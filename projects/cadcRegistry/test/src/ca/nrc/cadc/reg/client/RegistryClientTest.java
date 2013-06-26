@@ -132,8 +132,12 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     static String GMS_HTTP = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
     static String GMS_HTTPS = "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
     
+    static String VOS_URI = "ivo://cadc.nrc.ca/vospace";
+    static String VOS_HTTP = "http://www.canfar.phys.uvic.ca/vospace";
+    static String VOS_HTTPS = "https://www.canfar.phys.uvic.ca/vospace";
+    
     static String DUMMY_URI = "ivo://example.com/srv";
-    static String DUMMY_URL = "http://example.com/current/path/to/my/service";
+    static String DUMMY_URL = "http://www.example.com/current/path/to/my/service";
 
     @Test
     public void testNotFound() throws Exception
@@ -262,18 +266,43 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     }
 
     @Test
-    public void testFoundHost() throws Exception
+    public void testFoundFullyQualifiedHost() throws Exception
     {
         try
         {
-            System.setProperty(RegistryClient.class.getName() + ".host", "cadcweb0");
+            System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
 
-            String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-            URL expected = new URL("http://cadcweb0/current/path/to/my/service");
+            URL url = rc.getServiceURL(new URI(GMS_URI));
+            Assert.assertEquals("http://foo.bar.com/gms", url.toExternalForm());
+            
+            url = rc.getServiceURL(new URI(VOS_URI));
+            Assert.assertEquals("http://foo.bar.com/vospace", url.toExternalForm());
+        }
+        catch(Exception unexpected)
+        {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+        finally
+        {
+            System.setProperty(RegistryClient.class.getName() + ".host", "");
+        }
+    }
+    
+    @Test
+    public void testFoundHostInSameDomain() throws Exception
+    {
+        try
+        {
+            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
+            RegistryClient rc = new RegistryClient();
 
-            URL url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertEquals(expected, url);
+            URL url = rc.getServiceURL(new URI(GMS_URI));
+            Assert.assertEquals("http://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms", url.toExternalForm());
+            
+            url = rc.getServiceURL(new URI(VOS_URI));
+            Assert.assertEquals("http://foo.canfar.phys.uvic.ca/vospace", url.toExternalForm());
         }
         catch(Exception unexpected)
         {
