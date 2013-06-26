@@ -110,11 +110,13 @@ public class RegistryClient
     private static final String CACHE_FILENAME = RegistryClient.class.getSimpleName() + ".properties";
     private static final String LOCAL_PROPERTY = RegistryClient.class.getName() + ".local";
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
-
+    private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
+    
     private URL url;
     private MultiValuedProperties mvp;
     
     private String hostname;
+    private String shortHostname;
 
     /**
      * Constructor. Uses a properties file called RegistryClient.properties found in the classpath.
@@ -140,26 +142,33 @@ public class RegistryClient
         {
             String localP = System.getProperty(LOCAL_PROPERTY);
             String hostP = System.getProperty(HOST_PROPERTY);
-            log.debug("local: " + localP);
-            log.debug(" host: " + hostP);
+            String shortHostP = System.getProperty(SHORT_HOST_PROPERTY);
+            
+            log.debug("    local: " + localP);
+            log.debug("     host: " + hostP);
+            log.debug("shortHost: " + shortHostP);
             if ( "true".equals(localP) )
             {
                 log.debug(LOCAL_PROPERTY + " is set, assuming localhost runs the service");
                 this.hostname = InetAddress.getLocalHost().getCanonicalHostName();
             }
+            else if (shortHostP != null)
+            {
+                shortHostP = shortHostP.trim();
+                if (shortHostP.length() > 0)
+                {
+                    this.shortHostname = shortHostP;
+                }
+            }
             else if (hostP != null)
             {
-                hostP = hostP.trim();
-                if (hostP.length() > 0)
-                {
-                    InetAddress inet = InetAddress.getByName(hostP);
-                    this.hostname = inet.getCanonicalHostName();
-                }
+                this.hostname = hostP.trim();
             }
         }
         catch(UnknownHostException ex)
         {
-            throw new RuntimeException("failed to determine canonical local host name", ex);
+            log.warn("failed to find localhost name via name resolution (" + ex.toString() + "): using localhost");
+            this.hostname = "localhost";
         }
     }
     /**
@@ -236,12 +245,27 @@ public class RegistryClient
 
         StringBuilder sb = new StringBuilder();
 
-        if ( hostname != null )
+        if (hostname != null || shortHostname != null)
         {
             URL ret = new URL(surl);
             sb.append(ret.getProtocol());
             sb.append("://");
-            sb.append(hostname);
+            if (shortHostname != null)
+            {
+                String hname = shortHostname;
+                String fqhn = ret.getHost();
+                int i = fqhn.indexOf('.');
+                if (i > 0)
+                {
+                    String domain = fqhn.substring(i);
+                    hname += domain;
+                }
+                sb.append(hname);
+            }
+            else
+            {
+                sb.append(hostname);
+            }
             int p = ret.getPort();
             if (p > 0 && p != ret.getDefaultPort())
             {
