@@ -117,7 +117,7 @@
 <property name="testingJars" value="${dev.junit}:${dev.easyMock}:${dev.cglib}:${dev.asm}:${dev.objenesis}" />
 
     <!-- Run the test suite -->
-    <target name="test" depends="compile-test">
+    <target name="test" depends="compile-test,resources">
         <echo message="Running test" />
 
         <!-- Run the junit test suite -->

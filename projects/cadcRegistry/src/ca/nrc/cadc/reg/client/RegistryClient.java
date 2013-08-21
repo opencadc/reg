@@ -81,6 +81,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.nrc.cadc.util.MultiValuedProperties;
+import java.io.File;
 
 
 /**
@@ -123,7 +124,21 @@ public class RegistryClient
      */
     public RegistryClient()
     {
-        this(RegistryClient.class.getClassLoader().getResource(CACHE_FILENAME), false);
+        try
+        {
+            File conf = new File(System.getProperty("user.home") + "/config", CACHE_FILENAME);
+            URL furl;
+            if (conf.exists())
+                furl = new URL("file://" + conf.getAbsolutePath());
+            else
+                furl = RegistryClient.class.getResource("/"+CACHE_FILENAME);
+
+            init(furl, false);
+        }
+        catch(Exception ex)
+        {
+            throw new RuntimeException("failed to find URL to " + CACHE_FILENAME, ex);
+        }
     }
 
     /**
@@ -132,10 +147,10 @@ public class RegistryClient
      */
     public RegistryClient(URL url)
     {
-        this(url, false);
+        init(url, false);
     }
 
-    private RegistryClient(URL url, boolean unused)
+    private void init(URL url, boolean unused)
     {
         this.url = url;
         try
@@ -290,6 +305,7 @@ public class RegistryClient
         if (mvp != null)
             return;
 
+        InputStream istream = null;
         try
         {
             // find the cache resource from the url
@@ -297,7 +313,8 @@ public class RegistryClient
                 throw new RuntimeException("failed to find cache resource.");
 
             // read the properties
-            InputStream istream = url.openStream();
+            log.debug("init: reading config from " + url);
+            istream = url.openStream();
             this.mvp = new MultiValuedProperties();
             mvp.load(istream);
 
@@ -317,9 +334,14 @@ public class RegistryClient
         {
             throw new RuntimeException("failed to load resource: " + CACHE_FILENAME, ex);
         }
-        //catch(URISyntaxException ex)
-        //{
-        //    throw new RuntimeException("failed to parse resource: " + CACHE_FILENAME, ex);
-        //}
+        finally
+        {
+            if (istream != null)
+                try { istream.close(); }
+                catch(Throwable t) 
+                { 
+                    log.warn("failed to close " + url, t); 
+                }
+        }
     }
 }
