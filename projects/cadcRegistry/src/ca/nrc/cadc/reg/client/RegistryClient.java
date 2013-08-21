@@ -162,7 +162,9 @@ public class RegistryClient
             }
             else if (hostP != null)
             {
-                this.hostname = hostP.trim();
+                hostP = hostP.trim();
+                if (hostP.length() > 0)
+                    this.hostname = hostP;
             }
         }
         catch(UnknownHostException ex)
