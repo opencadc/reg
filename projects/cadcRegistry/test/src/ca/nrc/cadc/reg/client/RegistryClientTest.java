@@ -75,13 +75,12 @@ import java.net.URI;
 import java.net.URL;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Assert;
 
 /**
  *
@@ -194,6 +193,32 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         }
     }
 
+    @Test
+    public void testFoundViaConfigFile() throws Exception
+    {
+        String home = System.getProperty("user.home");
+        try
+        {
+            String fakeHome = System.getProperty("user.dir") + "/test";
+            log.debug("setting user.home = " + fakeHome);
+            System.setProperty("user.home", fakeHome);
+            RegistryClient rc = new RegistryClient();
+
+            URL expected = new URL("http://alt.example.com/current/path/to/my/service");
+            URL url = rc.getServiceURL(new URI("ivo://example.com/srv"), "http");
+            Assert.assertEquals(expected, url);
+        }
+        catch(Exception unexpected)
+        {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+        finally
+        {
+            // reset
+            System.setProperty("user.home", home);
+        }
+    }
 
     
     @Test
