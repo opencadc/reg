@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -81,7 +82,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.nrc.cadc.util.MultiValuedProperties;
-import java.io.File;
 
 
 /**
@@ -167,7 +167,8 @@ public class RegistryClient
                 log.debug(LOCAL_PROPERTY + " is set, assuming localhost runs the service");
                 this.hostname = InetAddress.getLocalHost().getCanonicalHostName();
             }
-            else if (shortHostP != null)
+            
+            if (shortHostP != null)
             {
                 shortHostP = shortHostP.trim();
                 if (shortHostP.length() > 0)
@@ -175,7 +176,8 @@ public class RegistryClient
                     this.shortHostname = shortHostP;
                 }
             }
-            else if (hostP != null)
+            
+            if (hostP != null && this.hostname == null)
             {
                 hostP = hostP.trim();
                 if (hostP.length() > 0)
