@@ -301,7 +301,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             RegistryClient rc = new RegistryClient();
 
             URL url = rc.getServiceURL(new URI(GMS_URI));
-            Assert.assertEquals("https://foo.bar.com/ac", url.toExternalForm());
+            Assert.assertEquals("https://foo.bar.com/gms", url.toExternalForm());
 
             url = rc.getServiceURL(new URI(VOS_URI));
             Assert.assertEquals("http://foo.bar.com/vospace", url.toExternalForm());
@@ -326,7 +326,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             RegistryClient rc = new RegistryClient();
 
             URL url = rc.getServiceURL(new URI(GMS_URI));
-            Assert.assertEquals("https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/ac", url.toExternalForm());
+            Assert.assertEquals("https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms", url.toExternalForm());
 
             url = rc.getServiceURL(new URI(VOS_URI));
             Assert.assertEquals("http://foo.canfar.phys.uvic.ca/vospace", url.toExternalForm());
