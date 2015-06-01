@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg.client;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,6 +83,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.nrc.cadc.util.MultiValuedProperties;
+import java.util.ArrayList;
+import java.util.ListIterator;
 
 
 /**
@@ -237,36 +240,53 @@ public class RegistryClient
     public URL getServiceURL(URI serviceID, String protocol, String path)
         throws MalformedURLException
     {
+        return getServiceURL(serviceID, protocol, path, null);
+    }
+    
+    public URL getServiceURL(URI serviceID, String protocol, String path, AuthMethod authMethod)
+        throws MalformedURLException
+    {
         init();
-        log.debug("getServiceURL: " + serviceID + "," + protocol + "," + path);
+        log.debug("getServiceURL: " + serviceID + "," + protocol + "," + path + "," + authMethod);
 
         //List<URL> urls = lookup.get(serviceID);
-        List<String> urls = mvp.getProperty(serviceID.toString());
-        if (urls == null || urls.isEmpty() )
+        List<String> strs = mvp.getProperty(serviceID.toString());
+        if (strs == null || strs.isEmpty() )
         {
             return null; // no matching serviceURI
         }
-        // default: first one in list
-        String surl = urls.get(0);
-
-        if (protocol != null)
+        List<Service> srvs = new ArrayList<Service>(strs.size());
+        for (String s : strs)
         {
-            for (String u : urls)
+            srvs.add(new Service(s));
+        }
+        
+        String testproto = protocol + "://";
+        ListIterator<Service> iter = srvs.listIterator();
+        while ( iter.hasNext() )
+        {
+            Service srv = iter.next();
+            boolean noMatch = false;
+            if (protocol != null && !srv.url.startsWith(testproto))
+                noMatch = true; // wrong protocol
+            if (authMethod != null && !srv.methods.contains(authMethod))
+                noMatch = true; // auth method not available
+            if (noMatch)
             {
-                if ( u.startsWith(protocol + "://") )
-                    surl = u;
-            }
-            if ( !surl.startsWith(protocol + "://") )
-            {
-                return null; // no matching protocol
+                iter.remove();
+                log.debug("getServiceURL: constraints not matched: " + srv + " vs " + protocol+ " + " + authMethod);
             }
         }
-
+        if (srvs.isEmpty())
+            return null;
+        
+        Service srv = srvs.get(0); // first match
+        
         StringBuilder sb = new StringBuilder();
 
         if (hostname != null || shortHostname != null)
         {
-            URL ret = new URL(surl);
+            URL ret = new URL(srv.url);
             sb.append(ret.getProtocol());
             sb.append("://");
             if (shortHostname != null)
@@ -294,7 +314,7 @@ public class RegistryClient
             sb.append(ret.getPath());
         }
         else
-            sb.append(surl);
+            sb.append(srv.url);
 
         if (path != null)
             sb.append(path);
@@ -302,6 +322,29 @@ public class RegistryClient
         return new URL(sb.toString());
     }
 
+    private class Service
+    {
+        String str;
+        String url;
+        List<AuthMethod> methods = new ArrayList<AuthMethod>();
+        
+        public String  toString() { return str; }
+        Service(String s)
+        {
+            this.str = s;
+            String[] parts = s.split(" ");
+            this.url = parts[0];
+            if (parts.length > 1)
+            {
+                parts = parts[1].split(",");
+                for (int i=0; i<parts.length; i++)
+                {
+                    AuthMethod a = AuthMethod.getAuthMethod(parts[i]);
+                    methods.add(a);
+                }
+            }
+        }
+    }
     private void init()
     {
         if (mvp != null)

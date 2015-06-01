@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg.client;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
@@ -129,16 +130,20 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     {
     }
 
-    static String GMS_URI = "ivo://cadc.nrc.ca/gms";
-    static String GMS_HTTP = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
-    static String GMS_HTTPS = "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
+    //static String GMS_URI = "ivo://cadc.nrc.ca/gms";
+    //static String GMS_HTTP = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
+    //static String GMS_HTTPS = "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
 
-    static String VOS_URI = "ivo://cadc.nrc.ca/vospace";
-    static String VOS_HTTP = "http://www.canfar.phys.uvic.ca/vospace";
-    static String VOS_HTTPS = "https://www.canfar.phys.uvic.ca/vospace";
+    //static String VOS_URI = "ivo://cadc.nrc.ca/vospace";
+    //static String VOS_HTTP = "http://www.canfar.phys.uvic.ca/vospace";
+    //static String VOS_HTTPS = "https://www.canfar.phys.uvic.ca/vospace";
 
     static String DUMMY_URI = "ivo://example.com/srv";
     static String DUMMY_URL = "http://www.example.com/current/path/to/my/service";
+    static String DUMMY_CERT_URL = "https://www.example.com/current/path/to/my/service";
+    static String DUMMY_PASSWORD_URL = "http://www.example.com/current/path/to/my/auth-service";
+    static String DUMMY_TOKEN_URL = DUMMY_URL;
+    static String DUMMY_COOKIE_URL = DUMMY_URL;
 
     @Test
     public void testNotFound() throws Exception
@@ -230,13 +235,49 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         {
             RegistryClient rc = new RegistryClient();
 
-            URL expected = new URL(VOS_HTTP);
-            URL url = rc.getServiceURL(new URI(VOS_URI), "http");
+            URL expected = new URL(DUMMY_URL);
+            URL url = rc.getServiceURL(new URI(DUMMY_URI), "http");
             Assert.assertEquals(expected, url);
 
-            expected = new URL(VOS_HTTPS);
-            url = rc.getServiceURL(new URI(VOS_URI), "https");
+            expected = new URL(DUMMY_CERT_URL);
+            url = rc.getServiceURL(new URI(DUMMY_URI), "https");
             Assert.assertEquals(expected, url);
+        }
+        catch(Exception unexpected)
+        {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
+    
+    @Test
+    public void testFoundWithAuthMethod() throws Exception
+    {
+        try
+        {
+            RegistryClient rc = new RegistryClient();
+
+            URL expected = new URL(DUMMY_URL);
+            URL url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.COOKIE);
+            Assert.assertEquals(expected, url);
+
+            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.TOKEN);
+            Assert.assertEquals(expected, url);
+
+            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.ANON);
+            Assert.assertEquals(expected, url);
+
+            expected = new URL(DUMMY_PASSWORD_URL);
+            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.PASSWORD);
+            Assert.assertEquals(expected, url);
+
+            expected = new URL(DUMMY_CERT_URL);
+            url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
+            Assert.assertEquals(expected, url);
+            
+            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.CERT);
+            Assert.assertNull(url);
+            
         }
         catch(Exception unexpected)
         {
@@ -252,12 +293,12 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         {
             RegistryClient rc = new RegistryClient();
 
-            URL expected = new URL(VOS_HTTP + "/doit");
-            URL url = rc.getServiceURL(new URI(VOS_URI), null, "/doit");
+            URL expected = new URL(DUMMY_URL + "/doit");
+            URL url = rc.getServiceURL(new URI(DUMMY_URI), null, "/doit");
             Assert.assertEquals(expected, url);
 
-            expected = new URL(VOS_HTTPS + "/doit");
-            url = rc.getServiceURL(new URI(VOS_URI), "https", "/doit");
+            expected = new URL(DUMMY_CERT_URL + "/doit");
+            url = rc.getServiceURL(new URI(DUMMY_URI), "https", "/doit");
             Assert.assertEquals(expected, url);
         }
         catch(Exception unexpected)
@@ -300,11 +341,11 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
 
-            URL url = rc.getServiceURL(new URI(GMS_URI));
-            Assert.assertEquals("https://foo.bar.com/gms", url.toExternalForm());
+            URL url = rc.getServiceURL(new URI(DUMMY_URI));
+            Assert.assertEquals("http://foo.bar.com/current/path/to/my/service", url.toExternalForm());
 
-            url = rc.getServiceURL(new URI(VOS_URI));
-            Assert.assertEquals("http://foo.bar.com/vospace", url.toExternalForm());
+            url = rc.getServiceURL(new URI(DUMMY_URI));
+            Assert.assertEquals("http://foo.bar.com/current/path/to/my/service", url.toExternalForm());
         }
         catch(Exception unexpected)
         {
@@ -325,11 +366,9 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             RegistryClient rc = new RegistryClient();
 
-            URL url = rc.getServiceURL(new URI(GMS_URI));
-            Assert.assertEquals("https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms", url.toExternalForm());
+            URL url = rc.getServiceURL(new URI(DUMMY_URI));
+            Assert.assertEquals("http://foo.example.com/current/path/to/my/service", url.toExternalForm());
 
-            url = rc.getServiceURL(new URI(VOS_URI));
-            Assert.assertEquals("http://foo.canfar.phys.uvic.ca/vospace", url.toExternalForm());
         }
         catch(Exception unexpected)
         {
@@ -338,7 +377,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         }
         finally
         {
-            System.setProperty(RegistryClient.class.getName() + ".host", "");
+            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
         }
     }
 }
