@@ -276,6 +276,8 @@ public class RegistryClient
                 iter.remove();
                 log.debug("getServiceURL: constraints not matched: " + srv + " vs " + protocol+ " + " + authMethod);
             }
+            else
+                log.debug("getServiceURL: found match: " + srv + " vs " + protocol+ " + " + authMethod);
         }
         if (srvs.isEmpty())
             return null;
