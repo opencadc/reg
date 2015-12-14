@@ -91,7 +91,7 @@
     <property name="jars" value="${lib}/cadcUtil.jar:${ext.lib}/log4j.jar" />
 
     <target name="build" depends="compile,resources">
-        <jar jarfile="${build}/lib/${project}Client.jar"
+        <jar jarfile="${build}/lib/${project}.jar"
                     basedir="${build}/class"
                     update="no">
                 <include name="ca/nrc/cadc/reg/client/**" />
