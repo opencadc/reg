@@ -319,7 +319,12 @@ public class RegistryClient
             sb.append(srv.url);
 
         if (path != null)
+        {
+            if (sb.charAt(sb.length()-1) != '/' 
+                    && path.charAt(0) != '/' && path.charAt(0) != '?')
+                sb.append("/");
             sb.append(path);
+        }
 
         return new URL(sb.toString());
     }
