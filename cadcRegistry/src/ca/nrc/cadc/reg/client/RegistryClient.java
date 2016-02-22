@@ -320,8 +320,7 @@ public class RegistryClient
 
         if (path != null)
         {
-            if (sb.charAt(sb.length()-1) != '/' 
-                    && path.charAt(0) != '/' && path.charAt(0) != '?')
+            if ( !path.startsWith("/") && path.startsWith("?") )
                 sb.append("/");
             sb.append(path);
         }
