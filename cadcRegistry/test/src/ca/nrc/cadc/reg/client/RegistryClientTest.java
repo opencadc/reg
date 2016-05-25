@@ -139,8 +139,10 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     //static String VOS_HTTPS = "https://www.canfar.phys.uvic.ca/vospace";
 
     static String DUMMY_URI = "ivo://example.com/srv";
+    static String OTHER_URI = "ivo://example.com/bar";
     static String DUMMY_URL = "http://www.example.com/current/path/to/my/service";
-    static String DUMMY_CERT_URL = "https://www.example.com/current/path/to/my/service";
+    static String DUMMY_SURL = "https://www.example.com/current/path/to/my/service";
+    static String DUMMY_CERT_URL = "https://www.example.com/current/path/to/my/x509-service";
     static String DUMMY_PASSWORD_URL = "http://www.example.com/current/path/to/my/auth-service";
     static String DUMMY_TOKEN_URL = DUMMY_URL;
     static String DUMMY_COOKIE_URL = DUMMY_URL;
@@ -239,8 +241,12 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             URL url = rc.getServiceURL(new URI(DUMMY_URI), "http");
             Assert.assertEquals(expected, url);
 
-            expected = new URL(DUMMY_CERT_URL);
+            expected = new URL(DUMMY_SURL);
             url = rc.getServiceURL(new URI(DUMMY_URI), "https");
+            Assert.assertEquals(expected, url);
+            
+            expected = new URL(DUMMY_CERT_URL);
+            url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
             Assert.assertEquals(expected, url);
         }
         catch(Exception unexpected)
@@ -287,7 +293,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     }
 
     @Test
-    public void testFoundWithPath() throws Exception
+    public void testAppendPath() throws Exception
     {
         try
         {
@@ -298,7 +304,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             Assert.assertEquals(expected, url);
 
             expected = new URL(DUMMY_CERT_URL + "/doit");
-            url = rc.getServiceURL(new URI(DUMMY_URI), "https", "/doit");
+            url = rc.getServiceURL(new URI(DUMMY_URI), "https", "/doit", AuthMethod.CERT);
             Assert.assertEquals(expected, url);
         }
         catch(Exception unexpected)
@@ -309,7 +315,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     }
 
     @Test
-    public void testFoundLocal() throws Exception
+    public void testModifyLocal() throws Exception
     {
         try
         {
@@ -320,6 +326,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             URL expected = new URL("http://" + localhost + "/current/path/to/my/service");
 
             URL url = rc.getServiceURL(new URI(DUMMY_URI));
+            Assert.assertNotNull(url);
             Assert.assertEquals(expected, url);
         }
         catch(Exception unexpected)
@@ -334,7 +341,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     }
 
     @Test
-    public void testFoundFullyQualifiedHost() throws Exception
+    public void testModifyHost() throws Exception
     {
         try
         {
@@ -342,10 +349,12 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             RegistryClient rc = new RegistryClient();
 
             URL url = rc.getServiceURL(new URI(DUMMY_URI));
+            Assert.assertNotNull(url);
             Assert.assertEquals("http://foo.bar.com/current/path/to/my/service", url.toExternalForm());
 
-            url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertEquals("http://foo.bar.com/current/path/to/my/service", url.toExternalForm());
+            url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
+            Assert.assertNotNull(url);
+            Assert.assertEquals("https://foo.bar.com/current/path/to/my/x509-service", url.toExternalForm());
         }
         catch(Exception unexpected)
         {
@@ -359,7 +368,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     }
 
     @Test
-    public void testFoundHostInSameDomain() throws Exception
+    public void testModifyShortHostname() throws Exception
     {
         try
         {
@@ -367,6 +376,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             RegistryClient rc = new RegistryClient();
 
             URL url = rc.getServiceURL(new URI(DUMMY_URI));
+            Assert.assertNotNull(url);
             Assert.assertEquals("http://foo.example.com/current/path/to/my/service", url.toExternalForm());
 
         }
@@ -378,6 +388,37 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         finally
         {
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
+        }
+    }
+    
+    @Test
+    public void testMatchDomain() throws Exception
+    {
+        try
+        {
+            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
+            System.setProperty(RegistryClient.class.getName() + ".domainMatch", "example.com,other.com");
+            RegistryClient rc = new RegistryClient();
+
+            URL url = rc.getServiceURL(new URI(DUMMY_URI));
+            Assert.assertNotNull(url);
+            Assert.assertEquals("http://foo.example.com/current/path/to/my/service", url.toExternalForm());
+            
+            // this one dopesn't match so hostname not modified
+            URL other = rc.getServiceURL(new URI(OTHER_URI));
+            Assert.assertNotNull(other);
+            Assert.assertEquals("http://www.example.net/current/path/to/my/service", other.toExternalForm());
+
+        }
+        catch(Exception unexpected)
+        {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+        finally
+        {
+            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
+            System.setProperty(RegistryClient.class.getName() + ".domainMatch", "");
         }
     }
 }

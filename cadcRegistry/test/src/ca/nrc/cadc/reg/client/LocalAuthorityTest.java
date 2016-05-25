@@ -1,14 +1,14 @@
-<!--
+/*
 ************************************************************************
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2009.                            (c) 2009.
+*  (c) 2011.                            (c) 2011.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
 *  All rights reserved                  Tous droits réservés
-*                                       
+*
 *  NRC disclaims any warranties,        Le CNRC dénie toute garantie
 *  expressed, implied, or               énoncée, implicite ou légale,
 *  statutory, of any kind with          de quelque nature que ce
@@ -31,10 +31,10 @@
 *  software without specific prior      de ce logiciel sans autorisation
 *  written permission.                  préalable et particulière
 *                                       par écrit.
-*                                       
+*
 *  This file is part of the             Ce fichier fait partie du projet
 *  OpenCADC project.                    OpenCADC.
-*                                       
+*
 *  OpenCADC is free software:           OpenCADC est un logiciel libre ;
 *  you can redistribute it and/or       vous pouvez le redistribuer ou le
 *  modify it under the terms of         modifier suivant les termes de
@@ -44,7 +44,7 @@
 *  either version 3 of the              : soit la version 3 de cette
 *  License, or (at your option)         licence, soit (à votre gré)
 *  any later version.                   toute version ultérieure.
-*                                       
+*
 *  OpenCADC is distributed in the       OpenCADC est distribué
 *  hope that it will be useful,         dans l’espoir qu’il vous
 *  but WITHOUT ANY WARRANTY;            sera utile, mais SANS AUCUNE
@@ -54,7 +54,7 @@
 *  PURPOSE.  See the GNU Affero         PARTICULIER. Consultez la Licence
 *  General Public License for           Générale Publique GNU Affero
 *  more details.                        pour plus de détails.
-*                                       
+*
 *  You should have received             Vous devriez avoir reçu une
 *  a copy of the GNU Affero             copie de la Licence Générale
 *  General Public License along         Publique GNU Affero avec
@@ -62,66 +62,79 @@
 *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 *                                       <http://www.gnu.org/licenses/>.
 *
-*  $Revision: 4 $
+*  $Revision: 5 $
 *
 ************************************************************************
--->
+*/
+
+package ca.nrc.cadc.reg.client;
 
 
-<!DOCTYPE project>
-<project default="build" basedir=".">
-    <property environment="env"/>
-    <property file="local.build.properties" />
+import ca.nrc.cadc.util.Log4jInit;
+import java.net.URI;
+import java.util.NoSuchElementException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ *
+ * @author pdowler
+ */
+public class LocalAuthorityTest 
+{
+    private static final Logger log = Logger.getLogger(LocalAuthorityTest.class);
+
+    private String NOT_FOUND_ID = "foo";
+    private String BASE_ID = "cred";
+    private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
     
-    <!-- site-specific build properties or overrides of values in opencadc.properties -->
-    <property file="${env.CADC_PREFIX}/etc/local.properties" />
+    static
+    {
+        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
+    }
+    public LocalAuthorityTest() { }
     
-    <!-- site-specific targets, e.g. install, cannot duplicate those in opencadc.targets.xml -->
-    <import file="${env.CADC_PREFIX}/etc/local.targets.xml" optional="true" />
-
-    <!-- default properties and targets -->
-    <property file="${env.CADC_PREFIX}/etc/opencadc.properties" />
-    <import file="${env.CADC_PREFIX}/etc/opencadc.targets.xml"/>
+    @Test
+    public void testNotFound()
+    {
+        try
+        {
+            LocalAuthority loc = new LocalAuthority();
+            
+            try 
+            { 
+                URI uri = loc.getServiceURI(NOT_FOUND_ID); 
+                Assert.fail("expected NoSuchElementException, found: " + uri);
+            }
+            catch(NoSuchElementException expected)
+            {
+                log.info("caught expected exception: " + expected);
+            }
+            
+        }
+        catch(Exception unexpected)
+        {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
     
-    <!-- developer convenience: place for extra targets and properties -->
-    <import file="extras.xml" optional="true" />
-
-    <property name="project" value="cadcRegistry" />
-
-    <property name="jars" value="${lib}/cadcUtil.jar:${ext.lib}/log4j.jar" />
-
-    <target name="build" depends="compile,resources">
-        <jar jarfile="${build}/lib/${project}.jar"
-                    basedir="${build}/class"
-                    update="no">
-                <include name="ca/nrc/cadc/reg/client/**" />
-                <include name="**.properties" />
-        </jar>
-    </target>
-
-    <target name="resources">
-        <copy todir="${build}/class">
-            <fileset dir="src/resources">
-                <include name="**.properties" />
-            </fileset>
-        </copy>
-
-    </target>
-
-<!-- JAR files needed to run the test suite -->
-<property name="dev.junit" value="${ext.dev}/junit.jar" />
-<property name="dev.easyMock" value="${ext.dev}/easymock.jar" />
-<property name="dev.cglib" value="${ext.dev}/cglib.jar" />
-<property name="dev.objenesis" value="${ext.dev}/objenesis.jar" />
-<property name="dev.asm" value="${ext.dev}/asm.jar" />
-<property name="testingJars" value="${dev.junit}:${dev.easyMock}:${dev.cglib}:${dev.asm}:${dev.objenesis}" />
-
-    <target name="setup-test">
-        <copy todir="${build}/test/class">
-            <fileset dir="test/resources">
-                <include name="**.properties" />
-            </fileset>
-        </copy>
-    </target>
-    
-</project>
+    @Test
+    public void testFound()
+    {
+        try
+        {
+            LocalAuthority loc = new LocalAuthority();
+            URI uri = loc.getServiceURI(BASE_ID);
+            Assert.assertNotNull(uri);
+            Assert.assertEquals(SERVICE_URI, uri.toASCIIString());
+        }
+        catch(Exception unexpected)
+        {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
+}

@@ -84,6 +84,7 @@ import org.apache.log4j.Logger;
 
 import ca.nrc.cadc.util.MultiValuedProperties;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ListIterator;
 
 
@@ -99,11 +100,25 @@ import java.util.ListIterator;
  * </pre>
  * </p><p>
  * Note for developers: You can set a system property to force this class to replace the hostname
- * in the resuting URL with an arbitrary hostname. This is useful for testing a specific remote server:
+ * in the resulting URL with an arbitrary hostname. This is useful for testing a specific remote server:
  * </p>
  * <pre>
  * ca.nrc.cadc.reg.client.RegistryClient.host=www.example.com
  * </pre>
+ * <p>
+ * or for testing in a special environment:
+ * </p>
+ * <pre>
+ * ca.nrc.cadc.reg.client.RegistryClient.shortHostname=test
+ * </pre>
+ * <p>
+ * The <code>ca.nrc.cadc.reg.client.RegistryClient.host</code> property replaces the entire fully-qualified host name
+ * with the specified value. The <code>ca.nrc.cadc.reg.client.RegistryClient.shortHostname</code> property
+ * replaces only the hostname and leaves the domain intact; this is useful if you run in multiple domains and have a
+ * set of test machines that span domains. The The <code>ca.nrc.cadc.reg.client.RegistryClient.domainMatch</code>
+ * property (comma-separated list of domains) can be used to limit hostname modifications to the specified domains; if
+ * it is not set, all URLs will be modified.
+ * </p>
  *
  * @author pdowler
  */
@@ -115,12 +130,14 @@ public class RegistryClient
     private static final String LOCAL_PROPERTY = RegistryClient.class.getName() + ".local";
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
     private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
+    private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
     
     private URL url;
     private MultiValuedProperties mvp;
     
     private String hostname;
     private String shortHostname;
+    private List<String>domainMatch = new ArrayList<String>();
 
     /**
      * Constructor. Uses a properties file called RegistryClient.properties found in the classpath.
@@ -161,6 +178,7 @@ public class RegistryClient
             String localP = System.getProperty(LOCAL_PROPERTY);
             String hostP = System.getProperty(HOST_PROPERTY);
             String shortHostP = System.getProperty(SHORT_HOST_PROPERTY);
+            String domainMatchP = System.getProperty(DOMAIN_MATCH_PROPERTY);
             
             log.debug("    local: " + localP);
             log.debug("     host: " + hostP);
@@ -185,6 +203,12 @@ public class RegistryClient
                 hostP = hostP.trim();
                 if (hostP.length() > 0)
                     this.hostname = hostP;
+            }
+            
+            if (domainMatchP != null)
+            {
+                String[] doms = domainMatchP.split(",");
+                this.domainMatch.addAll(Arrays.asList(doms));
             }
         }
         catch(UnknownHostException ex)
@@ -283,25 +307,29 @@ public class RegistryClient
             return null;
         
         Service srv = srvs.get(0); // first match
+        URL ret = new URL(srv.url);
         
-        StringBuilder sb = new StringBuilder();
-
+        boolean mangleHostname = false;
+        String domain = getDomain(ret.getHost());
         if (hostname != null || shortHostname != null)
         {
-            URL ret = new URL(srv.url);
+            //domainMatch.isEmpty : all
+            if (domainMatch.isEmpty() || domainMatch.contains(domain))
+                mangleHostname = true;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        if (mangleHostname)
+        {
+            String fqhn = ret.getHost();
+            
             sb.append(ret.getProtocol());
             sb.append("://");
             if (shortHostname != null)
             {
-                String hname = shortHostname;
-                String fqhn = ret.getHost();
-                int i = fqhn.indexOf('.');
-                if (i > 0)
-                {
-                    String domain = fqhn.substring(i);
-                    hname += domain;
-                }
-                sb.append(hname);
+                sb.append(shortHostname);
+                if (domain != null)
+                    sb.append(".").append(domain);
             }
             else
             {
@@ -393,6 +421,26 @@ public class RegistryClient
                 { 
                     log.warn("failed to close " + url, t); 
                 }
+        }
+    }
+    
+    public static String getDomain(String hostname) 
+    {
+        int startIndex = 0;
+        int nextIndex = hostname.indexOf('.');
+        int lastIndex = hostname.lastIndexOf('.');
+        while (nextIndex < lastIndex) 
+        {
+            startIndex = nextIndex + 1;
+            nextIndex = hostname.indexOf('.', startIndex);
+        }
+        if (startIndex > 0) 
+        {
+            return hostname.substring(startIndex);
+        } 
+        else 
+        {
+            return null;
         }
     }
 }
