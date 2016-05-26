@@ -69,7 +69,6 @@
 
 package ca.nrc.cadc.reg.client;
 
-import ca.nrc.cadc.auth.AuthMethod;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
@@ -83,6 +82,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.util.Log4jInit;
 
 /**
@@ -140,6 +140,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
 
     static String DUMMY_URI = "ivo://example.com/srv";
     static String OTHER_URI = "ivo://example.com/bar";
+    static String LONG_URI = "ivo://example.com/long";
     static String DUMMY_URL = "http://www.example.com/current/path/to/my/service";
     static String DUMMY_SURL = "https://www.example.com/current/path/to/my/service";
     static String DUMMY_CERT_URL = "https://www.example.com/current/path/to/my/x509-service";
@@ -244,7 +245,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             expected = new URL(DUMMY_SURL);
             url = rc.getServiceURL(new URI(DUMMY_URI), "https");
             Assert.assertEquals(expected, url);
-            
+
             expected = new URL(DUMMY_CERT_URL);
             url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
             Assert.assertEquals(expected, url);
@@ -255,7 +256,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             Assert.fail("unexpected exception: " + unexpected);
         }
     }
-    
+
     @Test
     public void testFoundWithAuthMethod() throws Exception
     {
@@ -280,10 +281,10 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             expected = new URL(DUMMY_CERT_URL);
             url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
             Assert.assertEquals(expected, url);
-            
+
             url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.CERT);
             Assert.assertNull(url);
-            
+
         }
         catch(Exception unexpected)
         {
@@ -390,7 +391,32 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
         }
     }
-    
+
+    @Test
+    public void testModifyShortHostnameLongDomain() throws Exception
+    {
+        try
+        {
+            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
+            RegistryClient rc = new RegistryClient();
+
+            URL url = rc.getServiceURL(new URI(LONG_URI));
+            log.info("long url: " + url);
+            Assert.assertNotNull(url);
+            Assert.assertEquals("http://foo.long.domain.example.net/current/path/to/my/service", url.toExternalForm());
+
+        }
+        catch(Exception unexpected)
+        {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+        finally
+        {
+            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
+        }
+    }
+
     @Test
     public void testMatchDomain() throws Exception
     {
@@ -403,7 +429,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             URL url = rc.getServiceURL(new URI(DUMMY_URI));
             Assert.assertNotNull(url);
             Assert.assertEquals("http://foo.example.com/current/path/to/my/service", url.toExternalForm());
-            
+
             // this one dopesn't match so hostname not modified
             URL other = rc.getServiceURL(new URI(OTHER_URI));
             Assert.assertNotNull(other);
