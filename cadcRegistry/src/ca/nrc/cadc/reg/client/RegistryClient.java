@@ -8,7 +8,7 @@
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
 *  All rights reserved                  Tous droits réservés
-*                                       
+*
 *  NRC disclaims any warranties,        Le CNRC dénie toute garantie
 *  expressed, implied, or               énoncée, implicite ou légale,
 *  statutory, of any kind with          de quelque nature que ce
@@ -31,10 +31,10 @@
 *  software without specific prior      de ce logiciel sans autorisation
 *  written permission.                  préalable et particulière
 *                                       par écrit.
-*                                       
+*
 *  This file is part of the             Ce fichier fait partie du projet
 *  OpenCADC project.                    OpenCADC.
-*                                       
+*
 *  OpenCADC is free software:           OpenCADC est un logiciel libre ;
 *  you can redistribute it and/or       vous pouvez le redistribuer ou le
 *  modify it under the terms of         modifier suivant les termes de
@@ -44,7 +44,7 @@
 *  either version 3 of the              : soit la version 3 de cette
 *  License, or (at your option)         licence, soit (à votre gré)
 *  any later version.                   toute version ultérieure.
-*                                       
+*
 *  OpenCADC is distributed in the       OpenCADC est distribué
 *  hope that it will be useful,         dans l’espoir qu’il vous
 *  but WITHOUT ANY WARRANTY;            sera utile, mais SANS AUCUNE
@@ -54,7 +54,7 @@
 *  PURPOSE.  See the GNU Affero         PARTICULIER. Consultez la Licence
 *  General Public License for           Générale Publique GNU Affero
 *  more details.                        pour plus de détails.
-*                                       
+*
 *  You should have received             Vous devriez avoir reçu une
 *  a copy of the GNU Affero             copie de la Licence Générale
 *  General Public License along         Publique GNU Affero avec
@@ -69,7 +69,6 @@
 
 package ca.nrc.cadc.reg.client;
 
-import ca.nrc.cadc.auth.AuthMethod;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,13 +77,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 
 import org.apache.log4j.Logger;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.util.MultiValuedProperties;
-import java.util.ArrayList;
-import java.util.ListIterator;
 
 
 /**
@@ -99,11 +100,25 @@ import java.util.ListIterator;
  * </pre>
  * </p><p>
  * Note for developers: You can set a system property to force this class to replace the hostname
- * in the resuting URL with an arbitrary hostname. This is useful for testing a specific remote server:
+ * in the resulting URL with an arbitrary hostname. This is useful for testing a specific remote server:
  * </p>
  * <pre>
  * ca.nrc.cadc.reg.client.RegistryClient.host=www.example.com
  * </pre>
+ * <p>
+ * or for testing in a special environment:
+ * </p>
+ * <pre>
+ * ca.nrc.cadc.reg.client.RegistryClient.shortHostname=test
+ * </pre>
+ * <p>
+ * The <code>ca.nrc.cadc.reg.client.RegistryClient.host</code> property replaces the entire fully-qualified host name
+ * with the specified value. The <code>ca.nrc.cadc.reg.client.RegistryClient.shortHostname</code> property
+ * replaces only the hostname and leaves the domain intact; this is useful if you run in multiple domains and have a
+ * set of test machines that span domains. The The <code>ca.nrc.cadc.reg.client.RegistryClient.domainMatch</code>
+ * property (comma-separated list of domains) can be used to limit hostname modifications to the specified domains; if
+ * it is not set, all URLs will be modified.
+ * </p>
  *
  * @author pdowler
  */
@@ -115,12 +130,14 @@ public class RegistryClient
     private static final String LOCAL_PROPERTY = RegistryClient.class.getName() + ".local";
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
     private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
-    
+    private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
+
     private URL url;
     private MultiValuedProperties mvp;
-    
+
     private String hostname;
     private String shortHostname;
+    private List<String>domainMatch = new ArrayList<String>();
 
     /**
      * Constructor. Uses a properties file called RegistryClient.properties found in the classpath.
@@ -161,7 +178,8 @@ public class RegistryClient
             String localP = System.getProperty(LOCAL_PROPERTY);
             String hostP = System.getProperty(HOST_PROPERTY);
             String shortHostP = System.getProperty(SHORT_HOST_PROPERTY);
-            
+            String domainMatchP = System.getProperty(DOMAIN_MATCH_PROPERTY);
+
             log.debug("    local: " + localP);
             log.debug("     host: " + hostP);
             log.debug("shortHost: " + shortHostP);
@@ -170,7 +188,7 @@ public class RegistryClient
                 log.debug(LOCAL_PROPERTY + " is set, assuming localhost runs the service");
                 this.hostname = InetAddress.getLocalHost().getCanonicalHostName();
             }
-            
+
             if (shortHostP != null)
             {
                 shortHostP = shortHostP.trim();
@@ -179,12 +197,18 @@ public class RegistryClient
                     this.shortHostname = shortHostP;
                 }
             }
-            
+
             if (hostP != null && this.hostname == null)
             {
                 hostP = hostP.trim();
                 if (hostP.length() > 0)
                     this.hostname = hostP;
+            }
+
+            if (domainMatchP != null)
+            {
+                String[] doms = domainMatchP.split(",");
+                this.domainMatch.addAll(Arrays.asList(doms));
             }
         }
         catch(UnknownHostException ex)
@@ -224,7 +248,7 @@ public class RegistryClient
     {
         return getServiceURL(serviceID, protocol, null);
     }
-    
+
     /**
      * Find the service URL for the service registered under the specified identifier and
      * using the specified protocol. The identifier must be an IVOA identifier
@@ -242,7 +266,7 @@ public class RegistryClient
     {
         return getServiceURL(serviceID, protocol, path, null);
     }
-    
+
     public URL getServiceURL(URI serviceID, String protocol, String path, AuthMethod authMethod)
         throws MalformedURLException
     {
@@ -260,7 +284,7 @@ public class RegistryClient
         {
             srvs.add(new Service(s));
         }
-        
+
         String testproto = protocol + "://";
         ListIterator<Service> iter = srvs.listIterator();
         while ( iter.hasNext() )
@@ -281,27 +305,30 @@ public class RegistryClient
         }
         if (srvs.isEmpty())
             return null;
-        
-        Service srv = srvs.get(0); // first match
-        
-        StringBuilder sb = new StringBuilder();
 
+        Service srv = srvs.get(0); // first match
+        URL ret = new URL(srv.url);
+
+        boolean mangleHostname = false;
+        String domain = getDomain(ret.getHost());
         if (hostname != null || shortHostname != null)
         {
-            URL ret = new URL(srv.url);
+            //domainMatch.isEmpty : all
+            if (domainMatch.isEmpty() || domainMatch.contains(domain))
+                mangleHostname = true;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (mangleHostname)
+        {
+
             sb.append(ret.getProtocol());
             sb.append("://");
             if (shortHostname != null)
             {
-                String hname = shortHostname;
-                String fqhn = ret.getHost();
-                int i = fqhn.indexOf('.');
-                if (i > 0)
-                {
-                    String domain = fqhn.substring(i);
-                    hname += domain;
-                }
-                sb.append(hname);
+                sb.append(shortHostname);
+                if (domain != null)
+                    sb.append(".").append(domain);
             }
             else
             {
@@ -333,7 +360,7 @@ public class RegistryClient
         String str;
         String url;
         List<AuthMethod> methods = new ArrayList<AuthMethod>();
-        
+
         public String  toString() { return str; }
         Service(String s)
         {
@@ -389,10 +416,28 @@ public class RegistryClient
         {
             if (istream != null)
                 try { istream.close(); }
-                catch(Throwable t) 
-                { 
-                    log.warn("failed to close " + url, t); 
+                catch(Throwable t)
+                {
+                    log.warn("failed to close " + url, t);
                 }
         }
+    }
+
+    public static String getDomain(String hostname)
+    {
+        if (hostname == null)
+        {
+            return null;
+        }
+        int dotIndex = hostname.indexOf('.');
+        if (dotIndex <= 0)
+        {
+            return null;
+        }
+        if (dotIndex + 1 == hostname.length())
+        {
+            return null;
+        }
+        return hostname.substring(dotIndex + 1);
     }
 }
