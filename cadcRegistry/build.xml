@@ -88,7 +88,7 @@
 
     <property name="project" value="cadcRegistry" />
 
-    <property name="jars" value="${lib}/cadcVOSI.jar:${lib}/cadcUtil.jar:${ext.lib}/log4j.jar" />
+    <property name="jars" value="${lib}/cadcVOSI.jar:${lib}/cadcUtil.jar:${ext.lib}/log4j.jar:${ext.lib}/jdom2.jar" />
 
     <target name="build" depends="compile,resources">
         <jar jarfile="${build}/lib/${project}.jar"
