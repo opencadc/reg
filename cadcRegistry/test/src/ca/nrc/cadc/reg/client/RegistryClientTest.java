@@ -71,7 +71,9 @@ package ca.nrc.cadc.reg.client;
 
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -84,6 +86,8 @@ import org.junit.Test;
 
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.vosi.Capabilities;
+import ca.nrc.cadc.vosi.Capability;
 
 /**
  *
@@ -147,304 +151,460 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     static String DUMMY_PASSWORD_URL = "http://www.example.com/current/path/to/my/auth-service";
     static String DUMMY_TOKEN_URL = DUMMY_URL;
     static String DUMMY_COOKIE_URL = DUMMY_URL;
+    
+    static String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
+    static String RESOURCE_ID_NO_VALUE = "ivo://cadc.nrc.ca/novalue";
+    static String RESOURCE_ID_NO_AUTH_METHOD = "ivo://cadc.nrc.ca/noauthmethod";
+    static String RESOURCE_ID_NOT_FOUND = "ivo://cadc.nrc.ca/notfound";
 
     @Test
-    public void testNotFound() throws Exception
+    public void testGetCapabilitiesMissingPropertyValue()
     {
-        try
-        {
-            RegistryClient rc = new RegistryClient();
-
-            URL url = rc.getServiceURL(new URI("ivo://foo/bar"));
-            Assert.assertNull(url);
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    	RegistryClient rc = new RegistryClient();
+    	try 
+    	{
+			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID_NO_VALUE));
+			Assert.assertEquals("resource identifier is different", RESOURCE_ID_NO_VALUE, caps.getResourceIdentifier().toString());
+			List<Capability> capList = caps.getCapabilities();
+            Assert.fail("expected IllegalArgumentException");			
+		} 
+    	catch (IllegalArgumentException ex)
+    	{
+    		// expecting a property value related exception
+    		if (!ex.getMessage().contains("property value"))
+    		{
+                log.error("unexpected exception", ex);
+        		Assert.fail("unexpected exception: " + ex);
+    		}
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
     }
 
     @Test
-    public void testFound() throws Exception
+    public void testGetCapabilitiesMissingAuthMethod()
     {
-        try
-        {
-            RegistryClient rc = new RegistryClient();
-
-            URL expected = new URL(DUMMY_URL);
-            URL url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertEquals(expected, url);
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
-    }
-    @Test
-    public void testFoundAltURL() throws Exception
-    {
-        try
-        {
-            // TODO: verify that this works with an arbitrary URL (eg http)
-            RegistryClient rc = new RegistryClient(
-                    RegistryClient.class.getClassLoader().getResource(
-                        RegistryClient.class.getSimpleName() + ".properties") );
-
-            URL expected = new URL(DUMMY_URL);
-            URL url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertEquals(expected, url);
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    	RegistryClient rc = new RegistryClient();
+    	try 
+    	{
+			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID_NO_AUTH_METHOD));
+			Assert.assertEquals("resource identifier is different", RESOURCE_ID_NO_AUTH_METHOD, caps.getResourceIdentifier().toString());
+			List<Capability> capList = caps.getCapabilities();
+            Assert.fail("expected IllegalArgumentException");
+		} 
+    	catch (IllegalArgumentException ex)
+    	{
+    		// expecting an auth method related exception
+    		if (!ex.getMessage().contains("authentication method"))
+    		{
+                log.error("unexpected exception", ex);
+        		Assert.fail("unexpected exception: " + ex);
+    		}
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
     }
 
     @Test
-    public void testFoundViaConfigFile() throws Exception
+    public void testGetCapabilitiesNotFound()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try 
+    	{
+			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID_NOT_FOUND));
+			Assert.assertEquals("resource identifier is different", RESOURCE_ID_NOT_FOUND, caps.getResourceIdentifier().toString());
+			List<Capability> capList = caps.getCapabilities();
+			Assert.assertEquals("Incorrect number of capabilities", 0, capList.size());
+		} 
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+
+    @Test
+    public void testGetCapabilitiesHappyPath()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try 
+    	{
+			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
+			Assert.assertEquals("resource identifier is different", RESOURCE_ID, caps.getResourceIdentifier().toString());
+			List<Capability> capList = caps.getCapabilities();
+			Assert.assertEquals("Incorrect number of capabilities", 3, capList.size());
+		} 
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testGetServiceURLWithNullAuthMethod()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try
+    	{
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/tap#sync");
+    		AuthMethod authMethod = null;
+    		rc.getServiceURL(serviceID, authMethod);
+    	}
+    	catch (IllegalArgumentException ex)
+    	{
+    		// expecting a null parameter related exception
+    		if (!ex.getMessage().contains("should not be null"))
+    		{
+                log.error("unexpected exception", ex);
+        		Assert.fail("unexpected exception: " + ex);
+    		}
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testGetServiceURLWithNullServiceID()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try
+    	{
+    		URI serviceID = null;
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
+    		rc.getServiceURL(serviceID, authMethod);
+    	}
+    	catch (IllegalArgumentException ex)
+    	{
+    		// expecting a null parameter related exception
+    		if (!ex.getMessage().contains("should not be null"))
+    		{
+                log.error("unexpected exception", ex);
+        		Assert.fail("unexpected exception: " + ex);
+    		}
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testGetServiceURLHappyPath()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try
+    	{
+    		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred");
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/cred#delegate");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testGetServiceURLWithAltURL()
+    {
+        RegistryClient rc = new RegistryClient(
+                RegistryClient.class.getClassLoader().getResource(
+                    RegistryClient.class.getSimpleName() + ".properties") );
+    	try
+    	{
+    		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred");
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/cred#delegate");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testGetServiceURLViaConfigFile()
     {
         String home = System.getProperty("user.home");
-        try
-        {
+    	try
+    	{
             String fakeHome = System.getProperty("user.dir") + "/test";
             log.debug("setting user.home = " + fakeHome);
             System.setProperty("user.home", fakeHome);
             RegistryClient rc = new RegistryClient();
 
             URL expected = new URL("http://alt.example.com/current/path/to/my/service");
-            URL url = rc.getServiceURL(new URI("ivo://example.com/srv"), "http");
-            Assert.assertEquals(expected, url);
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    		URI serviceID = new URI("ivo://example.com/srv");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cookie");
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
         finally
         {
             // reset
             System.setProperty("user.home", home);
         }
     }
-
-
+    
     @Test
-    public void testFoundWithProtocol() throws Exception
+    public void testGetServiceURLModifyLocal()
     {
-        try
-        {
-            RegistryClient rc = new RegistryClient();
-
-            URL expected = new URL(DUMMY_URL);
-            URL url = rc.getServiceURL(new URI(DUMMY_URI), "http");
-            Assert.assertEquals(expected, url);
-
-            expected = new URL(DUMMY_SURL);
-            url = rc.getServiceURL(new URI(DUMMY_URI), "https");
-            Assert.assertEquals(expected, url);
-
-            expected = new URL(DUMMY_CERT_URL);
-            url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
-            Assert.assertEquals(expected, url);
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
-    }
-
-    @Test
-    public void testFoundWithAuthMethod() throws Exception
-    {
-        try
-        {
-            RegistryClient rc = new RegistryClient();
-
-            URL expected = new URL(DUMMY_URL);
-            URL url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.COOKIE);
-            Assert.assertEquals(expected, url);
-
-            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.TOKEN);
-            Assert.assertEquals(expected, url);
-
-            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.ANON);
-            Assert.assertEquals(expected, url);
-
-            expected = new URL(DUMMY_PASSWORD_URL);
-            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.PASSWORD);
-            Assert.assertEquals(expected, url);
-
-            expected = new URL(DUMMY_CERT_URL);
-            url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
-            Assert.assertEquals(expected, url);
-
-            url = rc.getServiceURL(new URI(DUMMY_URI), "http", null, AuthMethod.CERT);
-            Assert.assertNull(url);
-
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
-    }
-
-    @Test
-    public void testAppendPath() throws Exception
-    {
-        try
-        {
-            RegistryClient rc = new RegistryClient();
-
-            URL expected = new URL(DUMMY_URL + "/doit");
-            URL url = rc.getServiceURL(new URI(DUMMY_URI), null, "/doit");
-            Assert.assertEquals(expected, url);
-
-            expected = new URL(DUMMY_CERT_URL + "/doit");
-            url = rc.getServiceURL(new URI(DUMMY_URI), "https", "/doit", AuthMethod.CERT);
-            Assert.assertEquals(expected, url);
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
-    }
-
-    @Test
-    public void testModifyLocal() throws Exception
-    {
-        try
-        {
+    	try
+    	{
             System.setProperty(RegistryClient.class.getName() + ".local", "true");
             RegistryClient rc = new RegistryClient();
-
             String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-            URL expected = new URL("http://" + localhost + "/current/path/to/my/service");
+            URL expected = new URL("https://" + localhost + "/cred");
 
-            URL url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertNotNull(url);
-            Assert.assertEquals(expected, url);
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/cred#delegate");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
         finally
         {
+            // reset
             System.setProperty(RegistryClient.class.getName() + ".local", "false");
         }
     }
-
+    
     @Test
-    public void testModifyHost() throws Exception
+    public void testGetServiceURLModifyHost()
     {
-        try
-        {
+    	try
+    	{
             System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
+            String expected = "https://foo.bar.com/cred";
 
-            URL url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertNotNull(url);
-            Assert.assertEquals("http://foo.bar.com/current/path/to/my/service", url.toExternalForm());
-
-            url = rc.getServiceURL(new URI(DUMMY_URI), "https", null, AuthMethod.CERT);
-            Assert.assertNotNull(url);
-            Assert.assertEquals("https://foo.bar.com/current/path/to/my/x509-service", url.toExternalForm());
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/cred#delegate");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL.toExternalForm());
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
         finally
         {
+            // reset
             System.setProperty(RegistryClient.class.getName() + ".host", "");
         }
     }
-
+    
     @Test
-    public void testModifyShortHostname() throws Exception
+    public void testGetServiceURLModifyShortHostname()
     {
-        try
-        {
+    	try
+    	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             RegistryClient rc = new RegistryClient();
+            String expected = "https://foo.example.com/current/path/to/my/x509-service";
 
-            URL url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertNotNull(url);
-            Assert.assertEquals("http://foo.example.com/current/path/to/my/service", url.toExternalForm());
-
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    		URI serviceID = new URI(DUMMY_URI);
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL.toExternalForm());
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
         finally
         {
+            // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
         }
     }
-
+    
     @Test
-    public void testModifyShortHostnameLongDomain() throws Exception
+    public void testGetServiceURLModifyShortHostnameLongDomain()
     {
-        try
-        {
+    	try
+    	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             RegistryClient rc = new RegistryClient();
+            String expected = "https://foo.long.domain.example.net/current/path/to/my/x509-service";
 
-            URL url = rc.getServiceURL(new URI(LONG_URI));
-            log.info("long url: " + url);
-            Assert.assertNotNull(url);
-            Assert.assertEquals("http://foo.long.domain.example.net/current/path/to/my/service", url.toExternalForm());
-
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    		URI serviceID = new URI(LONG_URI);
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod);
+            log.info("long url: " + serviceURL);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL.toExternalForm());
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
         finally
         {
+            // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
         }
     }
-
+  
     @Test
-    public void testMatchDomain() throws Exception
+    public void testGetServiceURLMatchDomain()
     {
-        try
-        {
+    	try
+    	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "example.com,other.com");
             RegistryClient rc = new RegistryClient();
+            String expected1 = "https://foo.example.com/current/path/to/my/x509-service";
 
-            URL url = rc.getServiceURL(new URI(DUMMY_URI));
-            Assert.assertNotNull(url);
-            Assert.assertEquals("http://foo.example.com/current/path/to/my/service", url.toExternalForm());
-
-            // this one dopesn't match so hostname not modified
-            URL other = rc.getServiceURL(new URI(OTHER_URI));
-            Assert.assertNotNull(other);
-            Assert.assertEquals("http://www.example.net/current/path/to/my/service", other.toExternalForm());
-
-        }
-        catch(Exception unexpected)
-        {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
+    		URI serviceID1 = new URI(DUMMY_URI);
+    		AuthMethod authMethod1 = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL1 = rc.getServiceURL(serviceID1, authMethod1);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL1);
+    		Assert.assertEquals("got an incorrect URL", expected1, serviceURL1.toExternalForm());
+    		
+            String expected2 = "https://www.example.net/current/path/to/my/x509-service";
+     		URI serviceID2 = new URI(OTHER_URI);
+    		AuthMethod authMethod2 = AuthMethod.getAuthMethod("cert");
+    		URL serviceURL2 = rc.getServiceURL(serviceID2, authMethod2);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL2);
+    		Assert.assertEquals("got an incorrect URL", expected2, serviceURL2.toExternalForm());
+    		
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
         finally
         {
+            // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "");
         }
+    }
+ 
+    @Test
+    public void testAppendPathWithNullAuthMethod()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try
+    	{
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/tap#sync");
+    		AuthMethod authMethod = null;
+    		String path = "a/path";
+    		rc.getServiceURL(serviceID, authMethod, path);
+    	}
+    	catch (IllegalArgumentException ex)
+    	{
+    		// expecting a null parameter related exception
+    		if (!ex.getMessage().contains("should not be null"))
+    		{
+                log.error("unexpected exception", ex);
+        		Assert.fail("unexpected exception: " + ex);
+    		}
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testAppendPathWithEmptyPath()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try
+    	{
+    		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred");
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/cred#delegate");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		String path = "";
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod, path);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testAppendPathWithNullPath()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try
+    	{
+    		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred");
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/cred#delegate");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		String path = null;
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod, path);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
+    }
+    
+    @Test
+    public void testAppendPathWithNonEmptyPath()
+    {
+    	RegistryClient rc = new RegistryClient();
+    	try
+    	{
+    		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/cred/appended/path");
+    		URI serviceID = new URI("ivo://cadc.nrc.ca/cred#delegate");
+    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
+    		String path = "appended/path";
+    		URL serviceURL = rc.getServiceURL(serviceID, authMethod, path);
+    		Assert.assertNotNull("Service URL should not be null", serviceURL);
+    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+    	}
+    	catch (Throwable t) 
+    	{
+            log.error("unexpected exception", t);
+    		Assert.fail("unexpected exception: " + t);
+		}
     }
 }

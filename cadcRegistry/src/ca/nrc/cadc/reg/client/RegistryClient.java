@@ -75,17 +75,23 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.util.MultiValuedProperties;
+import ca.nrc.cadc.util.StringUtil;
+import ca.nrc.cadc.vosi.Capabilities;
+import ca.nrc.cadc.vosi.Capability;
+import ca.nrc.cadc.vosi.Interface;
 
 
 /**
@@ -169,6 +175,213 @@ public class RegistryClient
     {
         init(url, false);
     }
+    
+    /**
+     * Find the capabilities for the service specified by its resource identifier. The 
+     * specified resource identifier must be an IVOA identifier (e.g. with URI 
+     * scheme of "ivo" like ivo://cadc.nrc.ca/vospace). 
+     *
+     * @param resourceID base resource identifier of the service
+     * @return service capabilities
+     * @throws URISyntaxException 
+     */
+    public Capabilities getCapabilities(final URI resourceID) 
+    		throws URISyntaxException
+    {
+        init();
+        log.debug("getCapabilities: " + resourceID);
+
+        Capabilities caps = new Capabilities(resourceID);
+        Set<String> keySet = this.mvp.keySet();
+        if (keySet == null || keySet.isEmpty())
+        {
+        	// no way to look up resource identifier
+        	return caps;
+        }
+        
+        // go through all configured capabilities and 
+        // find the ones that match the resourceID
+        Iterator<String> iter = keySet.iterator();
+        while (iter.hasNext())
+        {
+        	// key = <resource identifier>#<feature>
+        	String key = iter.next();
+        	String[] keyParts = key.split("#");        	
+        	if (keyParts[0].equals(resourceID.toString()))
+        	{
+        		// this is the capability we are looking for, add it.
+        		List<String> values = this.mvp.getProperty(key);
+        		if (values == null || values.isEmpty())
+        		{
+        			String msg = "Missing property value for property " + key;
+        			throw new IllegalArgumentException(msg);
+        		}
+        		
+        		// add interfaces to a capability
+        		Capability cap = new Capability(this.getStandardID(key));
+        		for (String value : values)
+        		{
+        			if (value.length() == 0)
+        			{
+            			String msg = "Missing a property value for property " + key;
+            			throw new IllegalArgumentException(msg);
+        			}
+        			
+        			// get an interface
+        			String[] valueParts = value.split(" "); 
+        			if (valueParts.length < 2)
+        			{
+        				String msg = "Missing either access URL or authentication method in properties file.";
+        				throw new IllegalArgumentException(msg);
+        			}
+        			
+        			String accessString = valueParts[0];
+        			Interface interf = new Interface(new URI(accessString));
+        			String[] ams = valueParts[1].split(",");
+        			for (String am : ams)
+        			{
+                        AuthMethod authMethod = AuthMethod.getAuthMethod(am);
+                        interf.getSecurityMethods().add(authMethod.getSecurityMethod());
+        			}
+        			
+        			// add the interface
+        			cap.getInterfaces().add(interf);
+        		};
+        		
+        		// add the capability
+        		caps.getCapabilities().add(cap);
+        	}
+        }
+        
+        return caps;
+    }
+
+    /**
+     * Find the service URL for the service registered under the specified base resource 
+     * identifier and using the specified authentication method. The identifier must be an 
+     * IVOA identifier (e.g. with URI scheme os "ivo"). 
+     *
+     * @param serviceID service identifier consisting of <resource identifier>#<feature>
+     * @param authMethod authentication method to be used
+     * @return service URL or null if a matching service (and protocol) was not found
+     * @throws RuntimeException if more than one URL match the service identifier
+     * @throws URISyntaxException 
+     * @throws MalformedURLException 
+     */
+    @Deprecated
+    public URL getServiceURL(final URI serviceID, AuthMethod authMethod) 
+    		throws URISyntaxException, MalformedURLException
+    {
+    	if (serviceID == null || authMethod == null)
+    	{
+    		String msg = "Both service identifier and authentication method should not be null";
+    		throw new IllegalArgumentException(msg);
+    	}
+    	
+    	URL url = null;
+    	
+    	// extract the resource identifier and get the associated capabilities
+    	String[] parts = serviceID.toString().split("#");
+    	Capabilities caps = this.getCapabilities(new URI(parts[0]));
+    	
+    	// locate the associated capability
+    	Capability cap = caps.findCapability(this.getStandardID(serviceID.toString()));
+    	
+    	if (cap != null)
+    	{
+    	    // locate the associated interface, throws RuntimeException if more than
+    	    // one interface match
+    	    Interface intf = cap.findInterface(authMethod.getSecurityMethod());
+    	    if (intf != null)
+    	    {
+    	        URL intfURL = intf.getAccessURL().toURL();
+    	        url = mangleHostname(intfURL);
+    	    }
+    	}
+    	
+    	// return associated access URL, mangle it if necessary
+        return url;
+    }
+
+    /**
+     * Find the service URL for the service registered under the specified base resource 
+     * identifier and using the specified authentication method. The identifier must be an 
+     * IVOA identifier (e.g. with URI scheme os "ivo"). 
+     *
+     * @param serviceID service identifier consisting of <resource identifier>#<feature>
+     * @param authMethod authentication method to be used
+     * @param path the path to be appended to the service URL prior to returning it
+     * @return base URL or null if a matching service (and protocol) was not found
+     * @throws URISyntaxException 
+     * @throws MalformedURLException 
+     */
+    @Deprecated
+    public URL getServiceURL(URI serviceID, AuthMethod authMethod, String path) 
+    		throws URISyntaxException, MalformedURLException
+    {
+    	URL serviceURL = this.getServiceURL(serviceID, authMethod);
+    	
+        if (serviceURL != null && StringUtil.hasText(path))
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(serviceURL.toString());
+            
+            if ( !path.startsWith("/") && !path.startsWith("?") )
+            {
+                sb.append("/");
+            }
+            
+            sb.append(path);
+            serviceURL = new URL(sb.toString());
+        }
+    	
+        return serviceURL;
+    }
+
+    private void init()
+    {
+        if (mvp != null)
+            return;
+
+        InputStream istream = null;
+        try
+        {
+            // find the cache resource from the url
+            if (url == null)
+                throw new RuntimeException("failed to find cache resource.");
+
+            // read the properties
+            log.debug("init: reading config from " + url);
+            istream = url.openStream();
+            this.mvp = new MultiValuedProperties();
+            mvp.load(istream);
+
+            if (log.isDebugEnabled())
+            {
+                for (String k : mvp.keySet())
+                {
+                    List<String> values = mvp.getProperty(k);
+                    for (String v : values)
+                    {
+                        log.debug(k + " = " + v);
+                    }
+                }
+            }
+        }
+        catch(IOException ex)
+        {
+            throw new RuntimeException("failed to load resource: " + CACHE_FILENAME, ex);
+        }
+        finally
+        {
+            if (istream != null)
+                try { istream.close(); }
+                catch(Throwable t)
+                {
+                    log.warn("failed to close " + url, t);
+                }
+        }
+    }
 
     private void init(URL url, boolean unused)
     {
@@ -217,212 +430,69 @@ public class RegistryClient
             this.hostname = "localhost";
         }
     }
-    /**
-     * Find the service URL for the service registered under the specified identifier. The
-     * identifier must be an IVOA identifier (e.g. with URI scheme os "ivo"). If the service
-     * has more than one service URL, one is chosen.
-     *
-     * @param serviceID
-     * @throws MalformedURLException if underlying properties file contains malformed URL
-     * @return base URL
-     */
-    public URL getServiceURL(URI serviceID)
-        throws MalformedURLException
+    
+    private URI getStandardID(final String serviceID) throws URISyntaxException
     {
-        return getServiceURL(serviceID, null, null);
+    	// TODO: implement once we have decided how to associate 
+    	//       a resource identifier to a standard identifier
+    	return new URI(serviceID);
     }
 
-    /**
-     * Find the service URL for the service registered under the specified identifier and
-     * using the specified protocol. The identifier must be an IVOA identifier
-     * (e.g. with URI scheme os "ivo"). The protocol argument may be null, in which case this
-     * method behaves exactly like getServiceURL(URI).
-     *
-     * @param serviceID the identifier of the service
-     * @param protocol the desired protocol or null if any will do
-     * @throws MalformedURLException if underlying properties file contains malformed URL
-     * @return base URL or null if a matching service (and protocol) was not found
-     */
-    public URL getServiceURL(URI serviceID, String protocol)
-         throws MalformedURLException
+    private boolean shouldMangleHostname(final URL url)
     {
-        return getServiceURL(serviceID, protocol, null);
-    }
-
-    /**
-     * Find the service URL for the service registered under the specified identifier and
-     * using the specified protocol. The identifier must be an IVOA identifier
-     * (e.g. with URI scheme os "ivo"). The protocol argument may be null, in which case this
-     * method behaves exactly like getServiceURL(URI).
-     *
-     * @param serviceID the identifier of the service
-     * @param protocol the desired protocol or null if any will do
-     * @param path a resource path to append to the base url (null to get the base url)
-     * @throws MalformedURLException if underlying properties file contains malformed URL
-     * @return base URL or null if a matching service (and protocol) was not found
-     */
-    public URL getServiceURL(URI serviceID, String protocol, String path)
-        throws MalformedURLException
-    {
-        return getServiceURL(serviceID, protocol, path, null);
-    }
-
-    public URL getServiceURL(URI serviceID, String protocol, String path, AuthMethod authMethod)
-        throws MalformedURLException
-    {
-        init();
-        log.debug("getServiceURL: " + serviceID + "," + protocol + "," + path + "," + authMethod);
-
-        //List<URL> urls = lookup.get(serviceID);
-        List<String> strs = mvp.getProperty(serviceID.toString());
-        if (strs == null || strs.isEmpty() )
-        {
-            return null; // no matching serviceURI
-        }
-        List<Service> srvs = new ArrayList<Service>(strs.size());
-        for (String s : strs)
-        {
-            srvs.add(new Service(s));
-        }
-
-        String testproto = protocol + "://";
-        ListIterator<Service> iter = srvs.listIterator();
-        while ( iter.hasNext() )
-        {
-            Service srv = iter.next();
-            boolean noMatch = false;
-            if (protocol != null && !srv.url.startsWith(testproto))
-                noMatch = true; // wrong protocol
-            if (authMethod != null && !srv.methods.contains(authMethod))
-                noMatch = true; // auth method not available
-            if (noMatch)
-            {
-                iter.remove();
-                log.debug("getServiceURL: constraints not matched: " + srv + " vs " + protocol+ " + " + authMethod);
-            }
-            else
-                log.debug("getServiceURL: found match: " + srv + " vs " + protocol+ " + " + authMethod);
-        }
-        if (srvs.isEmpty())
-            return null;
-
-        Service srv = srvs.get(0); // first match
-        URL ret = new URL(srv.url);
-
         boolean mangleHostname = false;
-        String domain = getDomain(ret.getHost());
-        if (hostname != null || shortHostname != null)
+        String domain = getDomain(url.getHost());
+        if (this.hostname != null || this.shortHostname != null)
         {
             //domainMatch.isEmpty : all
-            if (domainMatch.isEmpty() || domainMatch.contains(domain))
-                mangleHostname = true;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        if (mangleHostname)
-        {
-
-            sb.append(ret.getProtocol());
-            sb.append("://");
-            if (shortHostname != null)
+            if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain))
             {
-                sb.append(shortHostname);
+                mangleHostname = true;
+            }
+        }
+        
+        return mangleHostname;
+    }
+    
+    private URL mangleHostname(final URL url) throws MalformedURLException
+    {
+    	URL retURL = url;
+    	
+        if (shouldMangleHostname(url))
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(url.getProtocol());
+            sb.append("://");
+            
+            if (this.shortHostname != null)
+            {
+                sb.append(this.shortHostname);
+                String domain = getDomain(url.getHost());
                 if (domain != null)
+                {
                     sb.append(".").append(domain);
+                }
             }
             else
             {
-                sb.append(hostname);
+                sb.append(this.hostname);
             }
-            int p = ret.getPort();
-            if (p > 0 && p != ret.getDefaultPort())
+            
+            int p = url.getPort();
+            
+            if (p > 0 && p != url.getDefaultPort())
             {
                 sb.append(":");
                 sb.append(p);
             }
-            sb.append(ret.getPath());
+            
+            sb.append(url.getPath());            
+            retURL = new URL(sb.toString());
         }
-        else
-            sb.append(srv.url);
-
-        if (path != null)
-        {
-            if ( !path.startsWith("/") && !path.startsWith("?") )
-                sb.append("/");
-            sb.append(path);
-        }
-
-        return new URL(sb.toString());
+        
+        return retURL;
     }
-
-    private class Service
-    {
-        String str;
-        String url;
-        List<AuthMethod> methods = new ArrayList<AuthMethod>();
-
-        public String  toString() { return str; }
-        Service(String s)
-        {
-            this.str = s;
-            String[] parts = s.split(" ");
-            this.url = parts[0];
-            if (parts.length > 1)
-            {
-                parts = parts[1].split(",");
-                for (int i=0; i<parts.length; i++)
-                {
-                    AuthMethod a = AuthMethod.getAuthMethod(parts[i]);
-                    methods.add(a);
-                }
-            }
-        }
-    }
-    private void init()
-    {
-        if (mvp != null)
-            return;
-
-        InputStream istream = null;
-        try
-        {
-            // find the cache resource from the url
-            if (url == null)
-                throw new RuntimeException("failed to find cache resource.");
-
-            // read the properties
-            log.debug("init: reading config from " + url);
-            istream = url.openStream();
-            this.mvp = new MultiValuedProperties();
-            mvp.load(istream);
-
-            if (log.isDebugEnabled())
-            {
-                for (String k : mvp.keySet())
-                {
-                    List<String> values = mvp.getProperty(k);
-                    for (String v : values)
-                    {
-                        log.debug(k + " = " + v);
-                    }
-                }
-            }
-        }
-        catch(IOException ex)
-        {
-            throw new RuntimeException("failed to load resource: " + CACHE_FILENAME, ex);
-        }
-        finally
-        {
-            if (istream != null)
-                try { istream.close(); }
-                catch(Throwable t)
-                {
-                    log.warn("failed to close " + url, t);
-                }
-        }
-    }
-
+    
     public static String getDomain(String hostname)
     {
         if (hostname == null)
