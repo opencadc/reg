@@ -75,23 +75,20 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.jdom2.Namespace;
 
 import ca.nrc.cadc.auth.AuthMethod;
-import ca.nrc.cadc.util.MultiValuedProperties;
-import ca.nrc.cadc.util.StringUtil;
-import ca.nrc.cadc.vosi.Capabilities;
-import ca.nrc.cadc.vosi.Capability;
-import ca.nrc.cadc.vosi.Interface;
+import ca.nrc.cadc.reg.Capabilities;
+import ca.nrc.cadc.reg.CapabilitiesReader;
+import ca.nrc.cadc.reg.Capability;
+import ca.nrc.cadc.reg.Interface;
 
 
 /**
@@ -132,14 +129,13 @@ public class RegistryClient
 {
     private static Logger log = Logger.getLogger(RegistryClient.class);
 
-    private static final String CACHE_FILENAME = RegistryClient.class.getSimpleName() + ".properties";
     private static final String LOCAL_PROPERTY = RegistryClient.class.getName() + ".local";
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
     private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
     private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
-    private URL url;
-    private MultiValuedProperties mvp;
+    public static final String VODATASERVICE_NS_URI = "http://www.ivoa.net/xml/VODataService/v1.1";
+    public static final Namespace VODATASERVICE_NS = Namespace.getNamespace("vod", VODATASERVICE_NS_URI);
 
     private String hostname;
     private String shortHostname;
@@ -150,242 +146,11 @@ public class RegistryClient
      */
     public RegistryClient()
     {
-        try
-        {
-            File conf = new File(System.getProperty("user.home") + "/config", CACHE_FILENAME);
-            URL furl;
-            if (conf.exists())
-                furl = new URL("file://" + conf.getAbsolutePath());
-            else
-                furl = RegistryClient.class.getResource("/"+CACHE_FILENAME);
-
-            init(furl, false);
-        }
-        catch(Exception ex)
-        {
-            throw new RuntimeException("failed to find URL to " + CACHE_FILENAME, ex);
-        }
-    }
-
-    /**
-     * Constructor. Uses a properties file loaded from the specified url.
-     * @param url
-     */
-    public RegistryClient(URL url)
-    {
-        init(url, false);
-    }
-    
-    /**
-     * Find the capabilities for the service specified by its resource identifier. The 
-     * specified resource identifier must be an IVOA identifier (e.g. with URI 
-     * scheme of "ivo" like ivo://cadc.nrc.ca/vospace). 
-     *
-     * @param resourceID base resource identifier of the service
-     * @return service capabilities
-     * @throws URISyntaxException 
-     */
-    public Capabilities getCapabilities(final URI resourceID) 
-    		throws URISyntaxException
-    {
         init();
-        log.debug("getCapabilities: " + resourceID);
-
-        Capabilities caps = new Capabilities(resourceID);
-        Set<String> keySet = this.mvp.keySet();
-        if (keySet == null || keySet.isEmpty())
-        {
-        	// no way to look up resource identifier
-        	return caps;
-        }
-        
-        // go through all configured capabilities and 
-        // find the ones that match the resourceID
-        Iterator<String> iter = keySet.iterator();
-        while (iter.hasNext())
-        {
-        	// key = <resource identifier>#<feature>
-        	String key = iter.next();
-        	String[] keyParts = key.split("#");        	
-        	if (keyParts[0].equals(resourceID.toString()))
-        	{
-        		// this is the capability we are looking for, add it.
-        		List<String> values = this.mvp.getProperty(key);
-        		if (values == null || values.isEmpty())
-        		{
-        			String msg = "Missing property value for property " + key;
-        			throw new IllegalArgumentException(msg);
-        		}
-        		
-        		// add interfaces to a capability
-        		Capability cap = new Capability(this.getStandardID(key));
-        		for (String value : values)
-        		{
-        			if (value.length() == 0)
-        			{
-            			String msg = "Missing a property value for property " + key;
-            			throw new IllegalArgumentException(msg);
-        			}
-        			
-        			// get an interface
-        			String[] valueParts = value.split(" "); 
-        			if (valueParts.length < 2)
-        			{
-        				String msg = "Missing either access URL or authentication method in properties file.";
-        				throw new IllegalArgumentException(msg);
-        			}
-        			
-        			String accessString = valueParts[0];
-        			Interface interf = new Interface(new URI(accessString));
-        			String[] ams = valueParts[1].split(",");
-        			for (String am : ams)
-        			{
-                        AuthMethod authMethod = AuthMethod.getAuthMethod(am);
-                        interf.getSecurityMethods().add(authMethod.getSecurityMethod());
-        			}
-        			
-        			// add the interface
-        			cap.getInterfaces().add(interf);
-        		};
-        		
-        		// add the capability
-        		caps.getCapabilities().add(cap);
-        	}
-        }
-        
-        return caps;
-    }
-
-    /**
-     * Find the service URL for the service registered under the specified base resource 
-     * identifier and using the specified authentication method. The identifier must be an 
-     * IVOA identifier (e.g. with URI scheme os "ivo"). 
-     *
-     * @param serviceID service identifier consisting of <resource identifier>#<feature>
-     * @param authMethod authentication method to be used
-     * @return service URL or null if a matching service (and protocol) was not found
-     * @throws RuntimeException if more than one URL match the service identifier
-     * @throws URISyntaxException 
-     * @throws MalformedURLException 
-     */
-    @Deprecated
-    public URL getServiceURL(final URI serviceID, AuthMethod authMethod) 
-    		throws URISyntaxException, MalformedURLException
-    {
-    	if (serviceID == null || authMethod == null)
-    	{
-    		String msg = "Both service identifier and authentication method should not be null";
-    		throw new IllegalArgumentException(msg);
-    	}
-    	
-    	URL url = null;
-    	
-    	// extract the resource identifier and get the associated capabilities
-    	String[] parts = serviceID.toString().split("#");
-    	Capabilities caps = this.getCapabilities(new URI(parts[0]));
-    	
-    	// locate the associated capability
-    	Capability cap = caps.findCapability(this.getStandardID(serviceID.toString()));
-    	
-    	if (cap != null)
-    	{
-    	    // locate the associated interface, throws RuntimeException if more than
-    	    // one interface match
-    	    Interface intf = cap.findInterface(authMethod.getSecurityMethod());
-    	    if (intf != null)
-    	    {
-    	        URL intfURL = intf.getAccessURL().toURL();
-    	        url = mangleHostname(intfURL);
-    	    }
-    	}
-    	
-    	// return associated access URL, mangle it if necessary
-        return url;
-    }
-
-    /**
-     * Find the service URL for the service registered under the specified base resource 
-     * identifier and using the specified authentication method. The identifier must be an 
-     * IVOA identifier (e.g. with URI scheme os "ivo"). 
-     *
-     * @param serviceID service identifier consisting of <resource identifier>#<feature>
-     * @param authMethod authentication method to be used
-     * @param path the path to be appended to the service URL prior to returning it
-     * @return base URL or null if a matching service (and protocol) was not found
-     * @throws URISyntaxException 
-     * @throws MalformedURLException 
-     */
-    @Deprecated
-    public URL getServiceURL(URI serviceID, AuthMethod authMethod, String path) 
-    		throws URISyntaxException, MalformedURLException
-    {
-    	URL serviceURL = this.getServiceURL(serviceID, authMethod);
-    	
-        if (serviceURL != null && StringUtil.hasText(path))
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append(serviceURL.toString());
-            
-            if ( !path.startsWith("/") && !path.startsWith("?") )
-            {
-                sb.append("/");
-            }
-            
-            sb.append(path);
-            serviceURL = new URL(sb.toString());
-        }
-    	
-        return serviceURL;
     }
 
     private void init()
     {
-        if (mvp != null)
-            return;
-
-        InputStream istream = null;
-        try
-        {
-            // find the cache resource from the url
-            if (url == null)
-                throw new RuntimeException("failed to find cache resource.");
-
-            // read the properties
-            log.debug("init: reading config from " + url);
-            istream = url.openStream();
-            this.mvp = new MultiValuedProperties();
-            mvp.load(istream);
-
-            if (log.isDebugEnabled())
-            {
-                for (String k : mvp.keySet())
-                {
-                    List<String> values = mvp.getProperty(k);
-                    for (String v : values)
-                    {
-                        log.debug(k + " = " + v);
-                    }
-                }
-            }
-        }
-        catch(IOException ex)
-        {
-            throw new RuntimeException("failed to load resource: " + CACHE_FILENAME, ex);
-        }
-        finally
-        {
-            if (istream != null)
-                try { istream.close(); }
-                catch(Throwable t)
-                {
-                    log.warn("failed to close " + url, t);
-                }
-        }
-    }
-
-    private void init(URL url, boolean unused)
-    {
-        this.url = url;
         try
         {
             String localP = System.getProperty(LOCAL_PROPERTY);
@@ -430,64 +195,167 @@ public class RegistryClient
             this.hostname = "localhost";
         }
     }
-    
-    private URI getStandardID(final String serviceID) throws URISyntaxException
+
+    public Capabilities getCapabilities(final URI resourceID)
     {
-    	// TODO: implement once we have decided how to associate 
-    	//       a resource identifier to a standard identifier
-    	return new URI(serviceID);
+    	// get the associated capabilities
+    	CapabilitiesReader capReader = new CapabilitiesReader();
+    	URL capabilitiesFileURL = this.getCapabilitiesFileURL(resourceID);
+    	InputStream inStream = this.getStream(capabilitiesFileURL);
+    	Capabilities caps = null;
+    	
+    	try
+    	{
+	        caps = capReader.parse(inStream);
+    	}
+    	finally
+    	{
+            if (inStream != null)
+                try { inStream.close(); }
+                catch(Throwable t)
+                {
+                    log.warn("failed to close " + capabilitiesFileURL, t);
+                }
+    	}
+    	
+    	// return associated access URL, mangle it if necessary
+        return caps;
+    }
+    
+    /**
+     * Find the service URL for the service registered under the specified base resource 
+     * identifier and using the specified authentication method. The identifier must be an 
+     * IVOA identifier (e.g. with URI scheme os "ivo"). 
+     *
+     * @param resourceID resource identifier, e.g. ivo://cadc/nrc/ca/tap
+     * @param standardID IVOA standard identifier, e.g. ivo://ivo.net/std/TAP#sync-1.1
+     * @param authMethod authentication method to be used
+     * @return service URL or null if a matching service (and protocol) was not found
+     * @throws RuntimeException if more than one URL match the service identifier
+     */
+    @Deprecated
+    public URL getServiceURL(final URI resourceID, final URI standardID, final AuthMethod authMethod) 
+    {
+    	if (resourceID == null || standardID == null || authMethod == null)
+    	{
+    		String msg = "No input parameters should be null";
+    		throw new IllegalArgumentException(msg);
+    	}
+    	
+    	URL url = null;    	
+    	Capabilities caps = this.getCapabilities(resourceID);
+    	   	
+    	// locate the associated capability
+    	Capability cap = caps.findCapability(standardID);
+    	
+    	if (cap != null)
+    	{
+    	    // locate the associated interface, throws RuntimeException if more than
+    	    // one interface match
+    	    Interface intf = cap.findInterface(authMethod.getSecurityMethod());
+    	    if (intf != null)
+    	    {
+    	        URL intfURL = intf.getAccessURL().getURL();
+    	        
+    	        try
+    	        {
+	    	        url = mangleHostname(intfURL);
+    	        }
+    	        catch(MalformedURLException ex)
+    	        {
+    	        	String prefix = "resourceID=" + resourceID + ", standardID=" + standardID;
+    	        	String msg = prefix + ", malformed accessURL ";
+    	        	throw new RuntimeException(msg, ex);
+    	        }
+    	    }
+    	}
+    	
+    	// return associated access URL, mangle it if necessary
+        return url;
+    }
+    
+    private URL getCapabilitiesFileURL(URI resourceID)
+    {
+    	URL fileURL = null;
+    	
+    	String prefix = "/config/capabilities/" + resourceID.getAuthority();
+    	String path = resourceID.getPath();
+    	
+	    try
+	    {
+	        File conf = new File(System.getProperty("user.home") + prefix, path);
+	        URL furl;
+	        if (conf.exists())
+	            furl = new URL("file://" + conf.getAbsolutePath());
+	        else
+	            furl = RegistryClient.class.getResource("/" + path);
+	    }
+	    catch(Exception ex)
+	    {
+	        throw new RuntimeException("failed to find URL to " + path, ex);
+	    }
+    	
+    	return fileURL;
     }
 
-    private boolean shouldMangleHostname(final URL url)
+    private InputStream getStream(final URL fileURL)
     {
-        boolean mangleHostname = false;
-        String domain = getDomain(url.getHost());
-        if (this.hostname != null || this.shortHostname != null)
+        InputStream inStream = null;
+        try
         {
-            //domainMatch.isEmpty : all
-            if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain))
-            {
-                mangleHostname = true;
-            }
+            // find the cache resource from the url
+            if (fileURL == null)
+                throw new RuntimeException("failed to find cache resource.");
+
+            // open an input stream for the url
+            log.debug("getStream: opening an input stream for " + fileURL);
+            inStream = fileURL.openStream();
+        }
+        catch(IOException ex)
+        {
+            throw new RuntimeException("failed to open input stream for: " + fileURL, ex);
         }
         
-        return mangleHostname;
+        return inStream;
     }
     
-    private URL mangleHostname(final URL url) throws MalformedURLException
+    public URL mangleHostname(final URL url) throws MalformedURLException
     {
     	URL retURL = url;
     	
-        if (shouldMangleHostname(url))
+        if (this.hostname != null || this.shortHostname != null)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append(url.getProtocol());
-            sb.append("://");
-            
-            if (this.shortHostname != null)
-            {
-                sb.append(this.shortHostname);
-                String domain = getDomain(url.getHost());
-                if (domain != null)
-                {
-                    sb.append(".").append(domain);
-                }
-            }
-            else
-            {
-                sb.append(this.hostname);
-            }
-            
-            int p = url.getPort();
-            
-            if (p > 0 && p != url.getDefaultPort())
-            {
-                sb.append(":");
-                sb.append(p);
-            }
-            
-            sb.append(url.getPath());            
-            retURL = new URL(sb.toString());
+            String domain = getDomain(url.getHost());
+        	if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain))
+	        {
+	            StringBuilder sb = new StringBuilder();
+	            sb.append(url.getProtocol());
+	            sb.append("://");
+	            
+	            if (this.shortHostname != null)
+	            {
+	                sb.append(this.shortHostname);
+	                if (domain != null)
+	                {
+	                    sb.append(".").append(domain);
+	                }
+	            }
+	            else
+	            {
+	                sb.append(this.hostname);
+	            }
+	            
+	            int p = url.getPort();
+	            
+	            if (p > 0 && p != url.getDefaultPort())
+	            {
+	                sb.append(":");
+	                sb.append(p);
+	            }
+	            
+	            sb.append(url.getPath());            
+	            retURL = new URL(sb.toString());
+	        }
         }
         
         return retURL;
