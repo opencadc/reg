@@ -88,7 +88,12 @@
 
     <property name="project" value="cadcRegistry" />
 
-    <property name="jars" value="${lib}/cadcUtil.jar:${ext.lib}/log4j.jar:${ext.lib}/jdom2.jar" />
+    <property name="cadcUtil" value="${lib}/cadcUtil.jar" />
+    <property name="log4j" value="${ext.lib}/log4j.jar" />
+    <property name="jdom2" value="${ext.lib}/jdom2.jar" />
+    <property name="xerces" value="${ext.lib}/xerces.jar" />
+
+    <property name="jars" value="${cadcUtil}:${log4j}:${jdom2}:${xerces}" />
 
     <target name="build" depends="compile,resources">
         <jar jarfile="${build}/lib/${project}.jar"
@@ -102,7 +107,7 @@
     <target name="resources">
         <copy todir="${build}/class">
             <fileset dir="src/resources">
-                <include name="**.properties" />
+                <include name="**.xsd" />
             </fileset>
         </copy>
 
@@ -120,6 +125,7 @@
         <copy todir="${build}/test/class">
             <fileset dir="test/resources">
                 <include name="**.properties" />
+                <include name="**.xsd" />
             </fileset>
         </copy>
     </target>

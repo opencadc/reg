@@ -72,13 +72,16 @@ package ca.nrc.cadc.reg;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.xml.XmlUtil;
 import org.apache.log4j.Logger;
+import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -182,9 +185,48 @@ public class CapabilitiesReader
         log.debug("addSchemaLocation: " + namespace + " -> " + schemaLocation);
         schemaMap.put(namespace, schemaLocation);
     }
+
+    /**
+     *  Construct a Capabilities from an XML String source.
+     *
+     * @param xml String of the XML.
+     * @return Capabiltiies Capabilities.
+     */
+    public Capabilities read(String xml) 
+    {
+        if (xml == null)
+        {
+            throw new IllegalArgumentException("XML must not be null");
+        }
+        
+        return read(new StringReader(xml));
+    }
+
+    /**
+     * Construct a Capabilities from a InputStream.
+     *
+     * @param in InputStream.
+     * @return Capabilities Capabilities.
+     * @throws IOException 
+     */
+    public Capabilities read(InputStream istream)
+    {
+        if (istream == null)
+        {
+            throw new RuntimeException("capabilities xml file stream closed");
+        }
+
+        try
+        {
+            return read(new InputStreamReader(istream, "UTF-8"));
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new RuntimeException("UTF-8 encoding not supported");
+        }
+    }
     
-    public Capabilities parse(Reader reader)
-        throws IOException, JDOMException
+    public Capabilities read(Reader reader)
     {
         if (reader == null)
         {
@@ -192,34 +234,23 @@ public class CapabilitiesReader
         }
 
         // Create a JDOM Document from the XML
-        SAXBuilder sb = XmlUtil.createBuilder(schemaMap);
-        return this.buildCapabilities(sb.build(reader).getRootElement());
-    }
-
-    public Capabilities parse(InputStream istream)
-    {
-        if (istream == null)
-        {
-            throw new RuntimeException("capabilities xml file stream closed");
-        }
-
-        SAXBuilder sb = XmlUtil.createBuilder(schemaMap);
-        
+        Document document;
         try
         {
-	        return this.buildCapabilities(sb.build(istream).getRootElement());
+            document = XmlUtil.buildDocument(reader, schemaMap);
         }
-        catch(IOException ex)
+        catch (IOException ioe)
         {
-        	String msg = "Failed to read document into input stream ";
-        	throw new RuntimeException(msg, ex);
+            String msg = "Error reading XML: " + ioe.getMessage();
+            throw new RuntimeException(msg, ioe);
         }
-        catch(JDOMException ex)
+        catch (JDOMException jde)
         {
-        	String msg = "Failed to build document from input stream ";
-        	throw new RuntimeException(msg, ex);
+            String msg = "XML failed schema validation: " + jde.getMessage();
+            throw new RuntimeException(msg, jde);
         }
-        
+
+        return this.buildCapabilities(document.getRootElement());
     }
 
     private Capabilities buildCapabilities(final Element root) 

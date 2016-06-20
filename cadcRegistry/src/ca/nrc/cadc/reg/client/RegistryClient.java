@@ -219,7 +219,7 @@ public class RegistryClient
     	
     	try
     	{
-	        caps = capReader.parse(inStream);
+	        caps = capReader.read(inStream);
     	}
     	finally
     	{
@@ -289,26 +289,26 @@ public class RegistryClient
     
     private URL getCapabilitiesFileURL(URI resourceID)
     {
-    	URL fileURL = null;
+    	URL furl = null;
     	
-    	String prefix = "/config/capabilities/" + resourceID.getAuthority();
+    	String fileDir = "/capabilities/" + resourceID.getAuthority();
+    	String prefix = "/config" + fileDir;
     	String path = resourceID.getPath();
     	
 	    try
 	    {
 	        File conf = new File(System.getProperty("user.home") + prefix, path);
-	        URL furl;
 	        if (conf.exists())
 	            furl = new URL("file://" + conf.getAbsolutePath());
 	        else
-	            furl = RegistryClient.class.getResource("/" + path);
+	            furl = RegistryClient.class.getResource(fileDir + path);
 	    }
 	    catch(Exception ex)
 	    {
 	        throw new RuntimeException("failed to find URL to " + path, ex);
 	    }
     	
-    	return fileURL;
+    	return furl;
     }
 
     private InputStream getStream(final URL fileURL)
