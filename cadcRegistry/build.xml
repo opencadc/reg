@@ -94,7 +94,7 @@
         <jar jarfile="${build}/lib/${project}.jar"
                     basedir="${build}/class"
                     update="no">
-                <include name="ca/nrc/cadc/reg/client/**" />
+                <include name="ca/nrc/cadc/reg/**" />
                 <include name="**.properties" />
         </jar>
     </target>
