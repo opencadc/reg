@@ -67,7 +67,7 @@
 ************************************************************************
 */
 
-package ca.nrc.cadc.reg.client;
+package ca.nrc.cadc.reg;
 
 
 import ca.nrc.cadc.reg.AccessURL;

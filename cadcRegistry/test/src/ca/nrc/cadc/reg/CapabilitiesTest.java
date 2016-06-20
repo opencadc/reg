@@ -67,7 +67,7 @@
 ************************************************************************
 */
 
-package ca.nrc.cadc.reg.client;
+package ca.nrc.cadc.reg;
 
 
 import ca.nrc.cadc.reg.Capabilities;
@@ -88,9 +88,9 @@ public class CapabilitiesTest
 {
     private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
 
-    private String STANDARD_ID = "ivo://ivo.net/std/tap#sync-v1.1";
-    private String STANDARD_ID_2 = "ivo://ivo.net/std/tap#async-v1.1";
-    private String STANDARD_ID_3= "ivo://ivo.net/std/tap#tables-v1.1";
+    private String STANDARD_ID = Standard.TAP_SYNC_1_1;
+    private String STANDARD_ID_2 = Standard.TAP_ASYNC_1_1;
+    private String STANDARD_ID_3= Standard.TAP_TABLES_1_1;
     private String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
     
     static

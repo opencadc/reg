@@ -67,7 +67,7 @@
 ************************************************************************
 */
 
-package ca.nrc.cadc.reg.client;
+package ca.nrc.cadc.reg;
 
 
 import ca.nrc.cadc.reg.AccessURL;
@@ -155,7 +155,7 @@ public class CapabilityTest
     		interfaces.add(new Interface(new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD)));
     		Assert.assertEquals("interfaces should have one entry", 1, interfaces.size());
     		Interface[] intfArray = interfaces.toArray(new Interface[interfaces.size()]);
-    		Assert.assertEquals("interface contains a different access URL", ACCESS_URL, intfArray[0].getAccessURL().toString());
+    		Assert.assertEquals("interface contains a different access URL", ACCESS_URL, intfArray[0].getAccessURL().getURL().toString());
     		
     		// test correct number of security methods are added 
     		interfaces.add(new Interface(new AccessURL(new URL(ACCESS_URL_2)), new URI(SECURITY_METHOD_1)));
