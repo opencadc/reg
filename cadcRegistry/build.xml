@@ -100,7 +100,7 @@
                     basedir="${build}/class"
                     update="no">
                 <include name="ca/nrc/cadc/reg/**" />
-                <include name="**.properties" />
+                <include name="**.xsd" />
         </jar>
     </target>
 
