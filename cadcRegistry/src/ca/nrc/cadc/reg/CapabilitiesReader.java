@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.xml.XmlUtil;
 import org.apache.log4j.Logger;
@@ -99,20 +100,23 @@ public class CapabilitiesReader
 {
     private static final Logger log = Logger.getLogger(CapabilitiesReader.class);
     
+    private final URI resourceIdentifier;
     private String resourceIDStr = "";
     private String standardIDStr = "";
     private String accessURLStr = "";
     private String securityMethodStr = "";
     protected Map<String,String> schemaMap;
     
-    public CapabilitiesReader()
+    public CapabilitiesReader(final URI resourceIdentifier)
     {
-        this(true);
+        this(resourceIdentifier, true);
     }
     
-    public CapabilitiesReader(boolean enableSchemaValidation)
+    public CapabilitiesReader(final URI resourceIdentifier, boolean enableSchemaValidation)
     {
-        if (enableSchemaValidation)
+    	this.resourceIdentifier = resourceIdentifier;
+
+    	if (enableSchemaValidation)
         {
             this.schemaMap = new HashMap<String,String>();
             String url;
@@ -255,7 +259,8 @@ public class CapabilitiesReader
 
     private Capabilities buildCapabilities(final Element root) 
     {
-    	Capabilities caps = new Capabilities(this.parseResourceID(root));
+        Capabilities caps = new Capabilities(this.resourceIdentifier);
+    	
    	    List<Element> capElementList = root.getChildren("capability");
    	    for (Element capElement : capElementList)
    	    {
@@ -290,29 +295,40 @@ public class CapabilitiesReader
     }
     
     private URI parseSecurityMethod(final Element securityMethodElement) 
-    {
-    	String standardIDString = securityMethodElement.getAttributeValue("standardID");
-    	if (standardIDString == null)
+    {    	
+        URI standardID;
+        
+    	if (securityMethodElement == null)
     	{
-    		String prefix = this.resourceIDStr + this.standardIDStr + this.accessURLStr;
-    		String msg = prefix + ", standardID attribute not found in securityMethod element";
-    		throw new RuntimeException(msg);
+        	// anonymous access
+   		    standardID = AuthMethod.ANON.getSecurityMethod();
     	}
-    	
-    	this.securityMethodStr = ", securityMethod standardID=" + standardIDString;
-    	URI standardID;
-		try 
-		{
-			standardID = new URI(standardIDString);
-		} 
-		catch (URISyntaxException e) 
-		{
-    		String prefix = this.resourceIDStr + this.standardIDStr + this.accessURLStr + this.securityMethodStr;
-			String msg = prefix + ", invalid securityMethod standardID in xml: " + e.getMessage();
-            throw new RuntimeException(msg);
-		}
+    	else
+    	{
+    		// get the standardID for secure access
+	    	String standardIDString = securityMethodElement.getAttributeValue("standardID");
+	    	
+	    	if (standardIDString == null)
+	    	{
+	    		String prefix = this.resourceIDStr + this.standardIDStr + this.accessURLStr;
+	    		String msg = prefix + ", standardID attribute not found in securityMethod element";
+	    		throw new RuntimeException(msg);
+	    	}
+	    	
+	    	this.securityMethodStr = ", securityMethod standardID=" + standardIDString;
+			try 
+			{
+				standardID = new URI(standardIDString);
+			} 
+			catch (URISyntaxException e) 
+			{
+	    		String prefix = this.resourceIDStr + this.standardIDStr + this.accessURLStr + this.securityMethodStr;
+				String msg = prefix + ", invalid securityMethod standardID in xml: " + e.getMessage();
+	            throw new RuntimeException(msg);
+			}
+    	}
 		
-    	log.debug("securityMethod standardID: " + standardIDString);    	
+    	log.debug("securityMethod standardID: " + standardID);    	
         return standardID;
     }
     
@@ -385,31 +401,5 @@ public class CapabilitiesReader
 		
     	log.debug("capabilities standardID: " + standardIDString);    
         return standardID;
-    }
-    
-    private URI parseResourceID(final Element root) 
-    {
-    	String resourceIDString = root.getAttributeValue("resourceID");
-    	if (resourceIDString == null)
-    	{
-    		String msg = "resourceID attribute not found in capabilities element";
-    		throw new RuntimeException(msg);
-    	}
-    	
-    	this.resourceIDStr = "resourceID=" + resourceIDString;
-    	URI resourceID;
-    	
-		try 
-		{
-			resourceID = new URI(resourceIDString);
-		} 
-		catch (URISyntaxException e) 
-		{
-			String msg = this.resourceIDStr + ", invalid resourceID in xml: " + e.getMessage();
-            throw new RuntimeException(msg);
-		}
-		
-    	log.debug("capabilities resourceID: " + resourceIDString);    
-        return resourceID;
     }
 }

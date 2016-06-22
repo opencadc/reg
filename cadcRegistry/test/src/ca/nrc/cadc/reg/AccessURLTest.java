@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2010.                            (c) 2010.
+*  (c) 2011.                            (c) 2011.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,108 +69,63 @@
 
 package ca.nrc.cadc.reg;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
+import ca.nrc.cadc.reg.AccessURL;
+import ca.nrc.cadc.util.Log4jInit;
+import java.net.URL;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- * Minimal implementation of the Capabilities model in VOResource 1.0.
- * 
- * resourceIdentifier is a base URI which identifies a service provided by 
- * the managed authority, e.g. ivoa://cadc.nrc.ca/vospacev2.1. 
- * 
- * capability represents a general function of the service, usually in terms
- * of a standard service protocol (e.g. SIA), but not necessarily. A service 
- * can have many capabilities associated with it, each reflecting a
- * different aspect of the functionality it provides.
- * 
+ *
  * @author yeunga
  */
-public class Capabilities
+public class AccessURLTest 
 {
-    private static Logger log = Logger.getLogger(Capabilities.class);
+    private static final Logger log = Logger.getLogger(AccessURLTest.class);
 
-    // resource ID is optional for Capabilities
-    private URI resourceIdentifier;
-    private final List<Capability> capabilities = new ArrayList<Capability>();
-
-    /**
-     * Constructor. 
-     */
-    public Capabilities(final URI resourceIdentifier)
+    private String ACCESS_URL = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/availability";
+    
+    static
     {
-        validateResourceID(resourceIdentifier);
-
-        this.resourceIdentifier = resourceIdentifier;
+        Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
     }
     
-    /**
-     * Find the resource identifier associated with the capabilities.
-     * 
-     * @return associated resource identifier
-     */
-    public URI getResourceIdentifier()
+    public AccessURLTest() { }
+    
+    @Test
+    public void testNullAccessURL()
     {
         try
         {
-            return new URI(this.resourceIdentifier.toString());
+            new AccessURL(null);
+            Assert.fail("expected IllegalArgumentException");
         }
-        catch (URISyntaxException e)
+        catch(IllegalArgumentException ex)
         {
-            // Checked at construction time, so should not happen.
-            throw new RuntimeException(e);
+        	// expected
+        }
+        catch(Throwable t)
+        {
+            Assert.fail("unexpected t: " + t);
         }
     }
-
-    /**
-     * Find all associated capabilities.
-     * 
-     * @return all associated capabilities.
-     */
-	public List<Capability> getCapabilities() 
-	{
-		return this.capabilities;
-	}
-	
-	/**
-	 * Find the capability associated with the specified standard identifier.
-	 * 
-	 * @param standardID standard identifier for the required capability
-	 * @return capability found or null if not found
-	 */
-	public Capability findCapability(final URI standardID)
-	{
-		boolean found = false;
-		Capability retCap = null;
-		
-		for (Capability cap : this.capabilities)
-		{
-			if (cap.getStandardID().equals(standardID))
-			{
-				if (found)
-				{
-					String msg = "Matched more than one capability";
-					throw new RuntimeException(msg);
-				}
-				
-				found = true;
-				retCap = cap;
-			}
-		}
-		
-		return retCap;
-	}
-	
-	private void validateResourceID(final URI resourceID)
-	{
-		if (resourceID == null)
-		{
-			String msg = "resource identifier for a Capabilities object cannot be null.";
-			throw new IllegalArgumentException(msg);
-		}
-	}
+   
+    @Test
+    public void testConstruction()
+    {
+    	try
+    	{
+    		AccessURL accessURL = new AccessURL(new URL(ACCESS_URL));
+    		Assert.assertNotNull("accessURL should not be null", accessURL);
+    		Assert.assertEquals("accessURL is corrupted", ACCESS_URL, accessURL.getURL().toString());
+    	}
+    	catch (Throwable t)
+    	{
+            log.error("unexpected exception", t);
+            Assert.fail("unexpected exception: " + t);
+    	}
+    }
 }

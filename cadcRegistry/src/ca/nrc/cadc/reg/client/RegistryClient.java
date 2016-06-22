@@ -75,6 +75,7 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -209,13 +210,30 @@ public class RegistryClient
         }
     }
 
-    public Capabilities getCapabilities(final URI resourceID)
+    public Capabilities getCapabilities(final URI resourceIdentifier)
     {
-    	// get the associated capabilities
-    	CapabilitiesReader capReader = new CapabilitiesReader();
-    	URL capabilitiesFileURL = this.getCapabilitiesFileURL(resourceID);
-    	InputStream inStream = this.getStream(capabilitiesFileURL);
     	Capabilities caps = null;
+    	
+    	if (resourceIdentifier == null)
+    	{
+    		String msg = "Input parameter (resourceIdentifier) should not be null";
+    		throw new IllegalArgumentException(msg);
+    	}
+    	
+    	// get the associated capabilities
+    	URL capabilitiesFileURL = this.getCapabilitiesFileURL(resourceIdentifier);
+    	InputStream inStream = this.getStream(capabilitiesFileURL);
+    	CapabilitiesReader capReader;
+    	
+		try 
+		{
+			capReader = new CapabilitiesReader(capabilitiesFileURL.toURI());
+		} 
+		catch (URISyntaxException e) 
+		{
+			String msg = "Syntax error when converting to URI from URL " + capabilitiesFileURL;
+			throw new RuntimeException(msg, e);
+		}
     	
     	try
     	{
@@ -240,23 +258,23 @@ public class RegistryClient
      * identifier and using the specified authentication method. The identifier must be an 
      * IVOA identifier (e.g. with URI scheme os "ivo"). 
      *
-     * @param resourceID resource identifier, e.g. ivo://cadc/nrc/ca/tap
+     * @param resourceIdentifier resource identifier, e.g. ivo://cadc/nrc/ca/tap
      * @param standardID IVOA standard identifier, e.g. ivo://ivo.net/std/TAP#sync-1.1
      * @param authMethod authentication method to be used
      * @return service URL or null if a matching service (and protocol) was not found
      * @throws RuntimeException if more than one URL match the service identifier
      */
     @Deprecated
-    public URL getServiceURL(final URI resourceID, final URI standardID, final AuthMethod authMethod) 
+    public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod) 
     {
-    	if (resourceID == null || standardID == null || authMethod == null)
+    	if (resourceIdentifier == null || standardID == null || authMethod == null)
     	{
     		String msg = "No input parameters should be null";
     		throw new IllegalArgumentException(msg);
     	}
     	
     	URL url = null;    	
-    	Capabilities caps = this.getCapabilities(resourceID);
+    	Capabilities caps = this.getCapabilities(resourceIdentifier);
     	   	
     	// locate the associated capability
     	Capability cap = caps.findCapability(standardID);
@@ -266,6 +284,7 @@ public class RegistryClient
     	    // locate the associated interface, throws RuntimeException if more than
     	    // one interface match
     	    Interface intf = cap.findInterface(authMethod.getSecurityMethod());
+
     	    if (intf != null)
     	    {
     	        URL intfURL = intf.getAccessURL().getURL();
@@ -276,7 +295,7 @@ public class RegistryClient
     	        }
     	        catch(MalformedURLException ex)
     	        {
-    	        	String prefix = "resourceID=" + resourceID + ", standardID=" + standardID;
+    	        	String prefix = "resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID;
     	        	String msg = prefix + ", malformed accessURL ";
     	        	throw new RuntimeException(msg, ex);
     	        }
@@ -299,9 +318,13 @@ public class RegistryClient
 	    {
 	        File conf = new File(System.getProperty("user.home") + prefix, path);
 	        if (conf.exists())
+	        {
 	            furl = new URL("file://" + conf.getAbsolutePath());
+	        }
 	        else
+	        {
 	            furl = RegistryClient.class.getResource(fileDir + path);
+	        }
 	    }
 	    catch(Exception ex)
 	    {
@@ -318,7 +341,9 @@ public class RegistryClient
         {
             // find the cache resource from the url
             if (fileURL == null)
+            {
                 throw new RuntimeException("failed to find cache resource.");
+            }
 
             // open an input stream for the url
             log.debug("getStream: opening an input stream for " + fileURL);
@@ -339,6 +364,7 @@ public class RegistryClient
         if (this.hostname != null || this.shortHostname != null)
         {
             String domain = getDomain(url.getHost());
+
         	if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain))
 	        {
 	            StringBuilder sb = new StringBuilder();
