@@ -78,9 +78,27 @@ package ca.nrc.cadc.reg;
  */
 public class Standard
 {
-    public final static String SODA_SYNC_1_0 = "ivo://ivo.net/std/TAP#sync-1.0";          
-    public final static String SODA_ASYNC_1_0 = "ivo://ivo.net/std/TAP#async-1.0";          
-    public final static String TAP_SYNC_1_1 = "ivo://ivo.net/std/TAP#sync-1.1";          
-    public final static String TAP_ASYNC_1_1 = "ivo://ivo.net/std/TAP#async-1.1";          
-    public final static String TAP_TABLES_1_1 = "ivo://ivo.net/std/TAP#tables-1.1";          
+    public final static String SODA_SYNC_10 = "ivo://ivo.net/std/TAP#sync-1.0";
+    public final static String SODA_ASYNC_10 = "ivo://ivo.net/std/TAP#async-1.0";
+
+    public final static String TAP_10 = "ivo://ivo.net/std/TAP";
+    public final static String TAP_SYNC_11 = "ivo://ivo.net/std/TAP#sync-1.1";
+    public final static String TAP_ASYNC_11 = "ivo://ivo.net/std/TAP#async-1.1";
+    public final static String TAP_TABLES_11 = "ivo://ivo.net/std/TAP#tables-1.1";
+
+    public final static String PKG = "vos://cadc.nrc.ca~vospace/CADC/Std/Pkg#tar";
+
+    public final static String DATA = "";
+
+    public final static String CAOM2_META_20 = "";
+    public final static String CAOM2_PKG_20 = "";
+    public final static String CAOM2_REPO_20 = "";
+
+    public final static String DATALINK = "";
+
+    public final static String VOSPACE = "";
+
+    public final static String UMS_USERS = "";
+    public final static String UMS_REG = "";
+    public final static String GMS = "";
 }
