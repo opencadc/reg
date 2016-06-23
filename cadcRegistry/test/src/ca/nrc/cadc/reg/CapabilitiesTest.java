@@ -88,9 +88,9 @@ public class CapabilitiesTest
 {
     private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
 
-    private String STANDARD_ID = Standard.TAP_SYNC_1_1;
-    private String STANDARD_ID_2 = Standard.TAP_ASYNC_1_1;
-    private String STANDARD_ID_3= Standard.TAP_TABLES_1_1;
+    private String STANDARD_ID = Standards.TAP_SYNC_11;
+    private String STANDARD_ID_2 = Standards.TAP_ASYNC_11;
+    private String STANDARD_ID_3= Standards.TAP_TABLES_11;
     private String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
     
     static

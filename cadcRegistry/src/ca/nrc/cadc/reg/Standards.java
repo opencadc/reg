@@ -76,11 +76,12 @@ package ca.nrc.cadc.reg;
  * 
  * @author yeunga
  */
-public class Standard
+public class Standards
 {
-    public final static String SODA_SYNC_1_0 = "ivo://ivo.net/std/TAP#sync-1.0";          
-    public final static String SODA_ASYNC_1_0 = "ivo://ivo.net/std/TAP#async-1.0";          
-    public final static String TAP_SYNC_1_1 = "ivo://ivo.net/std/TAP#sync-1.1";          
-    public final static String TAP_ASYNC_1_1 = "ivo://ivo.net/std/TAP#async-1.1";          
-    public final static String TAP_TABLES_1_1 = "ivo://ivo.net/std/TAP#tables-1.1";          
+	// name syntax: <base service>_<feature>_<major version><minor version>
+    public final static String SODA_SYNC_10 = "ivo://ivo.net/std/TAP#sync-1.0";          
+    public final static String SODA_ASYNC_10 = "ivo://ivo.net/std/TAP#async-1.0";          
+    public final static String TAP_SYNC_11 = "ivo://ivo.net/std/TAP#sync-1.1";          
+    public final static String TAP_ASYNC_11 = "ivo://ivo.net/std/TAP#async-1.1";          
+    public final static String TAP_TABLES_11 = "ivo://ivo.net/std/TAP#tables-1.1";          
 }

@@ -82,7 +82,7 @@ import org.junit.Test;
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
-import ca.nrc.cadc.reg.Standard;
+import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.Log4jInit;
 import ca.nrc.cadc.util.StringUtil;
 
@@ -95,7 +95,7 @@ public class RegistryClientTest
 private static Logger log = Logger.getLogger(RegistryClientTest.class);
     static
     {
-        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
+        Log4jInit.setLevel("ca.nrc.cadc", Level.INFO);
     }
 
     //static String GMS_URI = "ivo://cadc.nrc.ca/gms";
@@ -189,7 +189,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
 					this.getResource(RESOURCE_ID), 
 					this.getResource(caps.getResourceIdentifier().toString()));
 			List<Capability> capList = caps.getCapabilities();
-			Assert.assertEquals("Incorrect number of capabilities", 5, capList.size());
+			Assert.assertEquals("Incorrect number of capabilities", 6, capList.size());
 		} 
     	catch (Throwable t) 
     	{
@@ -205,7 +205,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     	try
     	{
     		URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
-    		URI standardID = new URI(Standard.TAP_SYNC_1_1);
+    		URI standardID = new URI(Standards.TAP_SYNC_11);
     		AuthMethod authMethod = null;
     		rc.getServiceURL(resourceID, standardID, authMethod);
     	}
@@ -259,7 +259,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     	try
     	{
     		URI resourceID = null;
-    		URI standardID = new URI(Standard.TAP_SYNC_1_1);
+    		URI standardID = new URI(Standards.TAP_SYNC_11);
     		AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
     		rc.getServiceURL(resourceID, standardID, authMethod);
     	}

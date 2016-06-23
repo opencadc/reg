@@ -70,7 +70,6 @@
 package ca.nrc.cadc.reg;
 
 import ca.nrc.cadc.auth.AuthMethod;
-import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.xml.XmlUtil;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
@@ -87,7 +86,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -118,76 +116,8 @@ public class CapabilitiesReader
 
     	if (enableSchemaValidation)
         {
-            this.schemaMap = new HashMap<String,String>();
-            String url;
-
-            url = XmlUtil.getResourceUrlString(RegistryClient.CAPABILITIES_SCHEMA, CapabilitiesReader.class);
-            if (url != null)
-            {
-                log.debug(RegistryClient.CAPABILITIES_NS_URI + " -> " + url);
-                schemaMap.put(RegistryClient.CAPABILITIES_NS_URI, url);
-            }
-            else
-                log.warn("failed to find resource: " + RegistryClient.CAPABILITIES_SCHEMA);
-
-            url = XmlUtil.getResourceUrlString(RegistryClient.VORESOURCE_SCHEMA, CapabilitiesReader.class);
-            if (url != null)
-            {
-                log.debug(RegistryClient.VORESOURCE_NS_URI + " -> " + url);
-                schemaMap.put(RegistryClient.VORESOURCE_NS_URI, url);
-            }
-            else
-                log.warn("failed to find resource: " + RegistryClient.VORESOURCE_SCHEMA);
-
-            url = XmlUtil.getResourceUrlString(RegistryClient.VODATASERVICE_SCHEMA, CapabilitiesReader.class);
-            if (url != null)
-            {
-                log.debug(RegistryClient.VODATASERVICE_NS_URI + " -> " + url);
-                schemaMap.put(RegistryClient.VODATASERVICE_NS_URI, url);
-            }
-            else
-                log.warn("failed to find resource: " + RegistryClient.VODATASERVICE_SCHEMA);
-            
-            url = XmlUtil.getResourceUrlString(RegistryClient.STC_SCHEMA, CapabilitiesReader.class);
-            if (url != null)
-            {
-                log.debug(RegistryClient.STC_NS_URI + " -> " + url);
-                schemaMap.put(RegistryClient.STC_NS_URI, url);
-            }
-            else
-                log.warn("failed to find resource: " + RegistryClient.STC_SCHEMA);
-
-            url = XmlUtil.getResourceUrlString(XmlUtil.XSI_SCHEMA, CapabilitiesReader.class);
-            if (url != null)
-            {
-                log.debug(XmlUtil.XSI_NS_URI + " -> " + url);
-                schemaMap.put(XmlUtil.XSI_NS_URI, url);
-            }
-            else
-                log.warn("failed to find resource: " + RegistryClient.XLINK_SCHEMA);
-            
-            url = XmlUtil.getResourceUrlString(RegistryClient.XLINK_SCHEMA, CapabilitiesReader.class);
-            if (url != null)
-            {
-                log.debug(RegistryClient.XLINK_NS_URI + " -> " + url);
-                schemaMap.put(RegistryClient.XLINK_NS_URI, url);
-            }
-            else
-                log.warn("failed to find resource: " + RegistryClient.XLINK_SCHEMA);
+            this.schemaMap = XMLConstants.getSchemaMap();
         }
-    }
-    
-    /**
-     * Add an additional schema to the parser configuration. This is needed if the VOSI-capabilities
-     * uses an extension schema for xsi:type.
-     * 
-     * @param namespace
-     * @param schemaLocation 
-     */
-    public void addSchemaLocation(String namespace, String schemaLocation)
-    {
-        log.debug("addSchemaLocation: " + namespace + " -> " + schemaLocation);
-        schemaMap.put(namespace, schemaLocation);
     }
 
     /**
