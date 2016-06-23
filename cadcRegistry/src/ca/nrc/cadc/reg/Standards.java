@@ -76,8 +76,13 @@ package ca.nrc.cadc.reg;
  * 
  * @author yeunga
  */
-public class Standard
+public class Standards
 {
+	// name syntax: <base service>_<feature>_<major version><minor version>
+
+    public final static String SIA_10 = "";
+    public final static String SIA_QUERY_20 = "";
+
     public final static String SODA_SYNC_10 = "ivo://ivo.net/std/TAP#sync-1.0";
     public final static String SODA_ASYNC_10 = "ivo://ivo.net/std/TAP#async-1.0";
 
@@ -86,19 +91,40 @@ public class Standard
     public final static String TAP_ASYNC_11 = "ivo://ivo.net/std/TAP#async-1.1";
     public final static String TAP_TABLES_11 = "ivo://ivo.net/std/TAP#tables-1.1";
 
-    public final static String PKG = "vos://cadc.nrc.ca~vospace/CADC/Std/Pkg#tar";
-
-    public final static String DATA = "";
-
-    public final static String CAOM2_META_20 = "";
-    public final static String CAOM2_PKG_20 = "";
-    public final static String CAOM2_REPO_20 = "";
-
-    public final static String DATALINK = "";
-
     public final static String VOSPACE = "";
+    public final static String VOSPACE_NODES_20 = "";
+    public final static String VOSPACE_SYNC_20 = "";
+    public final static String VOSPACE_TRANSFERS_20 = "";
 
-    public final static String UMS_USERS = "";
-    public final static String UMS_REG = "";
-    public final static String GMS = "";
+    public final static String AD_10 = "";
+    public final static String AD_SYNC_10 = "";
+    public final static String AD_ASYNC_10 = "";
+    public final static String AD_TABLES_10 = "";
+
+    public final static String CRED_10 = "";
+    public final static String CRED_DELEGATE_10 = "";
+    public final static String CRED_PROXY_10 = "";
+
+    public final static String DATA_10 = "";
+    public final static String CANFARDATA_10 = "";
+
+    public final static String CAOM2REPO_20 = "";
+    public final static String CUTOUT_20 = "";
+    public final static String DATALINK_20 = "";
+    public final static String META_20 = "";
+    public final static String PKG_20 = "vos://cadc.nrc.ca~vospace/CADC/Std/Pkg#tar";
+
+    public final static String PROC_10 = "";
+    public final static String VMOD_10 = "";
+
+    public final static String GMS_10 = "";
+    public final static String GMS_GROUPS_10 = "";
+    public final static String GMS_SEARCH_10 = "";
+
+    public final static String UMS_USERS_10 = "";
+    public final static String UMS_REGS_10 = "";
+    public final static String UMS_LOGIN_10 = "";
+    public final static String UMS_MODPASS_10 = "";
+    public final static String UMS_RESETPASS_10 = "";
+    public final static String UMS_WHOAMI_10 = "";
 }
