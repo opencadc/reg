@@ -123,6 +123,7 @@ public class XMLConstants
     private static final String VORESOURCE_SCHEMA = "VOResource-v1.0.xsd";    
     private static final String XLINK_SCHEMA = "XLINK.xsd";
         
+    // Maps namespace URI to xsd schema file name
     public static final Map<URI,String> SCHEMA_MAP = new HashMap<URI,String>();
     static
     {
@@ -140,21 +141,16 @@ public class XMLConstants
     public static final Namespace TABLES_NS = Namespace.getNamespace("vosi", TABLES_NS_URI.toString());
     public static final Namespace VODATASERVICE_NS = Namespace.getNamespace("vod", VODATASERVICE_NS_URI.toString());
 
-    /**
-     * Get the schema map that maps a namespace URI string to the file path
-     * of the corresponding schema file.
-     * @return schema map
-     */
-    public static Map<String,String> getSchemaMap()
+    // Maps namespace URI string to file path of the corresponding xsd schema file.
+    public static final Map<String,String> SCHEMA_URL_MAP = new HashMap<String,String>();
+    static
     {
     	Map<String,String> map = new HashMap<String,String>();
     	
         for (Map.Entry<URI,String> es : SCHEMA_MAP.entrySet())
         {
-        	map.put(es.getKey().toString(), XmlUtil.getResourceUrlString(es.getValue(), XMLConstants.class));
+        	SCHEMA_URL_MAP.put(es.getKey().toString(), XmlUtil.getResourceUrlString(es.getValue(), XMLConstants.class));
         }
-        
-        return map;
     }
     
     /**
