@@ -75,6 +75,7 @@ import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -191,7 +192,7 @@ public class CapabilitiesReader
     {
         Capabilities caps = new Capabilities(this.resourceIdentifier);
     	
-   	    List<Element> capElementList = root.getChildren("capability");
+   	    List<Element> capElementList = root.getChildren("capability", Namespace.NO_NAMESPACE);
    	    for (Element capElement : capElementList)
    	    {
    	    	Capability cap = this.buildCapability(capElement);
