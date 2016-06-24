@@ -70,10 +70,8 @@
 package ca.nrc.cadc.reg;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.MissingResourceException;
 
 import org.jdom2.Namespace;
 
@@ -119,11 +117,9 @@ public class XMLConstants
 
     private static final String SIA_11_SCHEMA = "SIA-v1.1.xsd";    
     private static final String STC_13_SCHEMA = "STC-v1.3.xsd";
-    private static final String VOSITABLES_10_SCHEMA = "VOSITables-v1.0.xsd";
     private static final String TAPREGEXT_10_SCHEMA = "TAPRegExt-v1.0.xsd";
     private static final String VODATASERVICE_11_SCHEMA = "VODataService-v1.1.xsd";    
     private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.0.xsd";    
-    private static final String VOSIAVAILABILITY_10_SCHEMA = "VOSIAvailability-v1.0.xsd";    
     private static final String VOSICAPABILITIES_10_SCHEMA = "VOSICapabilities-v1.0.xsd";
     private static final String XLINK_SCHEMA = "XLINK.xsd";
         
