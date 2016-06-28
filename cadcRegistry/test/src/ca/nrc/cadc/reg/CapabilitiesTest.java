@@ -88,9 +88,9 @@ public class CapabilitiesTest
 {
     private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
 
-    private String STANDARD_ID = Standards.TAP_SYNC_11;
-    private String STANDARD_ID_2 = Standards.TAP_ASYNC_11;
-    private String STANDARD_ID_3= Standards.TAP_TABLES_11;
+    private URI STANDARD_ID = Standards.TAP_SYNC_11_URI;
+    private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11_URI;
+    private URI STANDARD_ID_3= Standards.TAP_TABLES_11_URI;
     private String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
     
     static
@@ -147,15 +147,15 @@ public class CapabilitiesTest
     		List<Capability> caps = capabilities.getCapabilities();
     		
     		// test correct capability is added
-    		caps.add(new Capability(new URI(STANDARD_ID)));
+    		caps.add(new Capability(STANDARD_ID));
     		Assert.assertEquals("capability list should have one entry", 1, caps.size());
     		Capability[] capArray = caps.toArray(new Capability[caps.size()]);
     		Assert.assertEquals("capability list contains a different capability", STANDARD_ID, capArray[0].getStandardID().toString());
     		
     		// test correct number of capability are added 
-    		caps.add(new Capability(new URI(STANDARD_ID_2)));
+    		caps.add(new Capability(STANDARD_ID_2));
     		Assert.assertEquals("capability list should have one entry", 2, caps.size());
-    		caps.add(new Capability(new URI(STANDARD_ID_3)));
+    		caps.add(new Capability(STANDARD_ID_3));
     		Assert.assertEquals("capability list should have one entry", 3, caps.size());
     	}
     	catch (Throwable t)
