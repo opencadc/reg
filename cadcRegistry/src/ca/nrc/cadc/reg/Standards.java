@@ -102,6 +102,10 @@ public class Standards
     public final static URI TAP_ASYNC_11_URI;
     public final static URI TAP_TABLES_11_URI;
 
+    public final static URI VOSI_CAPABILITIES_URI;
+    public final static URI VOSI_AVAILABILITY_URI;
+    public final static URI VOSI_TABLES_URI;
+
     public final static URI VOSPACE_URI;
     public final static URI VOSPACE_NODES_20_URI;
     public final static URI VOSPACE_SYNC_20_URI;
@@ -140,20 +144,23 @@ public class Standards
         {
         	SIA_10_URI = URI.create("ivo://ivoa.net/std/SIA");
         	SIA_QUERY_20_URI = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
-        	SODA_SYNC_10_URI = URI.create("ivo://ivo.net/std/TAP#sync-1.0");
-        	SODA_ASYNC_10_URI = URI.create("ivo://ivo.net/std/TAP#async-1.0");
-        	AD_10_URI = URI.create("ivo://ivo.net/std/TAP");
-        	AD_SYNC_10_URI = URI.create("ivo://ivo.net/std/TAP#sync");
-        	AD_ASYNC_10_URI = URI.create("ivo://ivo.net/std/TAP#async");
-        	AD_TABLES_10_URI = URI.create("ivo://ivo.net/std/TAP#tables");
-        	CAT_10_URI = URI.create("ivo://ivo.net/std/TAP");
-        	CAT_SYNC_10_URI = URI.create("ivo://ivo.net/std/TAP#sync");
-        	CAT_ASYNC_10_URI = URI.create("ivo://ivo.net/std/TAP#async");
-        	CAT_TABLES_10_URI = URI.create("ivo://ivo.net/std/TAP#tables");
-        	TAP_10_URI = URI.create("ivo://ivo.net/std/TAP");
-        	TAP_SYNC_11_URI = URI.create("ivo://ivo.net/std/TAP#sync-1.1");
-        	TAP_ASYNC_11_URI = URI.create("ivo://ivo.net/std/TAP#async-1.1");
-        	TAP_TABLES_11_URI = URI.create("ivo://ivo.net/std/TAP#tables-1.1");
+        	SODA_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync-1.0");
+        	SODA_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async-1.0");
+        	AD_10_URI = URI.create("ivo://ivoa.net/std/TAP");
+        	AD_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync");
+        	AD_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async");
+        	AD_TABLES_10_URI = URI.create("ivo://ivoa.net/std/TAP#tables");
+        	CAT_10_URI = URI.create("ivo://ivoa.net/std/TAP");
+        	CAT_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync");
+        	CAT_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async");
+        	CAT_TABLES_10_URI = URI.create("ivo://ivoa.net/std/TAP#tables");
+        	TAP_10_URI = URI.create("ivo://ivoa.net/std/TAP");
+        	TAP_SYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#sync-1.1");
+        	TAP_ASYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#async-1.1");
+        	TAP_TABLES_11_URI = URI.create("ivo://ivoa.net/std/TAP#tables-1.1");
+        	VOSI_CAPABILITIES_URI = URI.create("ivo://ivoa.net/std/VOSI#capabilities");
+        	VOSI_AVAILABILITY_URI = URI.create("ivo://ivoa.net/std/VOSI#availability");
+        	VOSI_TABLES_URI = URI.create("ivo://ivoa.net/std/VOSI#tables");
         	VOSPACE_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0");
             VOSPACE_NODES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
             VOSPACE_SYNC_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#sync");

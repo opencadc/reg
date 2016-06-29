@@ -91,11 +91,24 @@ public class CapabilitiesTest
     private URI STANDARD_ID = Standards.TAP_SYNC_11_URI;
     private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11_URI;
     private URI STANDARD_ID_3= Standards.TAP_TABLES_11_URI;
-    private String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
+    private static final URI TAP_RESOURCE_IDENTIFIER_URI;
     
     static
     {
         Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
+        
+        try 
+        {
+        	TAP_RESOURCE_IDENTIFIER_URI = URI.create("ivo://cadc.nrc.ca/tap");
+        } 
+        catch(IllegalArgumentException bug)
+        {
+            throw new RuntimeException("BUG: invalid resourceIdentifier string", bug);
+        }
+        catch(NullPointerException bug)
+        {
+            throw new RuntimeException("BUG: null resourceIdentifier string", bug);
+        }
     }
     
     public CapabilitiesTest() { }
@@ -123,10 +136,10 @@ public class CapabilitiesTest
     {
     	try
     	{
-    		Capabilities caps = new Capabilities(new URI(RESOURCE_ID));
+    		Capabilities caps = new Capabilities(TAP_RESOURCE_IDENTIFIER_URI);
     		URI resourceID = caps.getResourceIdentifier();
     		Assert.assertNotNull("accessURL should not be null", resourceID);
-    		Assert.assertEquals("resource identifier is corrupted", RESOURCE_ID, resourceID.toString());
+    		Assert.assertEquals("resource identifier is corrupted", TAP_RESOURCE_IDENTIFIER_URI, resourceID);
     		Assert.assertNotNull("capabilities should not be null", caps.getCapabilities());
     		Assert.assertEquals("capabilities should be empty", 0, caps.getCapabilities().size());
     	}
@@ -143,14 +156,14 @@ public class CapabilitiesTest
     	try
     	{
     		// construct a Capabilities object
-    		Capabilities capabilities = new Capabilities(new URI(RESOURCE_ID));
+    		Capabilities capabilities = new Capabilities(TAP_RESOURCE_IDENTIFIER_URI);
     		List<Capability> caps = capabilities.getCapabilities();
     		
     		// test correct capability is added
     		caps.add(new Capability(STANDARD_ID));
     		Assert.assertEquals("capability list should have one entry", 1, caps.size());
     		Capability[] capArray = caps.toArray(new Capability[caps.size()]);
-    		Assert.assertEquals("capability list contains a different capability", STANDARD_ID, capArray[0].getStandardID().toString());
+    		Assert.assertEquals("capability list contains a different capability", STANDARD_ID, capArray[0].getStandardID());
     		
     		// test correct number of capability are added 
     		caps.add(new Capability(STANDARD_ID_2));
