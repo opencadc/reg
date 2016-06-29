@@ -91,24 +91,11 @@ public class CapabilitiesTest
     private URI STANDARD_ID = Standards.TAP_SYNC_11_URI;
     private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11_URI;
     private URI STANDARD_ID_3= Standards.TAP_TABLES_11_URI;
-    private static final URI TAP_RESOURCE_IDENTIFIER_URI;
+    private static final URI TAP_RESOURCE_IDENTIFIER_URI = URI.create("ivo://cadc.nrc.ca/tap");
     
     static
     {
         Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
-        
-        try 
-        {
-        	TAP_RESOURCE_IDENTIFIER_URI = URI.create("ivo://cadc.nrc.ca/tap");
-        } 
-        catch(IllegalArgumentException bug)
-        {
-            throw new RuntimeException("BUG: invalid resourceIdentifier string", bug);
-        }
-        catch(NullPointerException bug)
-        {
-            throw new RuntimeException("BUG: null resourceIdentifier string", bug);
-        }
     }
     
     public CapabilitiesTest() { }
