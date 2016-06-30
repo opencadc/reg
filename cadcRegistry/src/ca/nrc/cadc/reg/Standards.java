@@ -109,6 +109,7 @@ public class Standards
     public final static URI VOSPACE_URI;
     public final static URI VOSPACE_NODES_20_URI;
     public final static URI VOSPACE_SYNC_20_URI;
+    public final static URI VOSPACE_SYNCTRANS_20_URI;
     public final static URI VOSPACE_TRANSFERS_20_URI;
 
     public final static URI CRED_10_URI;
@@ -164,6 +165,7 @@ public class Standards
         	VOSPACE_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0");
             VOSPACE_NODES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
             VOSPACE_SYNC_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#sync");
+            VOSPACE_SYNCTRANS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#synctrans");
             VOSPACE_TRANSFERS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
             CRED_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED");
             CRED_DELEGATE_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#delegate-1.0");
