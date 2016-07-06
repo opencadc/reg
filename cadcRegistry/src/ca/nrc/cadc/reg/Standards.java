@@ -81,26 +81,47 @@ public class Standards
 {
     /* Standard IDs */
 	// name syntax: <base service>_<feature>_<major version><minor version>_URI    
-    public final static URI SIA_10_URI;
-    public final static URI SIA_QUERY_20_URI;
-
-    public final static URI SODA_SYNC_10_URI;
-    public final static URI SODA_ASYNC_10_URI;
-
     public final static URI AD_10_URI;
     public final static URI AD_SYNC_10_URI;
     public final static URI AD_ASYNC_10_URI;
     public final static URI AD_TABLES_10_URI;
+
+    public final static URI CANFARDATA_10_URI;
 
     public final static URI CAT_10_URI;
     public final static URI CAT_SYNC_10_URI;
     public final static URI CAT_ASYNC_10_URI;
     public final static URI CAT_TABLES_10_URI;
 
+    public final static URI CRED_10_URI;
+    public final static URI CRED_DELEGATE_10_URI;
+    public final static URI CRED_PROXY_10_URI;
+
+    public final static URI DATA_10_URI;
+
+    public final static URI GMS_01_URI;
+    public final static URI GMS_GROUPS_01_URI;
+    public final static URI GMS_SEARCH_01_URI;
+    
+    public final static URI LOGGING_LOGCONTROL_10_URI;
+    
+    public final static URI SIA_10_URI;
+    public final static URI SIA_QUERY_20_URI;
+
+    public final static URI SODA_SYNC_10_URI;
+    public final static URI SODA_ASYNC_10_URI;
+
     public final static URI TAP_10_URI;
     public final static URI TAP_SYNC_11_URI;
     public final static URI TAP_ASYNC_11_URI;
     public final static URI TAP_TABLES_11_URI;
+
+    public final static URI UMS_USERS_01_URI;
+    public final static URI UMS_REGS_01_URI;
+    public final static URI UMS_LOGIN_01_URI;
+    public final static URI UMS_MODPASS_01_URI;
+    public final static URI UMS_RESETPASS_01_URI;
+    public final static URI UMS_WHOAMI_01_URI;
 
     public final static URI VOSI_CAPABILITIES_URI;
     public final static URI VOSI_AVAILABILITY_URI;
@@ -116,53 +137,56 @@ public class Standards
     public final static URI VOSPACE_TRANSFERS_20_URI;
     public final static URI VOSPACE_VIEWS_20_URI;
 
-    public final static URI CRED_10_URI;
-    public final static URI CRED_DELEGATE_10_URI;
-    public final static URI CRED_PROXY_10_URI;
-
-    public final static URI DATA_10_URI;
-    public final static URI CANFARDATA_10_URI;
-
     public final static URI CAOM2REPO_20_URI;
     public final static URI CUTOUT_20_URI;
-    public final static URI DATALINK_20_URI;
-    public final static URI META_20_URI;
+    public final static URI DATALINK_10_URI;
+    public final static URI META_2x_URI;
     public final static URI PKG_20_URI;
 
     public final static URI PROC_10_URI;
     public final static URI VMOD_10_URI;
-
-    public final static URI GMS_10_URI;
-    public final static URI GMS_GROUPS_10_URI;
-    public final static URI GMS_SEARCH_10_URI;
-
-    public final static URI UMS_USERS_10_URI;
-    public final static URI UMS_REGS_10_URI;
-    public final static URI UMS_LOGIN_10_URI;
-    public final static URI UMS_MODPASS_10_URI;
-    public final static URI UMS_RESETPASS_10_URI;
-    public final static URI UMS_WHOAMI_10_URI;
     
     static 
     {
         try 
         {
-        	SIA_10_URI = URI.create("ivo://ivoa.net/std/SIA");
-        	SIA_QUERY_20_URI = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
-        	SODA_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync-1.0");
-        	SODA_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async-1.0");
         	AD_10_URI = URI.create("ivo://ivoa.net/std/TAP");
         	AD_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync");
         	AD_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async");
         	AD_TABLES_10_URI = URI.create("ivo://ivoa.net/std/TAP#tables");
+            CANFARDATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CANFARDATA");
+            CAOM2REPO_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2REPO");
         	CAT_10_URI = URI.create("ivo://ivoa.net/std/TAP");
         	CAT_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync");
         	CAT_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async");
         	CAT_TABLES_10_URI = URI.create("ivo://ivoa.net/std/TAP#tables");
+            CRED_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED");
+            CRED_DELEGATE_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#delegate-1.0");
+            CRED_PROXY_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#proxy-1.0");
+            CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/VOX#cutout-2.0");
+            DATA_10_URI = URI.create("ivo://ivoa.net/std/DALI");
+            DATALINK_10_URI = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
+            GMS_01_URI = URI.create("ivo://ivoa.net/std/GMS/v0.1");
+            GMS_GROUPS_01_URI = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
+            GMS_SEARCH_01_URI = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
+            LOGGING_LOGCONTROL_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/LOGGING#logControl-1.0");
+            META_2x_URI = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
+            PKG_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/Pkg#tar-2.0");
+            PROC_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/PROC");
+        	SIA_10_URI = URI.create("ivo://ivoa.net/std/SIA");
+        	SIA_QUERY_20_URI = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
+        	SODA_SYNC_10_URI = URI.create("ivo://ivoa.net/std/SODA#sync-1.0");
+        	SODA_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/SODA#async-1.0");
         	TAP_10_URI = URI.create("ivo://ivoa.net/std/TAP");
         	TAP_SYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#sync-1.1");
         	TAP_ASYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#async-1.1");
         	TAP_TABLES_11_URI = URI.create("ivo://ivoa.net/std/TAP#tables-1.1");
+            UMS_USERS_01_URI = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
+            UMS_REGS_01_URI = URI.create("ivo://ivoa.net/std/UMS#regs-0.1");
+            UMS_LOGIN_01_URI = URI.create("ivo://ivoa.net/std/UMS#login-0.1");
+            UMS_MODPASS_01_URI = URI.create("ivo://ivoa.net/std/UMS#modpass-0.1");
+            UMS_RESETPASS_01_URI = URI.create("ivo://ivoa.net/std/UMS#resetpass-0.1");
+            UMS_WHOAMI_01_URI = URI.create("ivo://ivoa.net/std/UMS#whoami-0.1");
         	VOSI_CAPABILITIES_URI = URI.create("ivo://ivoa.net/std/VOSI#capabilities");
         	VOSI_AVAILABILITY_URI = URI.create("ivo://ivoa.net/std/VOSI#availability");
         	VOSI_TABLES_URI = URI.create("ivo://ivoa.net/std/VOSI#tables");
@@ -175,27 +199,7 @@ public class Standards
             VOSPACE_SYNCTRANS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#synctrans");
             VOSPACE_TRANSFERS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
             VOSPACE_VIEWS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
-            CRED_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED");
-            CRED_DELEGATE_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#delegate-1.0");
-            CRED_PROXY_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#proxy-1.0");
-            DATA_10_URI = URI.create("ivo://ivoa.net/std/DALI");
-            CANFARDATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CANFARDATA");
-            CAOM2REPO_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2REPO");
-            CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/VOX#cutout");
-            DATALINK_20_URI = URI.create("ivo://ivoa.net/std/DataLink#links-2.0");
-            META_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/META");
-            PKG_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/Pkg#tar");
-            PROC_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/PROC");
             VMOD_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
-            GMS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/GMS");
-            GMS_GROUPS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/GMS#groups-1.0");
-            GMS_SEARCH_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/GMS#search-1.0");
-            UMS_USERS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UMS#users-1.0");
-            UMS_REGS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UMS#regs-1.0");
-            UMS_LOGIN_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UMS#login-1.0");
-            UMS_MODPASS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UMS#modpass-1.0");
-            UMS_RESETPASS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UMS#resetpass-1.0");
-            UMS_WHOAMI_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UMS#whoami-1.0");
         } 
         catch(IllegalArgumentException bug)
         {
