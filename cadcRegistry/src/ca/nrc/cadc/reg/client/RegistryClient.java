@@ -326,7 +326,7 @@ public class RegistryClient
             // find the cache resource from the url
             if (fileURL == null)
             {
-                throw new RuntimeException("failed to find cache resource.");
+                throw new RuntimeException("failed to find capabilities file under <user.home>/config/capabilitites/<authority>/");
             }
 
             // open an input stream for the url

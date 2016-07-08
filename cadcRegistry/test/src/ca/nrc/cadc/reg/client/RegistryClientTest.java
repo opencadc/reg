@@ -162,16 +162,16 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
 		}
     }
 
-    private String getResource(final String resourceURLString)
+    private String getResource(final String resourceIDString)
     {
     	String ret = null;
     	
-    	if (StringUtil.hasText(resourceURLString) )
+    	if (StringUtil.hasText(resourceIDString) )
     	{
-    	    int endIndex = resourceURLString.lastIndexOf("/");
+    	    int endIndex = resourceIDString.lastIndexOf("/");
     	    if (endIndex != -1)  
     	    {
-    	        ret = resourceURLString.substring(endIndex + 1, resourceURLString.length());
+    	        ret = resourceIDString.substring(endIndex + 1, resourceIDString.length());
     	    }
     	}     
     	
@@ -189,7 +189,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
 					this.getResource(RESOURCE_ID), 
 					this.getResource(caps.getResourceIdentifier().toString()));
 			List<Capability> capList = caps.getCapabilities();
-			Assert.assertEquals("Incorrect number of capabilities", 6, capList.size());
+			Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
 		} 
     	catch (Throwable t) 
     	{
