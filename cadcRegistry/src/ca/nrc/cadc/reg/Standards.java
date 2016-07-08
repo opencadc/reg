@@ -117,7 +117,7 @@ public class Standards
     public final static URI TAP_TABLES_11_URI;
 
     public final static URI UMS_USERS_01_URI;
-    public final static URI UMS_REGS_01_URI;
+    public final static URI UMS_REQS_01_URI;
     public final static URI UMS_LOGIN_01_URI;
     public final static URI UMS_MODPASS_01_URI;
     public final static URI UMS_RESETPASS_01_URI;
@@ -182,7 +182,7 @@ public class Standards
         	TAP_ASYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#async-1.1");
         	TAP_TABLES_11_URI = URI.create("ivo://ivoa.net/std/TAP#tables-1.1");
             UMS_USERS_01_URI = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
-            UMS_REGS_01_URI = URI.create("ivo://ivoa.net/std/UMS#regs-0.1");
+            UMS_REQS_01_URI = URI.create("ivo://ivoa.net/std/UMS#reqs-0.1");
             UMS_LOGIN_01_URI = URI.create("ivo://ivoa.net/std/UMS#login-0.1");
             UMS_MODPASS_01_URI = URI.create("ivo://ivoa.net/std/UMS#modpass-0.1");
             UMS_RESETPASS_01_URI = URI.create("ivo://ivoa.net/std/UMS#resetpass-0.1");
