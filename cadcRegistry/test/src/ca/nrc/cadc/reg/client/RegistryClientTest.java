@@ -149,7 +149,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     	catch (RuntimeException ex)
     	{
     		// expecting not able to find the cache resource
-    		if (!ex.getMessage().contains("failed to find cache resource"))
+    		if (!ex.getMessage().contains("failed to find capabilities file"))
     		{
                 log.error("unexpected exception", ex);
         		Assert.fail("unexpected exception: " + ex);
