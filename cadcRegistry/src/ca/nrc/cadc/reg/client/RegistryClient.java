@@ -257,6 +257,7 @@ public class RegistryClient
     	}
     	
     	URL url = null;    	
+    	log.debug("resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID + ", authMethod=" + authMethod);
     	Capabilities caps = this.getCapabilities(resourceIdentifier);
     	   	
     	// locate the associated capability
@@ -300,6 +301,7 @@ public class RegistryClient
 	    try
 	    {
 	        File conf = new File(System.getProperty("user.home") + prefix, path);
+	        log.debug("looking for capabilities file: " + conf );
 	        if (conf.exists())
 	        {
 	            furl = new URL("file://" + conf.getAbsolutePath());
