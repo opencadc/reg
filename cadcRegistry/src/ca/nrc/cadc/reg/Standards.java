@@ -133,7 +133,7 @@ public class Standards
     public final static URI VOSPACE_PROTOCOLS_20_URI;
     public final static URI VOSPACE_SEARCHES_20_URI;
     public final static URI VOSPACE_SYNC_20_URI;
-    public final static URI VOSPACE_SYNCTRANS_20_URI;
+    public final static URI VOSPACE_SYNC_21_URI;
     public final static URI VOSPACE_TRANSFERS_20_URI;
     public final static URI VOSPACE_VIEWS_20_URI;
 
@@ -164,7 +164,7 @@ public class Standards
             CRED_DELEGATE_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#delegate-1.0");
             CRED_PROXY_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#proxy-1.0");
             CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/VOX#cutout-2.0");
-            DATA_10_URI = URI.create("ivo://ivoa.net/std/DALI");
+            DATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
             DATALINK_10_URI = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
             GMS_01_URI = URI.create("ivo://ivoa.net/std/GMS/v0.1");
             GMS_GROUPS_01_URI = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
@@ -196,7 +196,7 @@ public class Standards
             VOSPACE_PROTOCOLS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#protocols");
             VOSPACE_SEARCHES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#searches");
             VOSPACE_SYNC_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#sync");
-            VOSPACE_SYNCTRANS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#synctrans");
+            VOSPACE_SYNC_21_URI = URI.create("ivo://ivoa.net/std/VOSpace#sync-2.1");
             VOSPACE_TRANSFERS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
             VOSPACE_VIEWS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
             VMOD_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
