@@ -297,11 +297,12 @@ public class RegistryClient
     	String fileDir = "/capabilities/" + resourceID.getAuthority();
     	String prefix = "/config" + fileDir;
     	String path = resourceID.getPath();
+    	File conf = null;
     	
 	    try
 	    {
-	        File conf = new File(System.getProperty("user.home") + prefix, path);
-	        log.debug("looking for capabilities file: " + conf );
+	        conf = new File(System.getProperty("user.home") + prefix, path);
+	        
 	        if (conf.exists())
 	        {
 	            furl = new URL("file://" + conf.getAbsolutePath());
@@ -315,8 +316,12 @@ public class RegistryClient
 	    {
 	        throw new RuntimeException("failed to find URL to " + path, ex);
 	    }
+        
+        if (furl == null)
+        {
+            throw new RuntimeException("failed to find capabilities file " + conf);
+        }
     	
-	    log.debug("Capabilities XML file url: " + furl);
     	return furl;
     }
 
@@ -325,15 +330,12 @@ public class RegistryClient
         InputStream inStream = null;
         try
         {
-            // find the cache resource from the url
-            if (fileURL == null)
+            if (fileURL != null)
             {
-                throw new RuntimeException("failed to find capabilities file under <user.home>/config/capabilitites/<authority>/");
+	            // open an input stream for the url
+	            log.debug("getStream: opening an input stream for " + fileURL);
+	            inStream = fileURL.openStream();
             }
-
-            // open an input stream for the url
-            log.debug("getStream: opening an input stream for " + fileURL);
-            inStream = fileURL.openStream();
         }
         catch(IOException ex)
         {
