@@ -282,6 +282,10 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     @Test
     public void testGetServiceURLHappyPath()
     {
+    	// save user.home environment
+    	String currentUserHome = System.getProperty("user.home");
+    	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+    	
     	RegistryClient rc = new RegistryClient();
     	try
     	{
@@ -298,6 +302,11 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
 		}
+    	finally
+    	{
+    		// restore user.home environment
+    		System.setProperty("user.home", currentUserHome);
+    	}
     }
     
     @Test
@@ -360,6 +369,10 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     @Test
     public void testGetServiceURLModifyShortHostname()
     {
+    	// save user.home environment
+    	String currentUserHome = System.getProperty("user.home");
+    	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+    	
     	try
     	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
@@ -382,12 +395,17 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
+    		System.setProperty("user.home", currentUserHome);
         }
     }
   
     @Test
     public void testGetServiceURLMatchDomain()
     {
+    	// save user.home environment
+    	String currentUserHome = System.getProperty("user.home");
+    	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+    	
     	try
     	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
@@ -412,6 +430,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "");
+    		System.setProperty("user.home", currentUserHome);
         }
     }
 }
