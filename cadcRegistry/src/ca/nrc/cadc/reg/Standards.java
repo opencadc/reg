@@ -81,43 +81,18 @@ public class Standards
 {
     /* Standard IDs */
 	// name syntax: <base service>_<feature>_<major version><minor version>_URI    
-    public final static URI AD_10_URI = URI.create("ivo://ivoa.net/std/TAP");
-    public final static URI AD_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync");
-    public final static URI AD_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async");
-    public final static URI AD_TABLES_10_URI = URI.create("ivo://ivoa.net/std/TAP#tables");
 
-    public final static URI CANFARDATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CANFARDATA");
-    public final static URI CAOM2REPO_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2REPO");
+    public final static URI CRED_DELEGATE_10_URI = URI.create("ivo://ivoa.net/std/CDP#delegate-1.0");
+    public final static URI CRED_PROXY_10_URI = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
 
-    public final static URI CAT_10_URI = URI.create("ivo://ivoa.net/std/TAP");
-    public final static URI CAT_SYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#sync");
-    public final static URI CAT_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/TAP#async");
-    public final static URI CAT_TABLES_10_URI = URI.create("ivo://ivoa.net/std/TAP#tables");
+    public final static URI DATALINK_LINKS_10_URI = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
 
-    public final static URI CRED_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED");
-    public final static URI CRED_DELEGATE_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#delegate-1.0");
-    public final static URI CRED_PROXY_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#proxy-1.0");
-
-    public final static URI CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
-
-    public final static URI DATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
-
-    public final static URI DATALINK_10_URI = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
-
-    public final static URI GMS_01_URI = URI.create("ivo://ivoa.net/std/GMS/v0.1");
     public final static URI GMS_GROUPS_01_URI = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
     public final static URI GMS_SEARCH_01_URI = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
     
-    public final static URI LOGGING_LOGCONTROL_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/LOGGING#logControl-1.0");
-    
-    public final static URI META_2x_URI = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
-    
-    public final static URI PKG_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-2.0");
-
-    public final static URI PROC_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/PROC");
-
     public final static URI SIA_10_URI = URI.create("ivo://ivoa.net/std/SIA");
     public final static URI SIA_QUERY_20_URI = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
+    //public final static URI SIA_META_2x_URI = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
 
     public final static URI SODA_SYNC_10_URI = URI.create("ivo://ivoa.net/std/SODA#sync-1.0");
     public final static URI SODA_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/SODA#async-1.0");
@@ -125,7 +100,6 @@ public class Standards
     public final static URI TAP_10_URI = URI.create("ivo://ivoa.net/std/TAP");
     public final static URI TAP_SYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#sync-1.1");
     public final static URI TAP_ASYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#async-1.1");
-    public final static URI TAP_TABLES_11_URI = URI.create("ivo://ivoa.net/std/TAP#tables-1.1");
 
     public final static URI UMS_USERS_01_URI = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
     public final static URI UMS_REQS_01_URI = URI.create("ivo://ivoa.net/std/UMS#reqs-0.1");
@@ -137,8 +111,8 @@ public class Standards
     public final static URI VOSI_CAPABILITIES_URI = URI.create("ivo://ivoa.net/std/VOSI#capabilities");
     public final static URI VOSI_AVAILABILITY_URI = URI.create("ivo://ivoa.net/std/VOSI#availability");
     public final static URI VOSI_TABLES_URI = URI.create("ivo://ivoa.net/std/VOSI#tables");
+    public final static URI VOSI_TABLES_11_URI = URI.create("ivo://ivoa.net/std/VOSI#tables-1.1");
 
-    public final static URI VOSPACE_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0");
     public final static URI VOSPACE_NODES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
     public final static URI VOSPACE_PROPERTIES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#properties");
     public final static URI VOSPACE_PROTOCOLS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#protocols");
@@ -148,5 +122,21 @@ public class Standards
     public final static URI VOSPACE_TRANSFERS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
     public final static URI VOSPACE_VIEWS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
 
-    public final static URI VMOD_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
+    public final static URI CAOM2_OBS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2#obs-1.0");
+    
+    public final static URI CAOM2REPO_OBS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.0");
+    //public final static URI CAOM2REPO_GRANTS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#grants-1.0");
+
+    public final static URI CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
+    
+    public final static URI DATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
+
+    public final static URI LOGGING_CONTROL_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Logging#control-1.0");
+    
+    public final static URI PKG_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-1.0");
+
+    public final static URI PROC_JOBS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#jobs-1.0");
+
+    //public final static URI VMOD_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
+
 }
