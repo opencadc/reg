@@ -79,8 +79,8 @@ import ca.nrc.cadc.xml.W3CConstants;
 import ca.nrc.cadc.xml.XmlUtil;
 
 /**
- * This class defines the URI and corresponding namespace constants. 
- * 
+ * This class defines the URI and corresponding namespace constants.
+ *
  * @author yeunga
  */
 public class XMLConstants
@@ -89,13 +89,13 @@ public class XMLConstants
     public static final URI STC_13_NS_URI;
     public static final URI TAPREGEXT_10_NS_URI;
     public static final URI VODATASERVICE_11_NS_URI;
-    public static final URI VORESOURCE_10_NS_URI;    
+    public static final URI VORESOURCE_10_NS_URI;
     public static final URI VOSICAPABILITIES_10_NS_URI;
     public static final URI XLINK_NS_URI;
-    
-    static 
+
+    static
     {
-        try 
+        try
         {
             SIA_11_NS_URI = URI.create("http://www.ivoa.net/xml/SIA/v1.1");
             STC_13_NS_URI = URI.create("http://www.ivoa.net/xml/STC/stc-v1.30.xsd");
@@ -104,7 +104,7 @@ public class XMLConstants
             VORESOURCE_10_NS_URI = URI.create("http://www.ivoa.net/xml/VOResource/v1.0");
             VOSICAPABILITIES_10_NS_URI = URI.create("http://www.ivoa.net/xml/VOSICapabilities/v1.0");
             XLINK_NS_URI = URI.create("http://www.w3.org/1999/xlink");
-        } 
+        }
         catch(IllegalArgumentException bug)
         {
             throw new RuntimeException("BUG: invalid URI string in static constants", bug);
@@ -113,115 +113,46 @@ public class XMLConstants
         {
             throw new RuntimeException("BUG: null URI string in static constants", bug);
         }
-    }    
+    }
 
-    private static final String SIA_11_SCHEMA = "SIA-v1.1.xsd";    
+    private static final String SIA_11_SCHEMA = "SIA-v1.1.xsd";
     private static final String STC_13_SCHEMA = "STC-v1.3.xsd";
     private static final String TAPREGEXT_10_SCHEMA = "TAPRegExt-v1.0.xsd";
-    private static final String VODATASERVICE_11_SCHEMA = "VODataService-v1.1.xsd";    
-    private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.0.xsd";    
+    private static final String VODATASERVICE_11_SCHEMA = "VODataService-v1.1.xsd";
+    private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.0.xsd";
     private static final String VOSICAPABILITIES_10_SCHEMA = "VOSICapabilities-v1.0.xsd";
     private static final String XLINK_SCHEMA = "XLINK.xsd";
-        
+
     // Maps namespace URI to xsd schema file name
-    private static final Map<URI,String> MY_SCHEMA_MAP = new HashMap<URI,String>();
+    public static final Map<String,String> SCHEMA_MAP = new HashMap<String,String>();
     static
     {
-    	MY_SCHEMA_MAP.put(SIA_11_NS_URI, SIA_11_SCHEMA);
-    	MY_SCHEMA_MAP.put(STC_13_NS_URI, STC_13_SCHEMA);
-    	MY_SCHEMA_MAP.put(TAPREGEXT_10_NS_URI, TAPREGEXT_10_SCHEMA);
-    	MY_SCHEMA_MAP.put(VODATASERVICE_11_NS_URI, VODATASERVICE_11_SCHEMA);
-    	MY_SCHEMA_MAP.put(VORESOURCE_10_NS_URI, VORESOURCE_10_SCHEMA);
-    	MY_SCHEMA_MAP.put(VOSICAPABILITIES_10_NS_URI, VOSICAPABILITIES_10_SCHEMA);
-    	MY_SCHEMA_MAP.put(XLINK_NS_URI, XLINK_SCHEMA);
-    }
-    
-    private static final Map<URI,String> W3CCONSTANTS_SCHEMA_MAP = new HashMap<URI,String>();
-    static
-    {
-    	W3CCONSTANTS_SCHEMA_MAP.put(W3CConstants.XSI_NS_URI, W3CConstants.XSI_SCHEMA);
+        String sia11URL = XmlUtil.getResourceUrlString(SIA_11_SCHEMA, XMLConstants.class);
+        SCHEMA_MAP.put(SIA_11_NS_URI.toString(), sia11URL);
+
+    	String stc13URL = XmlUtil.getResourceUrlString(STC_13_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(STC_13_NS_URI.toString(), stc13URL);
+
+    	String tapRegEx10URL = XmlUtil.getResourceUrlString(TAPREGEXT_10_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(TAPREGEXT_10_NS_URI.toString(), tapRegEx10URL);
+
+    	String voDataSvc11URL = XmlUtil.getResourceUrlString(VODATASERVICE_11_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(VODATASERVICE_11_NS_URI.toString(), voDataSvc11URL);
+
+    	String voResource10URL = XmlUtil.getResourceUrlString(VORESOURCE_10_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(VORESOURCE_10_NS_URI.toString(), voResource10URL);
+
+    	String voCapabilties10URL = XmlUtil.getResourceUrlString(VOSICAPABILITIES_10_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(VOSICAPABILITIES_10_NS_URI.toString(), voCapabilties10URL);
+
+    	String xlinkSchemaURL = XmlUtil.getResourceUrlString(XLINK_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(XLINK_NS_URI.toString(), xlinkSchemaURL);
+
+    	String w3cSchemaURL = XmlUtil.getResourceUrlString(W3CConstants.XSI_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(W3CConstants.XSI_NS_URI.toString(), w3cSchemaURL);
     }
 
-    public static final Map<URI,String> SCHEMA_MAP = new HashMap<URI,String>();
-    static
-    {
-        for (Map.Entry<URI,String> es : MY_SCHEMA_MAP.entrySet())
-        {
-        	SCHEMA_MAP.put(es.getKey(), es.getValue());
-        }
-        
-        for (Map.Entry<URI,String> es : W3CCONSTANTS_SCHEMA_MAP.entrySet())
-        {
-        	SCHEMA_MAP.put(es.getKey(), es.getValue());
-        }
-    }
-    
     public static final Namespace CAPABILITIES_NS = Namespace.getNamespace("vosi", VOSICAPABILITIES_10_NS_URI.toString());
     public static final Namespace VODATASERVICE_NS = Namespace.getNamespace("vod", VODATASERVICE_11_NS_URI.toString());
-
-    // Maps namespace URI string to file path of the corresponding xsd schema file.
-    public static final Map<String,String> SCHEMA_URL_MAP = new HashMap<String,String>();
-    static
-    {    	
-        for (Map.Entry<URI,String> es : MY_SCHEMA_MAP.entrySet())
-        {
-        	SCHEMA_URL_MAP.put(es.getKey().toString(), XmlUtil.getResourceUrlString(es.getValue(), XMLConstants.class));
-        }
-    	
-        for (Map.Entry<URI,String> es : W3CCONSTANTS_SCHEMA_MAP.entrySet())
-        {
-        	SCHEMA_URL_MAP.put(es.getKey().toString(), XmlUtil.getResourceUrlString(es.getValue(), W3CConstants.class));
-        }
-    }
-    
-    /**
-     * Get the namespace URI corresponding to the specified URI String.
-     * @param uriString a namespace URI string
-     * @return the corresponding namespace URI if found, null if not found
-     */
-    public static URI getURI(final String uriString)
-    {
-    	URI retURI = null;
-    	
-        for (URI uri : SCHEMA_MAP.keySet())
-        {
-            if (uri.toString().equals(uriString))
-            {
-                retURI = uri;
-            }
-        }
-        
-        return retURI;
-    }
-    
-    /**
-     * Get the namespace URI corresponding to the specified schema.
-     * @param schema a string representing a schema
-     * @return the corresponding namespace URI if found, null if not found
-     */
-    public static URI getURIBySchema(final String schema)
-    {
-    	URI retURI = null;
-    	
-        for (Map.Entry<URI,String> es : SCHEMA_MAP.entrySet())
-        {
-            if ( es.getValue().equals(schema))
-            {
-                retURI = es.getKey();
-            }
-        }
-        
-        return retURI;
-    }
-    
-    /**
-     * Get the schema corresponding to the specified namespace URI.
-     * @param uri a namespace URI
-     * @return the corresponding schema if found, null if not found
-     */
-    public static String getSchema(final URI uri)
-    {
-        return SCHEMA_MAP.get(uri);
-    }
 
 }
