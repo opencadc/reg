@@ -98,7 +98,7 @@ public class Standards
     public final static URI CRED_DELEGATE_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#delegate-1.0");
     public final static URI CRED_PROXY_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CRED#proxy-1.0");
 
-    public final static URI CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/VOX#cutout-2.0");
+    public final static URI CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
 
     public final static URI DATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
 
@@ -112,7 +112,7 @@ public class Standards
     
     public final static URI META_2x_URI = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
     
-    public final static URI PKG_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/Pkg#tar-2.0");
+    public final static URI PKG_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-2.0");
 
     public final static URI PROC_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/PROC");
 
