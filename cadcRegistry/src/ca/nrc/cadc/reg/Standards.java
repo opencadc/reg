@@ -70,6 +70,10 @@
 package ca.nrc.cadc.reg;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
+import ca.nrc.cadc.auth.AuthMethod;
 
 /**
  * This class defines the constants for the strings that conform to the IVOA 
@@ -80,63 +84,94 @@ import java.net.URI;
 public class Standards
 {
     /* Standard IDs */
-	// name syntax: <base service>_<feature>_<major version><minor version>_URI    
+	// name syntax: <base service>_<feature>_<major version><minor version>    
 
-    public final static URI CRED_DELEGATE_10_URI = URI.create("ivo://ivoa.net/std/CDP#delegate-1.0");
-    public final static URI CRED_PROXY_10_URI = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
+    public final static URI CRED_DELEGATE_10 = URI.create("ivo://ivoa.net/std/CDP#delegate-1.0");
+    public final static URI CRED_PROXY_10 = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
 
-    public final static URI DATALINK_LINKS_10_URI = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
+    public final static URI DATALINK_LINKS_10 = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
 
-    public final static URI GMS_GROUPS_01_URI = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
-    public final static URI GMS_SEARCH_01_URI = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
+    public final static URI GMS_GROUPS_01 = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
+    public final static URI GMS_SEARCH_01 = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
     
-    public final static URI SIA_10_URI = URI.create("ivo://ivoa.net/std/SIA");
-    public final static URI SIA_QUERY_20_URI = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
-    //public final static URI SIA_META_2x_URI = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
+    public final static URI SIA_10 = URI.create("ivo://ivoa.net/std/SIA");
+    public final static URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
+    //public final static URI SIA_META_2x = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
 
-    public final static URI SODA_SYNC_10_URI = URI.create("ivo://ivoa.net/std/SODA#sync-1.0");
-    public final static URI SODA_ASYNC_10_URI = URI.create("ivo://ivoa.net/std/SODA#async-1.0");
+    public final static URI SODA_SYNC_10 = URI.create("ivo://ivoa.net/std/SODA#sync-1.0");
+    public final static URI SODA_ASYNC_10 = URI.create("ivo://ivoa.net/std/SODA#async-1.0");
 
-    public final static URI TAP_10_URI = URI.create("ivo://ivoa.net/std/TAP");
-    public final static URI TAP_SYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#sync-1.1");
-    public final static URI TAP_ASYNC_11_URI = URI.create("ivo://ivoa.net/std/TAP#async-1.1");
+    public final static URI TAP_10 = URI.create("ivo://ivoa.net/std/TAP");
+    public final static URI TAP_SYNC_11 = URI.create("ivo://ivoa.net/std/TAP#sync-1.1");
+    public final static URI TAP_ASYNC_11 = URI.create("ivo://ivoa.net/std/TAP#async-1.1");
 
-    public final static URI UMS_USERS_01_URI = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
-    public final static URI UMS_REQS_01_URI = URI.create("ivo://ivoa.net/std/UMS#reqs-0.1");
-    public final static URI UMS_LOGIN_01_URI = URI.create("ivo://ivoa.net/std/UMS#login-0.1");
-    public final static URI UMS_MODPASS_01_URI = URI.create("ivo://ivoa.net/std/UMS#modpass-0.1");
-    public final static URI UMS_RESETPASS_01_URI = URI.create("ivo://ivoa.net/std/UMS#resetpass-0.1");
-    public final static URI UMS_WHOAMI_01_URI = URI.create("ivo://ivoa.net/std/UMS#whoami-0.1");
+    public final static URI UMS_USERS_01 = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
+    public final static URI UMS_REQS_01 = URI.create("ivo://ivoa.net/std/UMS#reqs-0.1");
+    public final static URI UMS_LOGIN_01 = URI.create("ivo://ivoa.net/std/UMS#login-0.1");
+    public final static URI UMS_MODPASS_01 = URI.create("ivo://ivoa.net/std/UMS#modpass-0.1");
+    public final static URI UMS_RESETPASS_01 = URI.create("ivo://ivoa.net/std/UMS#resetpass-0.1");
+    public final static URI UMS_WHOAMI_01 = URI.create("ivo://ivoa.net/std/UMS#whoami-0.1");
 
-    public final static URI VOSI_CAPABILITIES_URI = URI.create("ivo://ivoa.net/std/VOSI#capabilities");
-    public final static URI VOSI_AVAILABILITY_URI = URI.create("ivo://ivoa.net/std/VOSI#availability");
-    public final static URI VOSI_TABLES_URI = URI.create("ivo://ivoa.net/std/VOSI#tables");
-    public final static URI VOSI_TABLES_11_URI = URI.create("ivo://ivoa.net/std/VOSI#tables-1.1");
+    public final static URI VOSI_CAPABILITIES = URI.create("ivo://ivoa.net/std/VOSI#capabilities");
+    public final static URI VOSI_AVAILABILITY = URI.create("ivo://ivoa.net/std/VOSI#availability");
+    public final static URI VOSI_TABLES = URI.create("ivo://ivoa.net/std/VOSI#tables");
+    public final static URI VOSI_TABLES_11 = URI.create("ivo://ivoa.net/std/VOSI#tables-1.1");
 
-    public final static URI VOSPACE_NODES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
-    public final static URI VOSPACE_PROPERTIES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#properties");
-    public final static URI VOSPACE_PROTOCOLS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#protocols");
-    public final static URI VOSPACE_SEARCHES_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#searches");
-    public final static URI VOSPACE_SYNC_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#sync");
-    public final static URI VOSPACE_SYNC_21_URI = URI.create("ivo://ivoa.net/std/VOSpace#sync-2.1");
-    public final static URI VOSPACE_TRANSFERS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
-    public final static URI VOSPACE_VIEWS_20_URI = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
+    public final static URI VOSPACE_NODES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
+    public final static URI VOSPACE_PROPERTIES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#properties");
+    public final static URI VOSPACE_PROTOCOLS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#protocols");
+    public final static URI VOSPACE_SEARCHES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#searches");
+    public final static URI VOSPACE_SYNC_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#sync");
+    public final static URI VOSPACE_SYNC_21 = URI.create("ivo://ivoa.net/std/VOSpace#sync-2.1");
+    public final static URI VOSPACE_TRANSFERS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
+    public final static URI VOSPACE_VIEWS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
 
-    public final static URI CAOM2_OBS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2#obs-1.0");
+    public final static URI CAOM2_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2#obs-1.0");
     
-    public final static URI CAOM2REPO_OBS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.0");
+    public final static URI CAOM2REPO_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.0");
     //public final static URI CAOM2REPO_GRANTS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#grants-1.0");
 
-    public final static URI CUTOUT_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
+    public final static URI CUTOUT_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
     
-    public final static URI DATA_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
+    public final static URI DATA_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
 
-    public final static URI LOGGING_CONTROL_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Logging#control-1.0");
+    public final static URI LOGGING_CONTROL_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Logging#control-1.0");
     
-    public final static URI PKG_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-1.0");
+    public final static URI PKG_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-1.0");
 
-    public final static URI PROC_JOBS_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#jobs-1.0");
+    public final static URI PROC_JOBS_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#jobs-1.0");
 
-    //public final static URI VMOD_10_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
+    //public final static URI VMOD_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
+    
+    public final static URI SECURITY_METHOD_ANON = URI.create("ivo://ivoa.net/sso#anon");
+    public final static URI SECURITY_METHOD_CERT = URI.create("ivo://ivoa.net/sso#tls-with-certificate");
+    public final static URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");
+    public final static URI SECURITY_METHOD_PASSWORD = URI.create("http://www.w3.org/Protocols/HTTP/1.0/spec.html#BasicAA");
+    public final static URI SECURITY_METHOD_TOKEN = URI.create("ivo://cadc.nrc.ca/auth#delegation-token");
 
+    
+    private static final Map<AuthMethod,URI> SEC_MAP = new HashMap<AuthMethod,URI>();
+    static
+    {
+        SEC_MAP.put(AuthMethod.ANON, SECURITY_METHOD_ANON);
+        SEC_MAP.put(AuthMethod.CERT, SECURITY_METHOD_CERT);
+        SEC_MAP.put(AuthMethod.COOKIE, SECURITY_METHOD_COOKIE);
+        SEC_MAP.put(AuthMethod.PASSWORD, SECURITY_METHOD_PASSWORD);
+        SEC_MAP.put(AuthMethod.TOKEN, SECURITY_METHOD_TOKEN);
+    }  
+    
+    public static AuthMethod getAuthMethod(URI securityMethod)
+    {
+        for (Map.Entry<AuthMethod,URI> me : SEC_MAP.entrySet())
+        {
+            if ( me.getValue().equals(securityMethod))
+                return me.getKey();
+        }
+        throw new IllegalArgumentException("invalid value: " + securityMethod);
+    }
+    
+    public static URI getSecurityMethod(AuthMethod am)
+    {
+        return SEC_MAP.get(am);
+    }
 }

@@ -88,9 +88,9 @@ public class CapabilitiesTest
 {
     private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
 
-    private URI STANDARD_ID = Standards.TAP_SYNC_11_URI;
-    private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11_URI;
-    private URI STANDARD_ID_3= Standards.TAP_TABLES_11_URI;
+    private URI STANDARD_ID = Standards.TAP_SYNC_11;
+    private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11;
+    private URI STANDARD_ID_3= Standards.VOSI_TABLES_11;
     private static final URI TAP_RESOURCE_IDENTIFIER_URI = URI.create("ivo://cadc.nrc.ca/tap");
     
     static

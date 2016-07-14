@@ -205,7 +205,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     	try
     	{
     		URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
-    		URI standardID = Standards.TAP_SYNC_11_URI;
+    		URI standardID = Standards.TAP_SYNC_11;
     		AuthMethod authMethod = null;
     		rc.getServiceURL(resourceID, standardID, authMethod);
     	}
@@ -259,7 +259,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     	try
     	{
     		URI resourceID = null;
-    		URI standardID = Standards.TAP_SYNC_11_URI;
+    		URI standardID = Standards.TAP_SYNC_11;
     		AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
     		rc.getServiceURL(resourceID, standardID, authMethod);
     	}

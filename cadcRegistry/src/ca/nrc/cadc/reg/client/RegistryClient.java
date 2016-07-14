@@ -89,6 +89,7 @@ import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
+import ca.nrc.cadc.reg.Standards;
 
 
 /**
@@ -267,7 +268,7 @@ public class RegistryClient
     	{
     	    // locate the associated interface, throws RuntimeException if more than
     	    // one interface match
-    	    Interface intf = cap.findInterface(authMethod.getSecurityMethod());
+    	    Interface intf = cap.findInterface(Standards.getSecurityMethod(authMethod));
 
     	    if (intf != null)
     	    {
