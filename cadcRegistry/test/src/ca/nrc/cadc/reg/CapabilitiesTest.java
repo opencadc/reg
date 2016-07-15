@@ -91,7 +91,6 @@ public class CapabilitiesTest
     private URI STANDARD_ID = Standards.TAP_SYNC_11;
     private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11;
     private URI STANDARD_ID_3= Standards.VOSI_TABLES_11;
-    private static final URI TAP_RESOURCE_IDENTIFIER_URI = URI.create("ivo://cadc.nrc.ca/tap");
     
     static
     {
@@ -123,10 +122,7 @@ public class CapabilitiesTest
     {
     	try
     	{
-    		Capabilities caps = new Capabilities(TAP_RESOURCE_IDENTIFIER_URI);
-    		URI resourceID = caps.getResourceIdentifier();
-    		Assert.assertNotNull("accessURL should not be null", resourceID);
-    		Assert.assertEquals("resource identifier is corrupted", TAP_RESOURCE_IDENTIFIER_URI, resourceID);
+    		Capabilities caps = new Capabilities();
     		Assert.assertNotNull("capabilities should not be null", caps.getCapabilities());
     		Assert.assertEquals("capabilities should be empty", 0, caps.getCapabilities().size());
     	}
@@ -143,7 +139,7 @@ public class CapabilitiesTest
     	try
     	{
     		// construct a Capabilities object
-    		Capabilities capabilities = new Capabilities(TAP_RESOURCE_IDENTIFIER_URI);
+    		Capabilities capabilities = new Capabilities();
     		List<Capability> caps = capabilities.getCapabilities();
     		
     		// test correct capability is added

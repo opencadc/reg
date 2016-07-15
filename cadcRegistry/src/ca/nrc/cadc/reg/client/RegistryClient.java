@@ -75,7 +75,6 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -207,17 +206,7 @@ public class RegistryClient
     	// get the associated capabilities
     	URL capabilitiesFileURL = this.getCapabilitiesFileURL(resourceIdentifier);
     	InputStream inStream = this.getStream(capabilitiesFileURL);
-    	CapabilitiesReader capReader;
-    	
-		try 
-		{
-			capReader = new CapabilitiesReader(capabilitiesFileURL.toURI());
-		} 
-		catch (URISyntaxException e) 
-		{
-			String msg = "Syntax error when converting to URI from URL " + capabilitiesFileURL;
-			throw new RuntimeException(msg, e);
-		}
+    	CapabilitiesReader capReader = new CapabilitiesReader();
     	
     	try
     	{

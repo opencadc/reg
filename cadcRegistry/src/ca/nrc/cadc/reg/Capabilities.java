@@ -70,7 +70,6 @@
 package ca.nrc.cadc.reg;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,35 +94,13 @@ public class Capabilities
     private static Logger log = Logger.getLogger(Capabilities.class);
 
     // resource ID is optional for Capabilities
-    private URI resourceIdentifier;
     private final List<Capability> capabilities = new ArrayList<Capability>();
 
     /**
      * Constructor. 
      */
-    public Capabilities(final URI resourceIdentifier)
+    public Capabilities()
     {
-        validateResourceID(resourceIdentifier);
-
-        this.resourceIdentifier = resourceIdentifier;
-    }
-    
-    /**
-     * Find the resource identifier associated with the capabilities.
-     * 
-     * @return associated resource identifier
-     */
-    public URI getResourceIdentifier()
-    {
-        try
-        {
-            return new URI(this.resourceIdentifier.toString());
-        }
-        catch (URISyntaxException e)
-        {
-            // Checked at construction time, so should not happen.
-            throw new RuntimeException(e);
-        }
     }
 
     /**

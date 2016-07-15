@@ -185,9 +185,6 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     	try 
     	{
 			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
-			Assert.assertEquals("resource identifier is different", 
-					this.getResource(RESOURCE_ID), 
-					this.getResource(caps.getResourceIdentifier().toString()));
 			List<Capability> capList = caps.getCapabilities();
 			Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
 		} 
