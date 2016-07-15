@@ -100,22 +100,19 @@ public class CapabilitiesReader
 {
     private static final Logger log = Logger.getLogger(CapabilitiesReader.class);
 
-    private final URI resourceIdentifier;
     private String resourceIDStr = "";
     private String standardIDStr = "";
     private String accessURLStr = "";
     private String securityMethodStr = "";
     protected Map<String,String> schemaMap;
 
-    public CapabilitiesReader(final URI resourceIdentifier)
+    public CapabilitiesReader()
     {
-        this(resourceIdentifier, true);
+        this(true);
     }
 
-    public CapabilitiesReader(final URI resourceIdentifier, boolean enableSchemaValidation)
+    public CapabilitiesReader(boolean enableSchemaValidation)
     {
-    	this.resourceIdentifier = resourceIdentifier;
-
     	if (enableSchemaValidation)
         {
             this.schemaMap = XMLConstants.SCHEMA_MAP;
@@ -191,7 +188,7 @@ public class CapabilitiesReader
 
     private Capabilities buildCapabilities(final Element root)
     {
-        Capabilities caps = new Capabilities(this.resourceIdentifier);
+        Capabilities caps = new Capabilities();
 
    	    List<Element> capElementList = root.getChildren("capability", Namespace.NO_NAMESPACE);
    	    for (Element capElement : capElementList)

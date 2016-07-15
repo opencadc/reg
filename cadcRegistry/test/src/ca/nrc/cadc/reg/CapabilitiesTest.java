@@ -70,21 +70,21 @@
 package ca.nrc.cadc.reg;
 
 
-import ca.nrc.cadc.reg.Capabilities;
-import ca.nrc.cadc.reg.Capability;
-import ca.nrc.cadc.util.Log4jInit;
 import java.net.URI;
 import java.util.List;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
+import ca.nrc.cadc.util.Log4jInit;
+
 /**
  *
  * @author yeunga
  */
-public class CapabilitiesTest 
+public class CapabilitiesTest
 {
     private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
 
@@ -92,14 +92,14 @@ public class CapabilitiesTest
     private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11;
     private URI STANDARD_ID_3= Standards.VOSI_TABLES_11;
     private static final URI TAP_RESOURCE_IDENTIFIER_URI = URI.create("ivo://cadc.nrc.ca/tap");
-    
+
     static
     {
         Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
     }
-    
+
     public CapabilitiesTest() { }
-    
+
     @Test
     public void testNullResourceID()
     {
@@ -117,42 +117,23 @@ public class CapabilitiesTest
             Assert.fail("unexpected t: " + t);
         }
     }
-    
-    @Test
-    public void testConstruction()
-    {
-    	try
-    	{
-    		Capabilities caps = new Capabilities(TAP_RESOURCE_IDENTIFIER_URI);
-    		URI resourceID = caps.getResourceIdentifier();
-    		Assert.assertNotNull("accessURL should not be null", resourceID);
-    		Assert.assertEquals("resource identifier is corrupted", TAP_RESOURCE_IDENTIFIER_URI, resourceID);
-    		Assert.assertNotNull("capabilities should not be null", caps.getCapabilities());
-    		Assert.assertEquals("capabilities should be empty", 0, caps.getCapabilities().size());
-    	}
-    	catch (Throwable t)
-    	{
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
-    	}
-    }
-    
+
     @Test
     public void testCapabilities()
     {
     	try
     	{
     		// construct a Capabilities object
-    		Capabilities capabilities = new Capabilities(TAP_RESOURCE_IDENTIFIER_URI);
+    		Capabilities capabilities = new Capabilities();
     		List<Capability> caps = capabilities.getCapabilities();
-    		
+
     		// test correct capability is added
     		caps.add(new Capability(STANDARD_ID));
     		Assert.assertEquals("capability list should have one entry", 1, caps.size());
     		Capability[] capArray = caps.toArray(new Capability[caps.size()]);
     		Assert.assertEquals("capability list contains a different capability", STANDARD_ID, capArray[0].getStandardID());
-    		
-    		// test correct number of capability are added 
+
+    		// test correct number of capability are added
     		caps.add(new Capability(STANDARD_ID_2));
     		Assert.assertEquals("capability list should have one entry", 2, caps.size());
     		caps.add(new Capability(STANDARD_ID_3));

@@ -116,11 +116,11 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetCapabilitiesWithNullResourceidentifier()
     {
     	RegistryClient rc = new RegistryClient();
-    	try 
+    	try
     	{
 			rc.getCapabilities(null);
-            Assert.fail("expected IllegalArgumentException");			
-		} 
+            Assert.fail("expected IllegalArgumentException");
+		}
     	catch (IllegalArgumentException ex)
     	{
     		// expecting null input parameter message
@@ -130,7 +130,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         		Assert.fail("unexpected exception: " + ex);
     		}
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
@@ -141,11 +141,11 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetCapabilitiesMissingPropertyValue()
     {
     	RegistryClient rc = new RegistryClient();
-    	try 
+    	try
     	{
 			rc.getCapabilities(new URI(RESOURCE_ID_NO_VALUE));
-            Assert.fail("expected RuntimeException");			
-		} 
+            Assert.fail("expected RuntimeException");
+		}
     	catch (RuntimeException ex)
     	{
     		// expecting not able to find the cache resource
@@ -155,7 +155,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         		Assert.fail("unexpected exception: " + ex);
     		}
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
@@ -165,39 +165,36 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     private String getResource(final String resourceIDString)
     {
     	String ret = null;
-    	
+
     	if (StringUtil.hasText(resourceIDString) )
     	{
     	    int endIndex = resourceIDString.lastIndexOf("/");
-    	    if (endIndex != -1)  
+    	    if (endIndex != -1)
     	    {
     	        ret = resourceIDString.substring(endIndex + 1, resourceIDString.length());
     	    }
-    	}     
-    	
+    	}
+
     	return ret;
     }
-    
+
     @Test
     public void testGetCapabilitiesHappyPath()
     {
     	RegistryClient rc = new RegistryClient();
-    	try 
+    	try
     	{
 			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
-			Assert.assertEquals("resource identifier is different", 
-					this.getResource(RESOURCE_ID), 
-					this.getResource(caps.getResourceIdentifier().toString()));
 			List<Capability> capList = caps.getCapabilities();
 			Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
-		} 
-    	catch (Throwable t) 
+		}
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
 		}
     }
-    
+
     @Test
     public void testGetServiceURLWithNullAuthMethod()
     {
@@ -218,13 +215,13 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         		Assert.fail("unexpected exception: " + ex);
     		}
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
 		}
     }
-    
+
     @Test
     public void testGetServiceURLWithNullStandardID()
     {
@@ -245,13 +242,13 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         		Assert.fail("unexpected exception: " + ex);
     		}
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
 		}
     }
-    
+
     @Test
     public void testGetServiceURLWithNullResourceID()
     {
@@ -272,20 +269,20 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
         		Assert.fail("unexpected exception: " + ex);
     		}
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
 		}
     }
-    
+
     @Test
     public void testGetServiceURLHappyPath()
     {
     	// save user.home environment
     	String currentUserHome = System.getProperty("user.home");
     	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
-    	
+
     	RegistryClient rc = new RegistryClient();
     	try
     	{
@@ -297,7 +294,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     		Assert.assertNotNull("Service URL should not be null", serviceURL);
     		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
@@ -308,7 +305,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     		System.setProperty("user.home", currentUserHome);
     	}
     }
-    
+
     @Test
     public void testGetServiceURLModifyLocal()
     {
@@ -326,7 +323,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     		Assert.assertNotNull("Service URL should not be null", serviceURL);
     		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
@@ -337,7 +334,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             System.setProperty(RegistryClient.class.getName() + ".local", "false");
         }
     }
-    
+
     @Test
     public void testGetServiceURLModifyHost()
     {
@@ -354,7 +351,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     		Assert.assertNotNull("Service URL should not be null", serviceURL);
     		Assert.assertEquals("got an incorrect URL", expected, serviceURL.toExternalForm());
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
@@ -365,14 +362,14 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
             System.setProperty(RegistryClient.class.getName() + ".host", "");
         }
     }
-    
+
     @Test
     public void testGetServiceURLModifyShortHostname()
     {
     	// save user.home environment
     	String currentUserHome = System.getProperty("user.home");
     	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
-    	
+
     	try
     	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
@@ -386,7 +383,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     		Assert.assertNotNull("Service URL should not be null", serviceURL);
     		Assert.assertEquals("got an incorrect URL", expected, serviceURL.toExternalForm());
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
@@ -398,14 +395,14 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     		System.setProperty("user.home", currentUserHome);
         }
     }
-  
+
     @Test
     public void testGetServiceURLMatchDomain()
     {
     	// save user.home environment
     	String currentUserHome = System.getProperty("user.home");
     	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
-    	
+
     	try
     	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
@@ -420,7 +417,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     		Assert.assertNotNull("Service URL should not be null", serviceURL1);
     		Assert.assertEquals("got an incorrect URL", expected1, serviceURL1.toExternalForm());
     	}
-    	catch (Throwable t) 
+    	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
     		Assert.fail("unexpected exception: " + t);
