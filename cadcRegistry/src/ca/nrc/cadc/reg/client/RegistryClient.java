@@ -206,9 +206,7 @@ public class RegistryClient
     	// get the associated capabilities
     	URL capabilitiesFileURL = this.getCapabilitiesFileURL(resourceIdentifier);
     	InputStream inStream = this.getStream(capabilitiesFileURL);
-    	CapabilitiesReader capReader;
-
-		capReader = new CapabilitiesReader();
+    	CapabilitiesReader capReader = new CapabilitiesReader();
 
     	try
     	{
