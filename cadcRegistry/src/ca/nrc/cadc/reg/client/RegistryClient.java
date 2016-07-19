@@ -196,18 +196,18 @@ public class RegistryClient
     public Capabilities getCapabilities(final URI resourceIdentifier)
     {
     	Capabilities caps = null;
-    	
+
     	if (resourceIdentifier == null)
     	{
     		String msg = "Input parameter (resourceIdentifier) should not be null";
     		throw new IllegalArgumentException(msg);
     	}
-    	
+
     	// get the associated capabilities
     	URL capabilitiesFileURL = this.getCapabilitiesFileURL(resourceIdentifier);
     	InputStream inStream = this.getStream(capabilitiesFileURL);
     	CapabilitiesReader capReader = new CapabilitiesReader();
-    	
+
     	try
     	{
 	        caps = capReader.read(inStream);
@@ -221,15 +221,15 @@ public class RegistryClient
                     log.warn("failed to close " + capabilitiesFileURL, t);
                 }
     	}
-    	
+
     	// return associated access URL, mangle it if necessary
         return caps;
     }
-    
+
     /**
-     * Find the service URL for the service registered under the specified base resource 
-     * identifier and using the specified authentication method. The identifier must be an 
-     * IVOA identifier (e.g. with URI scheme os "ivo"). 
+     * Find the service URL for the service registered under the specified base resource
+     * identifier and using the specified authentication method. The identifier must be an
+     * IVOA identifier (e.g. with URI scheme os "ivo").
      *
      * @param resourceIdentifier resource identifier, e.g. ivo://cadc/nrc/ca/tap
      * @param standardID IVOA standard identifier, e.g. ivo://ivo.net/std/TAP#sync-1.1
@@ -238,21 +238,21 @@ public class RegistryClient
      * @throws RuntimeException if more than one URL match the service identifier
      */
     @Deprecated
-    public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod) 
+    public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod)
     {
     	if (resourceIdentifier == null || standardID == null || authMethod == null)
     	{
     		String msg = "No input parameters should be null";
     		throw new IllegalArgumentException(msg);
     	}
-    	
-    	URL url = null;    	
+
+    	URL url = null;
     	log.debug("resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID + ", authMethod=" + authMethod);
     	Capabilities caps = this.getCapabilities(resourceIdentifier);
-    	   	
+
     	// locate the associated capability
     	Capability cap = caps.findCapability(standardID);
-    	
+
     	if (cap != null)
     	{
     	    // locate the associated interface, throws RuntimeException if more than
@@ -262,7 +262,7 @@ public class RegistryClient
     	    if (intf != null)
     	    {
     	        URL intfURL = intf.getAccessURL().getURL();
-    	        
+
     	        try
     	        {
 	    	        url = mangleHostname(intfURL);
@@ -275,24 +275,24 @@ public class RegistryClient
     	        }
     	    }
     	}
-    	
+
     	// return associated access URL, mangle it if necessary
         return url;
     }
-    
+
     private URL getCapabilitiesFileURL(URI resourceID)
     {
     	URL furl = null;
-    	
+
     	String fileDir = "/capabilities/" + resourceID.getAuthority();
     	String prefix = "/config" + fileDir;
     	String path = resourceID.getPath();
     	File conf = null;
-    	
+
 	    try
 	    {
 	        conf = new File(System.getProperty("user.home") + prefix, path);
-	        
+
 	        if (conf.exists())
 	        {
 	            furl = new URL("file://" + conf.getAbsolutePath());
@@ -306,12 +306,12 @@ public class RegistryClient
 	    {
 	        throw new RuntimeException("failed to find URL to " + path, ex);
 	    }
-        
+
         if (furl == null)
         {
             throw new RuntimeException("failed to find capabilities file " + conf);
         }
-    	
+
     	return furl;
     }
 
@@ -331,14 +331,14 @@ public class RegistryClient
         {
             throw new RuntimeException("failed to open input stream for: " + fileURL, ex);
         }
-        
+
         return inStream;
     }
-    
+
     public URL mangleHostname(final URL url) throws MalformedURLException
     {
     	URL retURL = url;
-    	
+
         if (this.hostname != null || this.shortHostname != null)
         {
             String domain = getDomain(url.getHost());
@@ -348,7 +348,7 @@ public class RegistryClient
 	            StringBuilder sb = new StringBuilder();
 	            sb.append(url.getProtocol());
 	            sb.append("://");
-	            
+
 	            if (this.shortHostname != null)
 	            {
 	                sb.append(this.shortHostname);
@@ -361,24 +361,24 @@ public class RegistryClient
 	            {
 	                sb.append(this.hostname);
 	            }
-	            
+
 	            int p = url.getPort();
-	            
+
 	            if (p > 0 && p != url.getDefaultPort())
 	            {
 	                sb.append(":");
 	                sb.append(p);
 	            }
-	            
-	            sb.append(url.getPath());            
+
+	            sb.append(url.getPath());
 	            retURL = new URL(sb.toString());
 	        }
         }
-        
+
         log.debug("mangled URL: " + retURL);
         return retURL;
     }
-    
+
     public static String getDomain(String hostname)
     {
         if (hostname == null)

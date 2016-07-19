@@ -78,26 +78,25 @@ import org.apache.log4j.Logger;
 
 /**
  * Minimal implementation of the Capabilities model in VOResource 1.0.
- * 
- * resourceIdentifier is a base URI which identifies a service provided by 
- * the managed authority, e.g. ivoa://cadc.nrc.ca/vospacev2.1. 
- * 
+ *
+ * resourceIdentifier is a base URI which identifies a service provided by
+ * the managed authority, e.g. ivoa://cadc.nrc.ca/vospacev2.1.
+ *
  * capability represents a general function of the service, usually in terms
- * of a standard service protocol (e.g. SIA), but not necessarily. A service 
+ * of a standard service protocol (e.g. SIA), but not necessarily. A service
  * can have many capabilities associated with it, each reflecting a
  * different aspect of the functionality it provides.
- * 
+ *
  * @author yeunga
  */
 public class Capabilities
 {
     private static Logger log = Logger.getLogger(Capabilities.class);
 
-    // resource ID is optional for Capabilities
     private final List<Capability> capabilities = new ArrayList<Capability>();
 
     /**
-     * Constructor. 
+     * Constructor.
      */
     public Capabilities()
     {
@@ -105,17 +104,17 @@ public class Capabilities
 
     /**
      * Find all associated capabilities.
-     * 
+     *
      * @return all associated capabilities.
      */
-	public List<Capability> getCapabilities() 
+	public List<Capability> getCapabilities()
 	{
 		return this.capabilities;
 	}
-	
+
 	/**
 	 * Find the capability associated with the specified standard identifier.
-	 * 
+	 *
 	 * @param standardID standard identifier for the required capability
 	 * @return capability found or null if not found
 	 */
@@ -123,7 +122,7 @@ public class Capabilities
 	{
 		boolean found = false;
 		Capability retCap = null;
-		
+
 		for (Capability cap : this.capabilities)
 		{
 			if (cap.getStandardID().equals(standardID))
@@ -133,21 +132,12 @@ public class Capabilities
 					String msg = "Matched more than one capability";
 					throw new RuntimeException(msg);
 				}
-				
+
 				found = true;
 				retCap = cap;
 			}
 		}
-		
+
 		return retCap;
-	}
-	
-	private void validateResourceID(final URI resourceID)
-	{
-		if (resourceID == null)
-		{
-			String msg = "resource identifier for a Capabilities object cannot be null.";
-			throw new IllegalArgumentException(msg);
-		}
 	}
 }
