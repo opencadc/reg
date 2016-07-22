@@ -126,6 +126,10 @@ public class Standards
     public final static URI VOSPACE_TRANSFERS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
     public final static URI VOSPACE_VIEWS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
 
+    public final static URI VOSPACE_XFER_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/VOSpace#xfer");
+    public final static URI VOSPACE_NODEPROPS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/VOSpace#nodeprops");
+
+
     public final static URI CAOM2_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2#obs-1.0");
     
     public final static URI CAOM2REPO_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.0");
