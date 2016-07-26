@@ -128,9 +128,9 @@ public class LocalAuthority
     
     public URI getServiceURI(String baseStandardID)
     {
-        String authority = authorityMap.get(baseStandardID);
-        if (authority == null)
+        String resourceIdentifier = authorityMap.get(baseStandardID);
+        if (resourceIdentifier == null)
             throw new NoSuchElementException("not found: " + baseStandardID);
-        return URI.create("ivo://" + authority + "/" + baseStandardID);
+        return URI.create(resourceIdentifier);
     }
 }

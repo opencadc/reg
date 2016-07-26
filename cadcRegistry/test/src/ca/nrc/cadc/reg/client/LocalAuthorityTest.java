@@ -70,6 +70,7 @@
 package ca.nrc.cadc.reg.client;
 
 
+import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.Log4jInit;
 import java.net.URI;
 import java.util.NoSuchElementException;
@@ -87,8 +88,8 @@ public class LocalAuthorityTest
     private static final Logger log = Logger.getLogger(LocalAuthorityTest.class);
 
     private String NOT_FOUND_ID = "foo";
-    private String BASE_ID = "cred";
-    private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
+    private String BASE_ID = Standards.CRED_DELEGATE_10.toString();
+    private String SERVICE_URI = "ivo://cadc.nrc.ca/cdp";
     
     static
     {
