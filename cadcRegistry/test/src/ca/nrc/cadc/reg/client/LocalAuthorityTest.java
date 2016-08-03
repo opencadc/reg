@@ -89,7 +89,7 @@ public class LocalAuthorityTest
 
     private String NOT_FOUND_ID = "foo";
     private String BASE_ID = Standards.CRED_DELEGATE_10.toString();
-    private String SERVICE_URI = "ivo://cadc.nrc.ca/cdp";
+    private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
     
     static
     {

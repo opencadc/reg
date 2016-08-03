@@ -126,8 +126,8 @@ public class Standards
     public final static URI VOSPACE_TRANSFERS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
     public final static URI VOSPACE_VIEWS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
 
-    public final static URI VOSPACE_XFER_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/VOSpace#xfer");
-    public final static URI VOSPACE_NODEPROPS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/Std/VOSpace#nodeprops");
+    public final static URI VOSPACE_XFER_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOSpace#xfer");
+    public final static URI VOSPACE_NODEPROPS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOSpace#nodeprops");
 
 
     public final static URI CAOM2_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2#obs-1.0");
@@ -153,7 +153,7 @@ public class Standards
     public final static URI SECURITY_METHOD_CERT = URI.create("ivo://ivoa.net/sso#tls-with-certificate");
     public final static URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");
     public final static URI SECURITY_METHOD_PASSWORD = URI.create("http://www.w3.org/Protocols/HTTP/1.0/spec.html#BasicAA");
-    public final static URI SECURITY_METHOD_TOKEN = URI.create("ivo://cadc.nrc.ca/auth#delegation-token");
+    public final static URI SECURITY_METHOD_TOKEN = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0");
 
     
     private static final Map<AuthMethod,URI> SEC_MAP = new HashMap<AuthMethod,URI>();
