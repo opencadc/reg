@@ -70,67 +70,48 @@
 
 <!DOCTYPE project>
 <project default="build" basedir=".">
-    <property environment="env"/>
+	
+    <property environment="env" />
     <property file="local.build.properties" />
-    
+
     <!-- site-specific build properties or overrides of values in opencadc.properties -->
     <property file="${env.CADC_PREFIX}/etc/local.properties" />
-    
+
     <!-- site-specific targets, e.g. install, cannot duplicate those in opencadc.targets.xml -->
     <import file="${env.CADC_PREFIX}/etc/local.targets.xml" optional="true" />
 
     <!-- default properties and targets -->
     <property file="${env.CADC_PREFIX}/etc/opencadc.properties" />
     <import file="${env.CADC_PREFIX}/etc/opencadc.targets.xml"/>
-    
+
     <!-- developer convenience: place for extra targets and properties -->
     <import file="extras.xml" optional="true" />
 
-    <property name="project" value="cadcRegistry" />
+    <property name="project" value="cadcTestVOSI" />
 
+    <!-- jars from lib -->
+    <property name="cadcReg" value="${lib}/cadcRegistry.jar"/>
     <property name="cadcUtil" value="${lib}/cadcUtil.jar" />
-	<property name="cadcLog" value="${lib}/cadcLog.jar" />
-    <property name="log4j" value="${ext.lib}/log4j.jar" />
-    <property name="jdom2" value="${ext.lib}/jdom2.jar" />
-    <property name="xerces" value="${ext.lib}/xerces.jar" />
+    <property name="libjars" value="${cadcReg}:${cadcUtil}" />
+    <!-- jars from external lib -->
+    <property name="junit" value="${ext.lib}/junit.jar"/>
+    <property name="log4j" value="${ext.lib}/log4j.jar"/>
+    <property name="extjars" value="${junit}:${log4j}" />
+    <!-- jars from external dev lib -->
 
-    <property name="jars" value="${cadcUtil}:${cadcLog}:${log4j}:${jdom2}:${xerces}" />
+    <property name="jars" value="${libjars}:${extjars}" />
 
-    <target name="build" depends="compile,resources">
-        <jar jarfile="${build}/lib/${project}.jar"
-                    basedir="${build}/class"
-                    update="no">
-                <include name="ca/nrc/cadc/reg/**" />
-                <include name="**.xsd" />
-        	    <include name="**.config" />
+    <target name="build" depends="cadcTestVOSI" />
+
+    <target name="cadcTestVOSI" depends="compile">
+	    <jar jarfile="${build}/lib/${project}.jar"
+		    basedir="${build}/class" 
+		    update="no">
         </jar>
     </target>
 
-    <target name="resources">
-        <copy todir="${build}/class">
-            <fileset dir="src/resources">
-                <include name="**.xsd" />
-            	<include name="**.config" />
-            </fileset>
-        </copy>
-
+    <target name="test">
+        <echo message="no tests implemented" />
     </target>
-
-<!-- JAR files needed to run the test suite -->
-<property name="dev.junit" value="${ext.dev}/junit.jar" />
-<property name="dev.easyMock" value="${ext.dev}/easymock.jar" />
-<property name="dev.cglib" value="${ext.dev}/cglib.jar" />
-<property name="dev.objenesis" value="${ext.dev}/objenesis.jar" />
-<property name="dev.asm" value="${ext.dev}/asm.jar" />
-<property name="testingJars" value="${dev.junit}:${dev.easyMock}:${dev.cglib}:${dev.asm}:${dev.objenesis}" />
-
-    <target name="setup-test">
-        <copy todir="${build}/test/class">
-            <fileset dir="test/resources">
-                <include name="**.properties" />
-                <include name="**.xsd" />
-            </fileset>
-        </copy>
-    </target>
-    
+	
 </project>

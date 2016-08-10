@@ -3,5 +3,6 @@ JAR files required for the OpenCADC cadcRegistry project
 
 Name in build.xml    Versioned Name          Project URL
 -----------------    --------------------    -----------
-cadcUtil.jar                                 http://code.google.com/p/opencadc 
+cadcUtil.jar                                 http://github.com/opencadc
+cadcLog.jar                                  http://github.com/opencadc  
 log4j.jar            log4j-1.2.15            http://logging.apache.org
