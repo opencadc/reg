@@ -71,7 +71,6 @@ package ca.nrc.cadc.reg.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -293,13 +292,35 @@ public class RegistryClient
                 return getCachedCapabilities(capabilitiesFile);
             }
 
-            Path path = capabilitiesFile.toPath();
-        	Files.deleteIfExists(path);
-        	FileOutputStream fileOut = new FileOutputStream(capabilitiesFile);
-        	capSource.loadCapabiltiesDoc(resourceID.toString(), fileOut);
+        	ByteArrayOutputStream out = new ByteArrayOutputStream();
+        	try
+        	{
+        	    capSource.loadCapabiltiesDoc(resourceID.toString(), out);
+        	}
+        	catch (Exception e)
+        	{
+        	    log.warn("Failed to load remote capabilities, " +
+        	        "trying existing cached verion.");
+        	    try
+        	    {
+        	        return getCachedCapabilities(capabilitiesFile);
+        	    }
+        	    catch (Exception e2)
+        	    {
+        	        log.debug("Couldn't read existing version", e2);
+        	        throw new RuntimeException("No registry information available " +
+        	            "for service " + resourceID, e);
+        	    }
+        	}
+
+        	// write the new document to the capabilities file
+       	    Path path = capabilitiesFile.toPath();
+       	    Files.deleteIfExists(path);
+       	    Files.write(path, out.toByteArray());
         	log.debug("Created cache for " + resourceID + " at " + capabilitiesFile);
 
-        	return getCachedCapabilities(capabilitiesFile);
+        	CapabilitiesReader capReader = new CapabilitiesReader();
+        	return capReader.read(out.toString());
         }
         finally
         {
@@ -578,7 +599,16 @@ public class RegistryClient
            loadCapabiltiesDoc(resourceID, out);
            String capDoc = out.toString();
            CapabilitiesReader capReader = new CapabilitiesReader();
-           return capReader.read(capDoc);
+           try
+           {
+               return capReader.read(capDoc);
+           }
+           catch (Exception e)
+           {
+               String message = "Failed to read document for resource: " + resourceID;
+               log.debug(message, e);
+               throw new RuntimeException(message, e);
+           }
        }
 
        public void loadCapabiltiesDoc(String resourceID, OutputStream dest) throws IOException
