@@ -92,7 +92,8 @@
     <!-- jars from lib -->
     <property name="cadcReg" value="${lib}/cadcRegistry.jar"/>
     <property name="cadcUtil" value="${lib}/cadcUtil.jar" />
-    <property name="libjars" value="${cadcReg}:${cadcUtil}" />
+    <property name="cadcVOSI" value="${lib}/cadcVOSI.jar" />
+    <property name="libjars" value="${cadcReg}:${cadcUtil}:${cadcVOSI}" />
     <!-- jars from external lib -->
     <property name="junit" value="${ext.lib}/junit.jar"/>
     <property name="log4j" value="${ext.lib}/log4j.jar"/>

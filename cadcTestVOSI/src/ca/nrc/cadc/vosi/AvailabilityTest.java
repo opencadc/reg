@@ -1,5 +1,4 @@
 /*
-/*
 ************************************************************************
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
@@ -71,62 +70,40 @@
 package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.auth.AuthMethod;
-import ca.nrc.cadc.reg.Capabilities;
-import ca.nrc.cadc.reg.CapabilitiesReader;
-import ca.nrc.cadc.reg.Capability;
-import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.List;
-
+import ca.nrc.cadc.vosi.avail.CheckWebService;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-/**
- * Tests the capabilities of a service. 
- * Note: 
- * 1. The tests require a capabilities file of the service under test
- *    to be in <user.home>/config/capabilities/<authority, e.g. cadc.nrc.ca>/<service, e.g. tap>
- * 2. The capabilities standard ID (Standards.VOSI_CAPABILITIES_URI) 
- *    is used by the tests.
- * 3. The accessURL of the associated capability should point to the 
- *    server under test, for example your test vm or rc server
- * 
- * @author yeunga
- */
-public class CapabilitiesTest
-{
+import java.net.URI;
+import java.net.URL;
 
-    private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
-    
+/**
+ * Tests the availability of a service.
+ */
+public class AvailabilityTest
+{
+    private static final Logger log = Logger.getLogger(AvailabilityTest.class);
+
     private static final URI resourceIdentifier;
-    
+
     static
     {
         Log4jInit.setLevel("ca.nrc.cadc", Level.INFO);
-        
-    	// get resourceIdentifier from system property
-        String resourceIdentifierName = CapabilitiesTest.class.getName() + ".resourceIdentifier";
+
+        // get resourceIdentifier from system property
+        String resourceIdentifierName = AvailabilityTest.class.getName() + ".resourceIdentifier";
         String resourceIdentifierValue = System.getProperty(resourceIdentifierName);
         log.debug(resourceIdentifierName + "=" + resourceIdentifierValue);
-        
-    	try 
+
+        try
         {
-    		resourceIdentifier = URI.create(resourceIdentifierValue);
-        } 
+            resourceIdentifier = URI.create(resourceIdentifierValue);
+        }
         catch(IllegalArgumentException bug)
         {
             throw new RuntimeException("BUG: invalid URI string", bug);
@@ -137,101 +114,25 @@ public class CapabilitiesTest
         }
     }
 
-    public CapabilitiesTest() 
-    {
+    public AvailabilityTest() {}
 
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception
-    {
-        
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception { }
-
-    @Before
-    public void setUp() { }
-
-    @After
-    public void tearDown() { }
-
-    private void getCapabilitiesFromServer(final URL accessURL) 
-    		throws IOException, URISyntaxException
-    {
-		CapabilitiesReader capReader = new CapabilitiesReader();
-		InputStream inStream = accessURL.openStream();
-		
-    	try
-    	{
-	        Capabilities caps = capReader.read(inStream);
-			Assert.assertTrue("Incorrect number of capabilities", caps.getCapabilities().size() > 3);
-   	    }
-    	finally
-    	{
-            if (inStream != null)
-            {
-                try { inStream.close(); }
-                catch(Throwable t)
-                {
-                    log.warn("failed to close " + accessURL, t);
-                }
-            }
-    	}
-    }
-    
-    // will be removed once RegistryClient.getServiceURL() has been deleted
     @Test
-    public void testValidateCapabilitiesUsingGetServiceURL()
+    public void testAvailability()
     {
-    	RegistryClient rc = new RegistryClient();
-    	try 
-    	{
-    		URL serviceURL = rc.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
-            Assert.assertNotNull(serviceURL);
-            log.debug("serviceURL=" + serviceURL);    	
-            
-    		this.getCapabilitiesFromServer(serviceURL);		
-		} 
-    	catch (Throwable t) 
-    	{
+        RegistryClient rc = new RegistryClient();
+        try
+        {
+            RegistryClient regClient = new RegistryClient();
+            URL availabilityURL = regClient.getServiceURL(resourceIdentifier, Standards.VOSI_AVAILABILITY, AuthMethod.ANON);
+            log.info("availability url: " + availabilityURL);
+
+            CheckWebService checkWebService = new CheckWebService(availabilityURL.toString());
+            checkWebService.check();
+        }
+        catch (Throwable t)
+        {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-    }
-    
-    @Test
-    public void validateCapabilitiesUsingGetCapabilities()
-    {
-    	RegistryClient rc = new RegistryClient();
-    	try 
-    	{
-    		// get the capabilities associated with the resourceIdentifier
-			Capabilities caps = rc.getCapabilities(resourceIdentifier);
-			Assert.assertNotNull(caps);
-			
-			// each web service supports capabilitites, availability and logControl
-			// in addition to capabilities specific to the web service
-			List<Capability> capList = caps.getCapabilities();
-			Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
-			
-			// get the capability associated with the standard ID
-			Capability cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
-			Assert.assertNotNull(cap);
-			
-			// get the interface associated with the securityMethod
-			Interface intf = cap.findInterface(Standards.getSecurityMethod(AuthMethod.ANON));
-			Assert.assertNotNull(intf);
-			
-			// get the accessURL associated with the interface
-			URL accessURL = intf.getAccessURL().getURL();
-			this.getCapabilitiesFromServer(accessURL);			
-		} 
-    	catch (Throwable t) 
-    	{
-            log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
+            Assert.fail("unexpected exception: " + t);
+        }
     }
 }
