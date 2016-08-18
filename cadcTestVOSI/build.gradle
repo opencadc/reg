@@ -1,0 +1,27 @@
+plugins {
+    id "java"
+    id "maven"
+}
+
+repositories {
+    jcenter()
+    mavenLocal()
+
+    // Only here until cadcUtil is in jcenter.
+    maven {
+        url  "http://dl.bintray.com/opencadc/software"
+    }
+}
+
+sourceCompatibility = 1.7
+version = '1.0.1'
+group = 'opencadc'
+
+dependencies {
+    compile 'log4j:log4j:1.2.+'
+    compile 'junit:junit:4.+'
+
+    compile 'opencadc:cadcUtil:1.+'
+    compile 'opencadc:cadcVOSI:1.+'
+    compile 'opencadc:cadcRegistry:1.0.+'
+}
