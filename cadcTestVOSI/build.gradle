@@ -1,6 +1,8 @@
 plugins {
     id "java"
     id "maven"
+    id "maven-publish"
+    id "com.jfrog.bintray" version "1.7.1"
 }
 
 repositories {
@@ -24,5 +26,5 @@ dependencies {
 
     compile 'opencadc:cadcUtil:1.+'
     compile 'opencadc:cadcVOSI:1.+'
-    compile 'opencadc:cadcRegistry:1.0.+'
+    compile 'opencadc:cadcRegistry:1.+'
 }
