@@ -107,14 +107,14 @@ import ca.nrc.cadc.util.MultiValuedProperties;
 /**
  * A very simple caching IVOA Registry client. All the lookups done by this client use a properties
  * file named RegistryClient.properties found via the classpath.
- * </p><p>
+ * <p>
  * Note for developers: You can set a system property to force this class to replace the hostname
- * in the resuting URL with the canonical hostname of the local host. This is useful for testing:
+ * in the resulting URL with the canonical hostname of the local host. This is useful for testing:
  * </p>
  * <pre>
  * ca.nrc.cadc.reg.client.RegistryClient.local=true
  * </pre>
- * </p><p>
+ * <p>
  * Note for developers: You can set a system property to force this class to replace the hostname
  * in the resulting URL with an arbitrary hostname. This is useful for testing a specific remote server:
  * </p>

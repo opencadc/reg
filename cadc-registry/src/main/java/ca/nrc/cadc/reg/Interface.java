@@ -101,7 +101,8 @@ public class Interface
 
     /**
      * Constructor. 
-     * @throws URISyntaxException 
+     * @param accessURL
+     * @param securityMethod
      */
     public Interface(final AccessURL accessURL, final URI securityMethod) 
     {
