@@ -89,7 +89,6 @@ public class AccessURL
     
     /**
      * Constructor. 
-     * @throws URISyntaxException 
      */
     public AccessURL(final URL url) 
     {

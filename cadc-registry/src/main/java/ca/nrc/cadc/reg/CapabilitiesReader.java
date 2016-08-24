@@ -138,9 +138,8 @@ public class CapabilitiesReader
     /**
      * Construct a Capabilities from a InputStream.
      *
-     * @param in InputStream.
+     * @param istream InputStream.
      * @return Capabilities Capabilities.
-     * @throws IOException
      */
     public Capabilities read(InputStream istream)
     {
