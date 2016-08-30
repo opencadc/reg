@@ -150,7 +150,7 @@ public class RegistryClient
     private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
     private static final int CAPABILITIES_CACHE_EXPIRY_MINUTES = 10;
-    private static final String CONFIG_CACHE_DIR = "/.config/cadcRegistry/";
+    private static final String CONFIG_CACHE_DIR = "/.config/cadc-registry/";
 
     private String hostname;
     private String shortHostname;
