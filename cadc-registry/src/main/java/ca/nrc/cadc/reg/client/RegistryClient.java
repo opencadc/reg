@@ -71,25 +71,27 @@ package ca.nrc.cadc.reg.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -218,6 +220,13 @@ public class RegistryClient
     		throw new IllegalArgumentException(msg);
     	}
 
+    	// 1. Open existing file and check timestamp.
+    	// 2. If not expired, open file and return to user
+    	// 3. Otherwise: read capabilities from web service
+    	// 4. Write new capabilities to temp file
+    	// 5. Atomically move temp file to real file
+    	// 6. Return these refreshed capabilities
+
     	CapabilitySource capSource = new CapabilitySource();
     	if (!capSource.hasResource(resourceID.toString()))
     	{
@@ -236,101 +245,72 @@ public class RegistryClient
     	    return capSource.getCapabilties(resourceID.toString());
     	}
 
-    	if (capabilitiesFile.exists() && capabilitiesFile.canRead())
+    	boolean cacheExists = capabilitiesFile.exists() && capabilitiesFile.canRead();
+    	if (cacheExists && !hasExpired(capabilitiesFile))
     	{
-    	    if (!hasExpired(capabilitiesFile))
-    	    {
-    	        // read from cached configuration
-    	        log.debug("Reading capabilities for " + resourceID + " from cached " +
-    	            "configuration: " + capabilitiesFile);
+	        // read from cached configuration
+	        log.debug("Reading capabilities for " + resourceID + " from cached " +
+	            "configuration: " + capabilitiesFile);
+	        try
+	        {
     	        Capabilities capabilities = getCachedCapabilities(capabilitiesFile);
     	        return capabilities;
-    	    }
+	        }
+	        catch (Exception e)
+	        {
+	            log.warn("Failed to reach cached capabilites file: " + capabilitiesFile);
+	            log.warn("Attempting to read capabilities from source.");
+	        }
     	}
 
-        if (!capabilitiesFile.canWrite())
-        {
-            boolean fixed;
-            try
-            {
-                fixed = createConfigDirectory(resourceID);
-                if (fixed)
-                {
-                    fixed = capabilitiesFile.createNewFile();
-                }
-            }
-            catch (Exception e)
-            {
-                fixed = false;
-                log.info("Error creating cache file structure", e);
-            }
+    	// read the capabilities from the web service
+    	try
+    	{
+    	    // make sure the correct directory exists
+    	    File dir = getConfigDirectory(resourceID);
 
-            if (!fixed)
-            {
-                log.warn("Write permission to " +
-                    capabilitiesFile.getAbsolutePath() +
-                    " is required for registry caching.");
-                return capSource.getCapabilties(resourceID.toString());
-            }
-        }
+    	    // create a temp file in the directory
+    	    File tmpFile = File.createTempFile(UUID.randomUUID().toString(), null, dir);
 
-        // create a cache
-        Profiler profiler = new Profiler(RegistryClient.class);
-        FileChannel channel = new RandomAccessFile(capabilitiesFile, "rw").getChannel();
-        FileLock lock = null;
-        try
-        {
-            log.debug("Updating new or expired capabilities cache: " + capabilitiesFile);
-            // lock the file - this will block until the lock is obtained
-            lock = channel.lock();
-            log.debug("Locked cache file: " + capabilitiesFile);
+    	    // write the contents to the file
+    	    FileOutputStream fos = new FileOutputStream(tmpFile);
+    	    capSource.loadCapabiltiesDoc(resourceID.toString(), fos);
+    	    fos.close();
 
-            // see if another process has already created the cache
-            if (channel.size() > 0 && !hasExpired(capabilitiesFile))
-            {
-                // return the cached version
-                return getCachedCapabilities(capabilitiesFile);
-            }
+    	    // move the file to the real location
+    	    Path source = Paths.get(tmpFile.getAbsolutePath());
+    	    Path dest = Paths.get(capabilitiesFile.getAbsolutePath());
 
-        	ByteArrayOutputStream out = new ByteArrayOutputStream();
-        	try
-        	{
-        	    capSource.loadCapabiltiesDoc(resourceID.toString(), out);
-        	}
-        	catch (Exception e)
-        	{
-        	    log.warn("Failed to load remote capabilities, " +
-        	        "trying existing cached verion.");
-        	    try
-        	    {
-        	        return getCachedCapabilities(capabilitiesFile);
-        	    }
-        	    catch (Exception e2)
-        	    {
-        	        log.debug("Couldn't read existing version", e2);
-        	        throw new RuntimeException("No registry information available " +
-        	            "for service " + resourceID, e);
-        	    }
-        	}
+    	    try
+    	    {
+    	        Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+    	        log.debug("Replaced capabilities file " + capabilitiesFile + " with fresh copy atomically.");
+    	    }
+    	    catch (AtomicMoveNotSupportedException e)
+    	    {
+    	        log.warn("Atomic file replacement not supported", e);
+    	        Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING);
+    	        log.debug("Replaced capabilities file " + capabilitiesFile + " with fresh copy (not atomically).");
+    	    }
 
-        	// write the new document to the capabilities file
-       	    Path path = capabilitiesFile.toPath();
-       	    Files.deleteIfExists(path);
-       	    Files.write(path, out.toByteArray());
-        	log.debug("Created cache for " + resourceID + " at " + capabilitiesFile);
-
-        	CapabilitiesReader capReader = new CapabilitiesReader();
-        	return capReader.read(out.toString());
-        }
-        finally
-        {
-            if (lock != null)
-            {
-                lock.release();
-                log.debug("Released cache file lock");
-            }
-            profiler.checkpoint("createCapabilitiesCache");
-        }
+    	    return this.getCachedCapabilities(capabilitiesFile);
+    	}
+    	catch (Exception e)
+    	{
+    	    log.warn("Failed to cache capabilities to file: " + capabilitiesFile, e);
+    	    // for any error return the cached copy if available, otherwise return
+    	    // the capabilities from source
+    	    if (cacheExists)
+    	    {
+    	        log.warn("Returning expired cached capabilities.");
+    	        return this.getCachedCapabilities(capabilitiesFile);
+    	    }
+    	    else
+    	    {
+    	        log.info("Attemping to return capabilities from source.");
+    	        return capSource.getCapabilties(resourceID.toString());
+    	    }
+    	}
     }
 
     private Capabilities getCachedCapabilities(File capabilitiesFile) throws IOException
@@ -432,7 +412,7 @@ public class RegistryClient
         return url;
     }
 
-    private boolean createConfigDirectory(URI resourceID)
+    private File getConfigDirectory(URI resourceID)
     {
         Profiler profiler = new Profiler(RegistryClient.class);
         String resourceCacheDir = getCacheDirectory(resourceID);
@@ -441,17 +421,17 @@ public class RegistryClient
         {
             if (!dir.exists())
             {
-                boolean worked = dir.mkdirs();
-                log.debug("Created directory " + resourceCacheDir + ": " + worked);
-                return worked;
+                if (!dir.mkdirs())
+                {
+                    throw new RuntimeException("Failed to create directory: " + dir);
+                }
+                log.debug("Created directory " + resourceCacheDir);
             }
-            return true;
+            return dir;
         }
         catch (Exception e)
         {
-            log.debug("exception creating cache directory", e);
-            log.info("Failed to create directory " + resourceCacheDir);
-            return false;
+            throw new RuntimeException("Failed to create directory: " + dir, e);
         }
         finally
         {
