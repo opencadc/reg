@@ -70,63 +70,76 @@
 package ca.nrc.cadc.reg.client;
 
 
-import ca.nrc.cadc.reg.Standards;
-import ca.nrc.cadc.util.Log4jInit;
 import java.net.URI;
 import java.util.NoSuchElementException;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
+import ca.nrc.cadc.reg.Standards;
+import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.util.PropertiesReader;
+
 /**
  *
  * @author pdowler
  */
-public class LocalAuthorityTest 
+public class LocalAuthorityTest
 {
     private static final Logger log = Logger.getLogger(LocalAuthorityTest.class);
 
     private String NOT_FOUND_ID = "foo";
     private String BASE_ID = Standards.CRED_DELEGATE_10.toString();
     private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
-    
+
     static
     {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
     public LocalAuthorityTest() { }
-    
+
+    private static String TEST_CONFIG_DIR = PropertiesReader.class.getName() + ".dir";
+
     @Test
     public void testNotFound()
     {
         try
         {
+            System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+
             LocalAuthority loc = new LocalAuthority();
-            
-            try 
-            { 
-                URI uri = loc.getServiceURI(NOT_FOUND_ID); 
+
+            try
+            {
+                URI uri = loc.getServiceURI(NOT_FOUND_ID);
                 Assert.fail("expected NoSuchElementException, found: " + uri);
             }
             catch(NoSuchElementException expected)
             {
                 log.info("caught expected exception: " + expected);
             }
-            
+
         }
         catch(Exception unexpected)
         {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
         }
+        finally
+        {
+            System.clearProperty(TEST_CONFIG_DIR);
+        }
     }
-    
+
     @Test
     public void testFound()
     {
         try
         {
+            System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+
             LocalAuthority loc = new LocalAuthority();
             URI uri = loc.getServiceURI(BASE_ID);
             Assert.assertNotNull(uri);
@@ -136,6 +149,10 @@ public class LocalAuthorityTest
         {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
+        }
+        finally
+        {
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 }
