@@ -71,6 +71,7 @@
 package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.net.HttpDownload;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.Capability;
@@ -79,15 +80,21 @@ import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
+import ca.nrc.cadc.xml.XmlUtil;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -112,34 +119,30 @@ public class CapabilitiesTest
 
     private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
     
-    private static final URI resourceIdentifier;
-    
     static
     {
-        Log4jInit.setLevel("ca.nrc.cadc", Level.INFO);
-        
-    	// get resourceIdentifier from system property
-        String resourceIdentifierName = CapabilitiesTest.class.getName() + ".resourceIdentifier";
-        String resourceIdentifierValue = System.getProperty(resourceIdentifierName);
-        log.debug(resourceIdentifierName + "=" + resourceIdentifierValue);
-        
-    	try 
-        {
-            resourceIdentifier = URI.create(resourceIdentifierValue);
-        } 
-        catch(IllegalArgumentException bug)
-        {
-            throw new RuntimeException("BUG: invalid URI string", bug);
-        }
-        catch(NullPointerException bug)
-        {
-            throw new RuntimeException("BUG: null URI string", bug);
-        }
+        Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
     }
 
+    private final URI resourceIdentifier;
+    
     public CapabilitiesTest() 
     {
-
+        this(null);
+    }
+    
+    public CapabilitiesTest(URI resourceIdentifier)
+    {
+        if (resourceIdentifier == null)
+        {
+            // get resourceIdentifier from system property
+            String resourceIdentifierName = CapabilitiesTest.class.getName() + ".resourceIdentifier";
+            String resourceIdentifierValue = System.getProperty(resourceIdentifierName);
+            log.info(resourceIdentifierName + "=" + resourceIdentifierValue);
+            this.resourceIdentifier = URI.create(resourceIdentifierValue);
+        }
+        else
+            this.resourceIdentifier = resourceIdentifier;
     }
 
     @BeforeClass
@@ -157,17 +160,18 @@ public class CapabilitiesTest
     @After
     public void tearDown() { }
 
-    private void getCapabilitiesFromServer(final URL accessURL) 
+    private Capabilities getCapabilitiesFromServer(final URL accessURL) 
     		throws IOException, URISyntaxException
     {
-		CapabilitiesReader capReader = new CapabilitiesReader();
-		InputStream inStream = accessURL.openStream();
+        log.info("get capabilties: " + accessURL);
+        
+        CapabilitiesReader capReader = new CapabilitiesReader();
+        InputStream inStream = accessURL.openStream();
 		
     	try
     	{
-	        Capabilities caps = capReader.read(inStream);
-			Assert.assertTrue("Incorrect number of capabilities", caps.getCapabilities().size() > 3);
-   	    }
+            return capReader.read(inStream);
+        }
     	finally
     	{
             if (inStream != null)
@@ -181,6 +185,19 @@ public class CapabilitiesTest
     	}
     }
     
+    /**
+     * Optional service-specific validation of content. Override this method to check
+     * the content.
+     * 
+     * @param caps 
+     * @throws java.lang.Exception unexpected exception causes test to fail
+     */
+    protected void validateContent(Capabilities caps)
+        throws Exception
+    {
+        // no-op
+    }
+    
     // will be removed once RegistryClient.getServiceURL() has been deleted
     @Test
     public void testValidateCapabilitiesUsingGetServiceURL()
@@ -188,50 +205,99 @@ public class CapabilitiesTest
     	RegistryClient rc = new RegistryClient();
     	try 
     	{
-    		URL serviceURL = rc.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
+            URL serviceURL = rc.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
             Assert.assertNotNull(serviceURL);
-            log.debug("serviceURL=" + serviceURL);    	
+            log.info("serviceURL=" + serviceURL);    	
             
-    		this.getCapabilitiesFromServer(serviceURL);		
-		} 
-    	catch (Throwable t) 
+            Capabilities caps = this.getCapabilitiesFromServer(serviceURL);
+            validateContent(caps);
+	    }
+    	catch (Exception t) 
     	{
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
+            Assert.fail("unexpected exception: " + t);
+        }
     }
     
     @Test
-    public void validateCapabilitiesUsingGetCapabilities()
+    public void testValidateCapabilitiesUsingGetCapabilities()
     {
     	RegistryClient rc = new RegistryClient();
     	try 
     	{
-    		// get the capabilities associated with the resourceIdentifier
-			Capabilities caps = rc.getCapabilities(resourceIdentifier);
-			Assert.assertNotNull(caps);
-			
-			// each web service supports capabilitites, availability and logControl
-			// in addition to capabilities specific to the web service
-			List<Capability> capList = caps.getCapabilities();
-			Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
-			
-			// get the capability associated with the standard ID
-			Capability cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
-			Assert.assertNotNull(cap);
-			
-			// get the interface associated with the securityMethod
-			Interface intf = cap.findInterface(Standards.getSecurityMethod(AuthMethod.ANON));
-			Assert.assertNotNull(intf);
-			
-			// get the accessURL associated with the interface
-			URL accessURL = intf.getAccessURL().getURL();
-			this.getCapabilitiesFromServer(accessURL);			
-		} 
-    	catch (Throwable t) 
+            // get the capabilities associated with the resourceIdentifier
+            Capabilities caps = rc.getCapabilities(resourceIdentifier);
+            Assert.assertNotNull(caps);
+
+            // each web service supports capabilitites, availability and logControl
+            // in addition to capabilities specific to the web service
+            List<Capability> capList = caps.getCapabilities();
+            Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
+
+            // get the capability associated with the standard ID
+            Capability cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
+            Assert.assertNotNull(cap);
+
+            // get the interface associated with the securityMethod
+            Interface intf = cap.findInterface(Standards.getSecurityMethod(AuthMethod.ANON));
+            Assert.assertNotNull(intf);
+
+            validateContent(caps);
+        } 
+    	catch (Exception t) 
     	{
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
+            Assert.fail("unexpected exception: " + t);
+        }
     }
+
+    @Test
+    public void testValidateCapabilitiesNamespaces()
+    {
+        RegistryClient rc = new RegistryClient();
+        try
+        {
+            URL serviceURL = rc.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
+            Assert.assertNotNull(serviceURL);
+            log.info("serviceURL=" + serviceURL);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            HttpDownload download = new HttpDownload(serviceURL, out);
+            download.setFollowRedirects(true);
+            download.run();
+
+            if(download.getThrowable() != null)
+            {
+                Assert.fail("Unable to download capabilities XML because " + download.getThrowable().getMessage());
+            }
+
+            Document doc = XmlUtil.buildDocument(out.toString("UTF-8"));
+            Element capabilities = doc.getRootElement();
+            List<Namespace> namespaces = capabilities.getAdditionalNamespaces();
+            boolean found = false;
+            for (Namespace namespace : namespaces)
+            {
+                if (namespace.getURI().startsWith("http://www.ivoa.net/xml/VODataService/"))
+                {
+                    if (namespace.getPrefix().equals("vs"))
+                    {
+                        found = true;
+                        break;
+                    }
+                    if (namespace.getPrefix().equals("vod"))
+                    {
+                        Assert.fail("vod namespace for VODataService found");
+                    }
+                }
+            }
+
+            Assert.assertTrue("vs namespace declaration not found", found);
+        }
+        catch (Exception t)
+        {
+            log.error("unexpected exception", t);
+            Assert.fail("unexpected exception: " + t);
+        }
+    }
+
 }

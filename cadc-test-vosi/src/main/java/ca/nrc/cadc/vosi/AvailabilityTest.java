@@ -89,32 +89,31 @@ public class AvailabilityTest
 {
     private static final Logger log = Logger.getLogger(AvailabilityTest.class);
 
-    private static final URI resourceIdentifier;
+    private final URI resourceIdentifier;
 
     static
     {
-        Log4jInit.setLevel("ca.nrc.cadc", Level.INFO);
-
-        // get resourceIdentifier from system property
-        String resourceIdentifierName = AvailabilityTest.class.getName() + ".resourceIdentifier";
-        String resourceIdentifierValue = System.getProperty(resourceIdentifierName);
-        log.debug(resourceIdentifierName + "=" + resourceIdentifierValue);
-
-        try
-        {
-            resourceIdentifier = URI.create(resourceIdentifierValue);
-        }
-        catch(IllegalArgumentException bug)
-        {
-            throw new RuntimeException("BUG: invalid URI string", bug);
-        }
-        catch(NullPointerException bug)
-        {
-            throw new RuntimeException("BUG: null URI string", bug);
-        }
+        Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
     }
 
-    public AvailabilityTest() {}
+    public AvailabilityTest() 
+    {
+        this(null);
+    }
+    
+    public AvailabilityTest(URI resourceIdentifier)
+    {
+        if (resourceIdentifier == null)
+        {
+            // get resourceIdentifier from system property
+            String resourceIdentifierName = AvailabilityTest.class.getName() + ".resourceIdentifier";
+            String resourceIdentifierValue = System.getProperty(resourceIdentifierName);
+            log.debug(resourceIdentifierName + "=" + resourceIdentifierValue);
+            this.resourceIdentifier = URI.create(resourceIdentifierValue);
+        }
+        else
+            this.resourceIdentifier = resourceIdentifier;
+    }
 
     @Test
     public void testAvailability()

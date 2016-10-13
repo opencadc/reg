@@ -70,62 +70,52 @@
 package ca.nrc.cadc.reg.client;
 
 
-import ca.nrc.cadc.util.MultiValuedProperties;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
+
+import ca.nrc.cadc.util.MultiValuedProperties;
+import ca.nrc.cadc.util.PropertiesReader;
 
 /**
  *
  * @author pdowler
  */
-public class LocalAuthority 
+public class LocalAuthority
 {
     private static final Logger log = Logger.getLogger(LocalAuthority.class);
 
-    private static final String CACHE_FILE = LocalAuthority.class.getSimpleName() + ".properties";
-    
-    private Map<String,String> authorityMap = new TreeMap<String,String>();
-    
-    public LocalAuthority() 
-    {
-        try
-        {
-            MultiValuedProperties mvp = new MultiValuedProperties();
-            URL url = LocalAuthority.class.getClassLoader().getResource(CACHE_FILE);
-            if (url == null)
-                throw new RuntimeException("failed to find " + CACHE_FILE + " in classpath");
-            
-            mvp.load(url.openStream());
+    private static final String LOCAL_AUTH_PROP_FILE = LocalAuthority.class.getSimpleName() + ".properties";
 
-            for (String std : mvp.keySet())
+    private Map<String,String> authorityMap = new TreeMap<String,String>();
+
+    public LocalAuthority()
+    {
+        PropertiesReader propReader = new PropertiesReader(LOCAL_AUTH_PROP_FILE);
+        MultiValuedProperties mvp = propReader.getAllProperties();
+
+        for (String std : mvp.keySet())
+        {
+            List<String> values = mvp.getProperty(std);
+            if (values.size() > 1)
+                throw new IllegalStateException("found " + values.size() + " values for " + std);
+            if (values.isEmpty())
             {
-                List<String> values = mvp.getProperty(std);
-                if (values.size() > 1)
-                    throw new IllegalStateException("found " + values.size() + " values for " + std);
-                if (values.isEmpty())
-                {
-                    log.debug(std + " has no value, skipping");
-                }
-                else
-                {
-                    String val = values.get(0);
-                    log.debug("authorityMap: " + std + " -> " + val);
-                    authorityMap.put(std, val);
-                }
+                log.debug(std + " has no value, skipping");
+            }
+            else
+            {
+                String val = values.get(0);
+                log.debug("authorityMap: " + std + " -> " + val);
+                authorityMap.put(std, val);
             }
         }
-        catch(IOException ex)
-        {
-            throw new RuntimeException("failed to read " + CACHE_FILE, ex);
-        }
     }
-    
+
     public URI getServiceURI(String baseStandardID)
     {
         String resourceIdentifier = authorityMap.get(baseStandardID);
