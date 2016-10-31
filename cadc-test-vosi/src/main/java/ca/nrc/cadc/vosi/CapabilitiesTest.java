@@ -71,6 +71,7 @@
 package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.net.HttpDownload;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.Capability;
@@ -79,15 +80,21 @@ import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
+import ca.nrc.cadc.xml.XmlUtil;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -204,7 +211,7 @@ public class CapabilitiesTest
             
             Capabilities caps = this.getCapabilitiesFromServer(serviceURL);
             validateContent(caps);
-	} 
+	    }
     	catch (Exception t) 
     	{
             log.error("unexpected exception", t);
@@ -243,4 +250,52 @@ public class CapabilitiesTest
             Assert.fail("unexpected exception: " + t);
         }
     }
+
+    @Test
+    public void testValidateCapabilitiesNamespaces()
+    {
+        RegistryClient rc = new RegistryClient();
+        try
+        {
+            URL serviceURL = rc.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
+            Assert.assertNotNull(serviceURL);
+            log.info("serviceURL=" + serviceURL);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            HttpDownload download = new HttpDownload(serviceURL, out);
+            download.setFollowRedirects(true);
+            download.run();
+
+            if(download.getThrowable() != null)
+            {
+                Assert.fail("Unable to download capabilities XML because " + download.getThrowable().getMessage());
+            }
+
+            Document doc = XmlUtil.buildDocument(out.toString("UTF-8"));
+            Element capabilities = doc.getRootElement();
+            List<Namespace> namespaces = capabilities.getAdditionalNamespaces();
+            boolean found = false;
+            for (Namespace namespace : namespaces)
+            {
+                if (namespace.getURI().startsWith("http://www.ivoa.net/xml/VODataService/"))
+                {
+                    Assert.assertEquals("Expected VODataService namespace prefix vs, found " + namespace.getPrefix(),
+                                        "vs", namespace.getPrefix());
+                }
+                if (namespace.getURI().startsWith("http://www.ivoa.net/xml/VOResource/"))
+                {
+                    Assert.assertEquals("Expected VOResource namespace prefix vr, found " + namespace.getPrefix(),
+                                        "vr", namespace.getPrefix());
+                }
+            }
+
+            Assert.assertTrue("vs namespace declaration not found", found);
+        }
+        catch (Exception t)
+        {
+            log.error("unexpected exception", t);
+            Assert.fail("unexpected exception: " + t);
+        }
+    }
+
 }

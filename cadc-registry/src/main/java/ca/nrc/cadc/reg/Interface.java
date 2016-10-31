@@ -95,8 +95,7 @@ public class Interface
     // Use List to preserve order
     private final AccessURL accessURL;
     private final URI securityMethod;
-    
-    public final String type = "vod:ParamHTTP";
+
     public String role ;
 
     /**
