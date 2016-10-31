@@ -279,17 +279,13 @@ public class CapabilitiesTest
             {
                 if (namespace.getURI().startsWith("http://www.ivoa.net/xml/VODataService/"))
                 {
-                    if (!namespace.getPrefix().equals("vs"))
-                    {
-                        Assert.fail("Expected VODataService namespace prefix vs, found " + namespace.getPrefix());
-                    }
+                    Assert.assertEquals("Expected VODataService namespace prefix vs, found " + namespace.getPrefix(),
+                                        "vs", namespace.getPrefix());
                 }
                 if (namespace.getURI().startsWith("http://www.ivoa.net/xml/VOResource/"))
                 {
-                    if (!namespace.getPrefix().equals("vr"))
-                    {
-                        Assert.fail("Expected VOResource namespace prefix vr, found " + namespace.getPrefix());
-                    }
+                    Assert.assertEquals("Expected VOResource namespace prefix vr, found " + namespace.getPrefix(),
+                                        "vr", namespace.getPrefix());
                 }
             }
 
