@@ -274,7 +274,6 @@ public class CapabilitiesTest
             Document doc = XmlUtil.buildDocument(out.toString("UTF-8"));
             Element capabilities = doc.getRootElement();
             List<Namespace> namespaces = capabilities.getAdditionalNamespaces();
-            boolean found = false;
             for (Namespace namespace : namespaces)
             {
                 if (namespace.getURI().startsWith("http://www.ivoa.net/xml/VODataService/"))
@@ -288,8 +287,6 @@ public class CapabilitiesTest
                                         "vr", namespace.getPrefix());
                 }
             }
-
-            Assert.assertTrue("vs namespace declaration not found", found);
         }
         catch (Exception t)
         {
