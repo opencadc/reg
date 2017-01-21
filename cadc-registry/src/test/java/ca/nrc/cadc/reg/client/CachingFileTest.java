@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2011.                            (c) 2011.
+*  (c) 2017.                            (c) 2017.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,90 +69,148 @@
 
 package ca.nrc.cadc.reg.client;
 
-
-import java.net.URI;
-import java.util.NoSuchElementException;
+import java.io.File;
+import java.net.URL;
+import java.security.MessageDigest;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import ca.nrc.cadc.reg.Standards;
+import ca.nrc.cadc.util.HexUtil;
 import ca.nrc.cadc.util.Log4jInit;
-import ca.nrc.cadc.util.PropertiesReader;
 
-/**
- *
- * @author pdowler
- */
-public class LocalAuthorityTest
+public class CachingFileTest
 {
-    private static final Logger log = Logger.getLogger(LocalAuthorityTest.class);
 
-    private String NOT_FOUND_ID = "foo";
-    private String BASE_ID = Standards.CRED_DELEGATE_10.toString();
-    private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
-
+    private static Logger log = Logger.getLogger(RegistryClientTest.class);
     static
     {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
-    public LocalAuthorityTest() { }
-
-    private static String TEST_CONFIG_DIR = PropertiesReader.class.getName() + ".dir";
 
     @Test
-    public void testNotFound()
+    public void testCachingFile()
     {
         try
         {
-            System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+            File file = new File(System.getProperty("user.dir") + "/build/tmp/testCache");
+            // web site content changes on each request
+            URL url = new URL("https://www.uuidgenerator.net/");
+            // cache expires in 10 seconds
+            CachingFile cachingFile = new CachingFile(file, url, 10);
+            String md51 = getMd5Sum(cachingFile.getContent());
 
-            LocalAuthority loc = new LocalAuthority();
+            // wait 4 seconds
+            Thread.sleep(4000);
+            String md52 = getMd5Sum(cachingFile.getContent());
+            Assert.assertEquals(md51, md52);
 
-            try
-            {
-                URI uri = loc.getServiceURI(NOT_FOUND_ID);
-                Assert.fail("expected NoSuchElementException, found: " + uri);
-            }
-            catch(NoSuchElementException expected)
-            {
-                log.debug("caught expected exception: " + expected);
-            }
-
+            // wait 7 seconds
+            Thread.sleep(7000);
+            String md53 = getMd5Sum(cachingFile.getContent());
+            Assert.assertNotEquals(md51, md53);
         }
-        catch(Exception unexpected)
+        catch (Throwable t)
         {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
+            log.error("unexpected throwable", t);
+            Assert.fail("unexpected throwable: " + t.getMessage());
         }
-        finally
+    }
+
+    private String getMd5Sum(String s) throws Exception
+    {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        byte[] bytes = md.digest(s.getBytes());
+        return HexUtil.toHex(bytes);
+    }
+
+    @Test
+    public void testNullFile()
+    {
+        try
         {
-            System.clearProperty(TEST_CONFIG_DIR);
+            URL url = new URL("http://www.canfar.net");
+            new CachingFile(null, url);
+            Assert.fail("Expected exception");
+        }
+        catch (IllegalArgumentException e)
+        {
+            Assert.assertTrue(e.getMessage().contains("localCache"));
+            Assert.assertTrue(e.getMessage().contains("required"));
+        }
+        catch (Throwable t)
+        {
+            log.error("unexpected throwable", t);
+            Assert.fail("unexpected throwable: " + t.getMessage());
         }
     }
 
     @Test
-    public void testFound()
+    public void testNullURL()
     {
         try
         {
-            System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
-
-            LocalAuthority loc = new LocalAuthority();
-            URI uri = loc.getServiceURI(BASE_ID);
-            Assert.assertNotNull(uri);
-            Assert.assertEquals(SERVICE_URI, uri.toASCIIString());
+            File file = new File(System.getProperty("user.dir") + "/src/test/resources/LocalAuthority.properties");
+            new CachingFile(file, null);
+            Assert.fail("Expected exception");
         }
-        catch(Exception unexpected)
+        catch (IllegalArgumentException e)
         {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
+            Assert.assertTrue(e.getMessage().contains("remoteSource"));
+            Assert.assertTrue(e.getMessage().contains("required"));
         }
-        finally
+        catch (Throwable t)
         {
-            System.clearProperty(TEST_CONFIG_DIR);
+            log.error("unexpected throwable", t);
+            Assert.fail("unexpected throwable: " + t.getMessage());
         }
     }
+
+    @Test
+    public void testNotAFile()
+    {
+        try
+        {
+            File file = new File(System.getProperty("user.dir") + "/src/test/resources");
+            URL url = new URL("http://www.canfar.net");
+            new CachingFile(file, url);
+            Assert.fail("Expected exception");
+        }
+        catch (IllegalArgumentException e)
+        {
+            Assert.assertTrue(e.getMessage().contains("localCache"));
+            Assert.assertTrue(e.getMessage().contains("directory"));
+        }
+        catch (Throwable t)
+        {
+            log.error("unexpected throwable", t);
+            Assert.fail("unexpected throwable: " + t.getMessage());
+        }
+    }
+
+    @Test
+    public void testNonHttpScheme()
+    {
+        try
+        {
+            File file = new File(System.getProperty("user.dir") + "/src/test/resources/LocalAuthority.properties");
+            URL url = new URL("ftp://www.canfar.net");
+            new CachingFile(file, url);
+            Assert.fail("Expected exception");
+        }
+        catch (IllegalArgumentException e)
+        {
+            log.debug("IllegalArgument: " + e.getMessage());
+            Assert.assertTrue(e.getMessage().contains("remoteSource"));
+            Assert.assertTrue(e.getMessage().contains("scheme"));
+        }
+        catch (Throwable t)
+        {
+            log.error("unexpected throwable", t);
+            Assert.fail("unexpected throwable: " + t.getMessage());
+        }
+    }
+
 }

@@ -69,35 +69,22 @@
 
 package ca.nrc.cadc.reg.client;
 
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.TreeMap;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
 import ca.nrc.cadc.auth.AuthMethod;
-import ca.nrc.cadc.net.HttpDownload;
-import ca.nrc.cadc.profiler.Profiler;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.Capability;
@@ -149,12 +136,26 @@ public class RegistryClient
     private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
     private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
-    private static final int CAPABILITIES_CACHE_EXPIRY_MINUTES = 10;
     private static final String CONFIG_CACHE_DIR = "/.config/cadc-registry/";
+    private static final URL RESOURCE_CAPS_URL;
+    private static final String RESOURCE_CAPS_NAME = "resource-caps";
 
     private String hostname;
     private String shortHostname;
     private List<String>domainMatch = new ArrayList<String>();
+
+    static
+    {
+        try
+        {
+            RESOURCE_CAPS_URL = new URL("http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps");
+        }
+        catch (MalformedURLException e)
+        {
+            log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
+            throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());
+        }
+    }
 
     /**
      * Constructor. Uses a properties file called RegistryClient.properties found in the classpath.
@@ -211,143 +212,69 @@ public class RegistryClient
         }
     }
 
-    public Capabilities getCapabilities(final URI resourceID) throws IOException
+    /**
+     * Get the capabilities object for the resource identified
+     * by resourceID.
+     *
+     * @param resourceID Identifies the resource.
+     * @return The associated capabilities object.
+     * @throws IOException If the capabilities could not be determined.
+     */
+    public Capabilities getCapabilities(URI resourceID) throws IOException
     {
+        if (resourceID == null)
+        {
+            String msg = "Input parameter (resourceID) should not be null";
+            throw new IllegalArgumentException(msg);
+        }
 
-    	if (resourceID == null)
-    	{
-    		String msg = "Input parameter (resourceID) should not be null";
-    		throw new IllegalArgumentException(msg);
-    	}
+        // obey any url overrides
+        URL capSourceURL = mangleHostname(RESOURCE_CAPS_URL);
+        log.debug("Capabilities source URL: " + capSourceURL);
 
-    	// 1. Open existing file and check timestamp.
-    	// 2. If not expired, open file and return to user
-    	// 3. Otherwise: read capabilities from web service
-    	// 4. Write new capabilities to temp file
-    	// 5. Atomically move temp file to real file
-    	// 6. Return these refreshed capabilities
-
-    	CapabilitySource capSource = new CapabilitySource();
-    	if (!capSource.hasResource(resourceID.toString()))
-    	{
-    	    throw new IllegalArgumentException("Unknown service: " + resourceID);
-    	}
-
-    	File capabilitiesFile = null;
-    	try
-    	{
-    	    capabilitiesFile = this.getCapabilitiesFile(resourceID);
-    	}
-    	catch (Exception e)
-    	{
-    	    log.debug("Failed to construct capabilities cache file", e);
-    	    log.warn("Unable to cache registry: " + e.getMessage());
-    	    return capSource.getCapabilties(resourceID.toString());
-    	}
-
-    	boolean cacheExists = capabilitiesFile.exists() && capabilitiesFile.canRead();
-    	if (cacheExists && !hasExpired(capabilitiesFile))
-    	{
-	        // read from cached configuration
-	        log.debug("Reading capabilities for " + resourceID + " from cached " +
-	            "configuration: " + capabilitiesFile);
-	        try
-	        {
-    	        Capabilities capabilities = getCachedCapabilities(capabilitiesFile);
-    	        return capabilities;
-	        }
-	        catch (Exception e)
-	        {
-	            log.warn("Failed to reach cached capabilites file: " + capabilitiesFile);
-	            log.warn("Attempting to read capabilities from source.");
-	        }
-    	}
-
-    	// read the capabilities from the web service
-    	try
-    	{
-    	    // make sure the correct directory exists
-    	    File dir = getConfigDirectory(resourceID);
-
-    	    // create a temp file in the directory
-    	    File tmpFile = File.createTempFile(UUID.randomUUID().toString(), null, dir);
-
-    	    // write the contents to the file
-    	    FileOutputStream fos = new FileOutputStream(tmpFile);
-    	    capSource.loadCapabiltiesDoc(resourceID.toString(), fos);
-    	    fos.close();
-
-    	    // move the file to the real location
-    	    Path source = Paths.get(tmpFile.getAbsolutePath());
-    	    Path dest = Paths.get(capabilitiesFile.getAbsolutePath());
-
-    	    try
-    	    {
-    	        Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-    	        log.debug("Replaced capabilities file " + capabilitiesFile + " with fresh copy atomically.");
-    	    }
-    	    catch (AtomicMoveNotSupportedException e)
-    	    {
-    	        log.warn("Atomic file replacement not supported", e);
-    	        Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING);
-    	        log.debug("Replaced capabilities file " + capabilitiesFile + " with fresh copy (not atomically).");
-    	    }
-
-    	    return this.getCachedCapabilities(capabilitiesFile);
-    	}
-    	catch (Exception e)
-    	{
-    	    log.warn("Failed to cache capabilities to file: " + capabilitiesFile, e);
-    	    // for any error return the cached copy if available, otherwise return
-    	    // the capabilities from source
-    	    if (cacheExists)
-    	    {
-    	        log.warn("Returning expired cached capabilities.");
-    	        return this.getCachedCapabilities(capabilitiesFile);
-    	    }
-    	    else
-    	    {
-    	        log.info("Attemping to return capabilities from source.");
-    	        return capSource.getCapabilties(resourceID.toString());
-    	    }
-    	}
-    }
-
-    private Capabilities getCachedCapabilities(File capabilitiesFile) throws IOException
-    {
-        // read from cached configuration
-        Profiler profiler = new Profiler(RegistryClient.class);
-        URL fileURL = new URL("file://" + capabilitiesFile.getAbsolutePath());
-        log.debug("Reading cached capabilities from " + fileURL);
-        InputStream in = fileURL.openStream();
+        File capCacheFile = getCapSourceCacheFile();
+        log.debug("Capabilities cache file: " + capCacheFile);
+        CachingFile cachedCapSource = new CachingFile(capCacheFile, capSourceURL);
+        String map = cachedCapSource.getContent();
+        InputStream mapStream = new ByteArrayInputStream(map.getBytes("UTF-8"));
+        MultiValuedProperties mvp = new MultiValuedProperties();
         try
         {
-            CapabilitiesReader capReader = new CapabilitiesReader();
-            return capReader.read(in);
+            mvp.load(mapStream);
         }
-        finally
+        catch (Exception e)
         {
-            if (in != null)
-            {
-                try
-                {
-                    in.close();
-                }
-                catch(Throwable t)
-                {
-                    log.warn("failed to close " + fileURL, t);
-                }
-            }
-            profiler.checkpoint("getCachedCapabilities");
+            throw new RuntimeException("failed to load capabilities source map from " + capSourceURL, e);
         }
-    }
 
-    private boolean hasExpired(File capabilitiesFile)
-    {
-        long lastModified = capabilitiesFile.lastModified();
-        long expiryMillis = CAPABILITIES_CACHE_EXPIRY_MINUTES * 60 * 1000;
-        long now = System.currentTimeMillis();
-        return ((now - lastModified) > expiryMillis);
+        List<String> values = mvp.getProperty(resourceID.toString());
+        if (values == null || values.isEmpty())
+        {
+            throw new IllegalArgumentException("Unknown service: " + resourceID);
+        }
+        if (values.size() > 1)
+        {
+            throw new RuntimeException("Multiple capability locations for " + resourceID);
+        }
+        URL serviceCapsURL = null;
+        try
+        {
+            serviceCapsURL = new URL(values.get(0));
+        }
+        catch (MalformedURLException e)
+        {
+            throw new RuntimeException("URL for " + resourceID + " at " + capSourceURL + " is malformed", e);
+        }
+
+        // obey any url overrides
+        serviceCapsURL = mangleHostname(serviceCapsURL);
+        log.debug("Service capabilities URL: " + serviceCapsURL);
+
+        File capabilitiesFile = this.getCapabilitiesCacheFile(resourceID);
+        CachingFile cachedCapabilities = new CachingFile(capabilitiesFile, serviceCapsURL);
+        String xml = cachedCapabilities.getContent();
+        CapabilitiesReader capReader = new CapabilitiesReader();
+        return capReader.read(xml);
     }
 
     /**
@@ -364,90 +291,71 @@ public class RegistryClient
     @Deprecated
     public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod)
     {
-    	if (resourceIdentifier == null || standardID == null || authMethod == null)
-    	{
-    		String msg = "No input parameters should be null";
-    		throw new IllegalArgumentException(msg);
-    	}
+        if (resourceIdentifier == null || standardID == null || authMethod == null)
+        {
+            String msg = "No input parameters should be null";
+            throw new IllegalArgumentException(msg);
+        }
 
-    	URL url = null;
-    	log.debug("resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID + ", authMethod=" + authMethod);
-    	Capabilities caps = null;
-    	try
-    	{
-    	    caps = this.getCapabilities(resourceIdentifier);
-    	}
-    	catch (IOException e)
-    	{
-    	    throw new RuntimeException("Could not obtain service URL", e);
-    	}
+        URL url = null;
+        log.debug("resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID + ", authMethod=" + authMethod);
+        Capabilities caps = null;
+        try
+        {
+            caps = this.getCapabilities(resourceIdentifier);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Could not obtain service URL", e);
+        }
 
-    	// locate the associated capability
-    	Capability cap = caps.findCapability(standardID);
+        // locate the associated capability
+        Capability cap = caps.findCapability(standardID);
 
-    	if (cap != null)
-    	{
-    	    // locate the associated interface, throws RuntimeException if more than
-    	    // one interface match
-    	    Interface intf = cap.findInterface(Standards.getSecurityMethod(authMethod));
+        if (cap != null)
+        {
+            // locate the associated interface, throws RuntimeException if more than
+            // one interface match
+            Interface intf = cap.findInterface(Standards.getSecurityMethod(authMethod));
 
-    	    if (intf != null)
-    	    {
-    	        URL intfURL = intf.getAccessURL().getURL();
+            if (intf != null)
+            {
+                URL intfURL = intf.getAccessURL().getURL();
 
-    	        try
-    	        {
-	    	        url = mangleHostname(intfURL);
-    	        }
-    	        catch(MalformedURLException ex)
-    	        {
-    	        	String prefix = "resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID;
-    	        	String msg = prefix + ", malformed accessURL ";
-    	        	throw new RuntimeException(msg, ex);
-    	        }
-    	    }
-    	}
+                try
+                {
+                    url = mangleHostname(intfURL);
+                }
+                catch(MalformedURLException ex)
+                {
+                    String prefix = "resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID;
+                    String msg = prefix + ", malformed accessURL ";
+                    throw new RuntimeException(msg, ex);
+                }
+            }
+        }
 
-    	// return associated access URL, mangle it if necessary
+        // return associated access URL, mangle it if necessary
         return url;
     }
 
-    private File getConfigDirectory(URI resourceID)
+    private File getCapSourceCacheFile()
     {
-        Profiler profiler = new Profiler(RegistryClient.class);
-        String resourceCacheDir = getCacheDirectory(resourceID);
-        File dir = new File(resourceCacheDir);
-        try
-        {
-            if (!dir.exists())
-            {
-                if (!dir.mkdirs())
-                {
-                    throw new RuntimeException("Failed to create directory: " + dir);
-                }
-                log.debug("Created directory " + resourceCacheDir);
-            }
-            return dir;
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Failed to create directory: " + dir, e);
-        }
-        finally
-        {
-            profiler.checkpoint("createConfigDirectory");
-        }
+        String cacheBaseDir = getBaseCacheDirectory();
+        String path = "/" + RESOURCE_CAPS_NAME;
+        File file = new File(cacheBaseDir + path);
+        return file;
     }
 
-    private File getCapabilitiesFile(URI resourceID)
+    private File getCapabilitiesCacheFile(URI resourceID)
     {
-        String resourceCacheDir = getCacheDirectory(resourceID);
+        String resourceCacheDir = getBaseCacheDirectory() + resourceID.getAuthority();
         String path = resourceID.getPath();
         File file =  new File(resourceCacheDir, path);
         return file;
     }
 
-    private String getCacheDirectory(URI resourceID)
+    private String getBaseCacheDirectory()
     {
         String userHome = System.getProperty("user.home");
         log.debug("User home: " + userHome);
@@ -455,48 +363,48 @@ public class RegistryClient
         {
             throw new RuntimeException("No home directory");
         }
-        return userHome + CONFIG_CACHE_DIR + resourceID.getAuthority();
+        return userHome + CONFIG_CACHE_DIR;
     }
 
     public URL mangleHostname(final URL url) throws MalformedURLException
     {
-    	URL retURL = url;
+        URL retURL = url;
 
-    	log.debug("mangling URL: " + url);
+        log.debug("mangling URL: " + url);
         if (this.hostname != null || this.shortHostname != null)
         {
             String domain = getDomain(url.getHost());
 
-        	if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain))
-	        {
-	            StringBuilder sb = new StringBuilder();
-	            sb.append(url.getProtocol());
-	            sb.append("://");
+            if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain))
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append(url.getProtocol());
+                sb.append("://");
 
-	            if (this.shortHostname != null)
-	            {
-	                sb.append(this.shortHostname);
-	                if (domain != null)
-	                {
-	                    sb.append(".").append(domain);
-	                }
-	            }
-	            else
-	            {
-	                sb.append(this.hostname);
-	            }
+                if (this.shortHostname != null)
+                {
+                    sb.append(this.shortHostname);
+                    if (domain != null)
+                    {
+                        sb.append(".").append(domain);
+                    }
+                }
+                else
+                {
+                    sb.append(this.hostname);
+                }
 
-	            int p = url.getPort();
+                int p = url.getPort();
 
-	            if (p > 0 && p != url.getDefaultPort())
-	            {
-	                sb.append(":");
-	                sb.append(p);
-	            }
+                if (p > 0 && p != url.getDefaultPort())
+                {
+                    sb.append(":");
+                    sb.append(p);
+                }
 
-	            sb.append(url.getPath());
-	            retURL = new URL(sb.toString());
-	        }
+                sb.append(url.getPath());
+                retURL = new URL(sb.toString());
+            }
         }
 
         log.debug("mangled URL: " + retURL);
@@ -521,102 +429,4 @@ public class RegistryClient
         return hostname.substring(dotIndex + 1);
     }
 
-    /**
-    *
-    * This class retrieves the capabilities from the web services
-    * defined in CapabilitySource.config.
-    *
-    * @author majorb
-    */
-   public class CapabilitySource
-   {
-       private final String MAP_FILE = CapabilitySource.class.getSimpleName() + ".config";
-
-       private Map<String,String> capabilityMap = new TreeMap<String,String>();
-
-       public CapabilitySource()
-       {
-           try
-           {
-               MultiValuedProperties mvp = new MultiValuedProperties();
-               URL url = CapabilitySource.class.getClassLoader().getResource(MAP_FILE);
-               if (url == null)
-                   throw new RuntimeException("failed to find " + MAP_FILE + " in classpath");
-
-               mvp.load(url.openStream());
-
-               for (String std : mvp.keySet())
-               {
-                   List<String> values = mvp.getProperty(std);
-                   if (values.size() > 1)
-                       throw new IllegalStateException("found " + values.size() + " values for " + std);
-                   if (values.isEmpty())
-                   {
-                       log.debug(std + " has no value, skipping");
-                   }
-                   else
-                   {
-                       String val = values.get(0);
-                       log.debug("capabilityMap: " + std + " -> " + val);
-                       capabilityMap.put(std, val);
-                   }
-               }
-           }
-           catch(IOException ex)
-           {
-               throw new RuntimeException("failed to read " + MAP_FILE, ex);
-           }
-       }
-
-       public boolean hasResource(String resourceID)
-       {
-           return capabilityMap.containsKey(resourceID);
-       }
-
-       public Capabilities getCapabilties(String resourceID) throws IOException
-       {
-           ByteArrayOutputStream out = new ByteArrayOutputStream();
-           loadCapabiltiesDoc(resourceID, out);
-           String capDoc = out.toString();
-           CapabilitiesReader capReader = new CapabilitiesReader();
-           try
-           {
-               return capReader.read(capDoc);
-           }
-           catch (Exception e)
-           {
-               String message = "Failed to read document for resource: " + resourceID;
-               log.debug(message, e);
-               throw new RuntimeException(message, e);
-           }
-       }
-
-       public void loadCapabiltiesDoc(String resourceID, OutputStream dest) throws IOException
-       {
-           Profiler profiler = new Profiler(CapabilitySource.class);
-           try
-           {
-               String capLocation = capabilityMap.get(resourceID);
-
-               if (capLocation == null)
-                   throw new NoSuchElementException("not found: " + resourceID);
-
-               URL url = new URL(capLocation);
-               url = mangleHostname(url);
-
-               HttpDownload download = new HttpDownload(url, dest);
-               download.run();
-
-               if (download.getThrowable() != null)
-               {
-                   log.warn("Could not get capabilities from " + url, download.getThrowable());
-                   throw new IOException(download.getThrowable());
-               }
-           }
-           finally
-           {
-               profiler.checkpoint("loadCapabilitiesDoc");
-           }
-       }
-   }
 }
