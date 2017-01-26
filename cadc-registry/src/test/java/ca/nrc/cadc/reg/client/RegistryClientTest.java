@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2010.                            (c) 2010.
+*  (c) 2017.                            (c) 2017.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -93,10 +93,10 @@ import ca.nrc.cadc.util.Log4jInit;
  */
 public class RegistryClientTest
 {
-private static Logger log = Logger.getLogger(RegistryClientTest.class);
+    private static Logger log = Logger.getLogger(RegistryClientTest.class);
     static
     {
-        Log4jInit.setLevel("ca.nrc.cadc", Level.INFO);
+        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
 
     //static String GMS_URI = "ivo://cadc.nrc.ca/gms";
@@ -125,7 +125,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetCapabilitiesWithNullResourceidentifier()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -158,7 +158,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetCapabilitiesMissingPropertyValue()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -191,7 +191,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetCapabilitiesHappyPath()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -216,7 +216,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetServiceURLWithNullAuthMethod()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -251,7 +251,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetServiceURLWithNullStandardID()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -286,7 +286,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetServiceURLWithNullResourceID()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -322,7 +322,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     {
     	// save user.home environment
     	String currentUserHome = System.getProperty("user.home");
-    	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+    	System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -351,7 +351,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetServiceURLModifyLocal()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	try
     	{
@@ -384,7 +384,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     public void testGetServiceURLModifyHost()
     {
         String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	try
     	{
@@ -417,7 +417,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     {
     	// save user.home environment
     	String currentUserHome = System.getProperty("user.home");
-    	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+    	System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	try
     	{
@@ -450,7 +450,7 @@ private static Logger log = Logger.getLogger(RegistryClientTest.class);
     {
     	// save user.home environment
     	String currentUserHome = System.getProperty("user.home");
-    	System.setProperty("user.home", System.getProperty("user.dir") + "/test");
+    	System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
     	try
     	{
