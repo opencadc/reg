@@ -143,6 +143,7 @@ public class RegistryClient
     private String hostname;
     private String shortHostname;
     private List<String>domainMatch = new ArrayList<String>();
+    private URL resourceCapsURL;
 
     static
     {
@@ -162,6 +163,16 @@ public class RegistryClient
      */
     public RegistryClient()
     {
+        this(RESOURCE_CAPS_URL);
+    }
+
+    public RegistryClient(URL resourceCapsURL)
+    {
+        if (resourceCapsURL == null)
+        {
+            throw new IllegalArgumentException("resourceCapsURL cannot be null");
+        }
+        this.resourceCapsURL = resourceCapsURL;
         init();
     }
 
@@ -229,7 +240,7 @@ public class RegistryClient
         }
 
         // obey any url overrides
-        URL capSourceURL = mangleHostname(RESOURCE_CAPS_URL);
+        URL capSourceURL = mangleHostname(resourceCapsURL);
         log.debug("Capabilities source URL: " + capSourceURL);
 
         File capCacheFile = getCapSourceCacheFile();
