@@ -87,6 +87,7 @@ import org.apache.log4j.Logger;
 
 import ca.nrc.cadc.net.HttpDownload;
 import ca.nrc.cadc.profiler.Profiler;
+import java.io.FileInputStream;
 
 /**
  * This class will handle the caching of a file based on a remote source.
@@ -285,13 +286,12 @@ public class CachingFile
     {
         // read from cached configuration
         Profiler profiler = new Profiler(CachingFile.class);
-        URL fileURL = new URL("file://" + localCache.getAbsolutePath());
-        log.debug("Reading cache from " + fileURL);
+        log.debug("Reading cache from " + localCache.getAbsolutePath());
         InputStream in = null;
         ByteArrayOutputStream out = null;
         try
         {
-            in = fileURL.openStream();
+            in = new FileInputStream(localCache);
             out = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int length;

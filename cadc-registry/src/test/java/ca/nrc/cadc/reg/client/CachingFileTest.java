@@ -95,7 +95,8 @@ public class CachingFileTest
     {
         try
         {
-            File file = new File(System.getProperty("user.dir") + "/build/tmp/testCache");
+            // make sure the cache is on alocal filesystem or small NFS time diff causes it to fail
+            File file = new File(System.getProperty("tmp.dir") + "/" + CachingFileTest.class.getSimpleName()+".cache");
             // web site content changes on each request
             URL url = new URL("https://www.uuidgenerator.net/");
             // cache expires in 10 seconds
