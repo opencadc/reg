@@ -358,14 +358,10 @@ public class RegistryClientTest
             System.setProperty(RegistryClient.class.getName() + ".local", "true");
             RegistryClient rc = new RegistryClient();
             String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-            URL expected = new URL("https://" + localhost + "/tap/sync");
-
-    		URI resourceID = new URI(RESOURCE_ID);
-    		URI standardID = new URI(STANDARD_ID);
-    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
-    		URL serviceURL = rc.getServiceURL(resourceID, standardID, authMethod);
-    		Assert.assertNotNull("Service URL should not be null", serviceURL);
-    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+			URL expected = new URL("http://" + localhost + "/reg/resource-caps");
+            URL resourceCapsURL = rc.getResourceCapsURL();
+    		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+    		Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
     	}
     	catch (Throwable t)
     	{
@@ -423,14 +419,11 @@ public class RegistryClientTest
     	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             RegistryClient rc = new RegistryClient();
-            String expected = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync";
+            String expected = "http://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
 
-    		URI resourceID = new URI(RESOURCE_ID);
-    		URI standardID = new URI(STANDARD_ID);
-    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
-    		URL serviceURL = rc.getServiceURL(resourceID, standardID, authMethod);
-    		Assert.assertNotNull("Service URL should not be null", serviceURL);
-    		Assert.assertEquals("got an incorrect URL", expected, serviceURL.toExternalForm());
+            URL resourceCapsURL = rc.getResourceCapsURL();
+    		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+    		Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL.toExternalForm());
     	}
     	catch (Throwable t)
     	{
@@ -457,14 +450,11 @@ public class RegistryClientTest
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "cadc-ccda.hia-iha.nrc-cnrc.gc.ca,other.com");
             RegistryClient rc = new RegistryClient();
-            String expected1 = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync";
+            String expected1 = "http://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
 
-    		URI resourceID1 = new URI(RESOURCE_ID);
-    		URI standardID1 = new URI(STANDARD_ID);
-    		AuthMethod authMethod1 = AuthMethod.getAuthMethod("cert");
-    		URL serviceURL1 = rc.getServiceURL(resourceID1, standardID1, authMethod1);
-    		Assert.assertNotNull("Service URL should not be null", serviceURL1);
-    		Assert.assertEquals("got an incorrect URL", expected1, serviceURL1.toExternalForm());
+            URL resourceCapsURL = rc.getResourceCapsURL();
+    		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+    		Assert.assertEquals("got an incorrect URL", expected1, resourceCapsURL.toExternalForm());
     	}
     	catch (Throwable t)
     	{

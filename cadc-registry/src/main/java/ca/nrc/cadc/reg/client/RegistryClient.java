@@ -172,8 +172,18 @@ public class RegistryClient
         {
             throw new IllegalArgumentException("resourceCapsURL cannot be null");
         }
-        this.resourceCapsURL = resourceCapsURL;
         init();
+        try
+        {
+            log.debug("Original resourceCapURL: " + resourceCapsURL);
+            this.resourceCapsURL = mangleHostname(resourceCapsURL);
+            log.debug("Mangled resourceCapURL: " + this.resourceCapsURL);
+        }
+        catch (MalformedURLException e)
+        {
+            log.error("Error transforming resource-caps URL", e);
+            throw new RuntimeException(e);
+        }
     }
 
     private void init()
@@ -239,13 +249,9 @@ public class RegistryClient
             throw new IllegalArgumentException(msg);
         }
 
-        // obey any url overrides
-        URL capSourceURL = mangleHostname(resourceCapsURL);
-        log.debug("Capabilities source URL: " + capSourceURL);
-
         File capCacheFile = getCapSourceCacheFile();
         log.debug("Capabilities cache file: " + capCacheFile);
-        CachingFile cachedCapSource = new CachingFile(capCacheFile, capSourceURL);
+        CachingFile cachedCapSource = new CachingFile(capCacheFile, resourceCapsURL);
         String map = cachedCapSource.getContent();
         InputStream mapStream = new ByteArrayInputStream(map.getBytes("UTF-8"));
         MultiValuedProperties mvp = new MultiValuedProperties();
@@ -255,7 +261,7 @@ public class RegistryClient
         }
         catch (Exception e)
         {
-            throw new RuntimeException("failed to load capabilities source map from " + capSourceURL, e);
+            throw new RuntimeException("failed to load capabilities source map from " + resourceCapsURL, e);
         }
 
         List<String> values = mvp.getProperty(resourceID.toString());
@@ -274,11 +280,9 @@ public class RegistryClient
         }
         catch (MalformedURLException e)
         {
-            throw new RuntimeException("URL for " + resourceID + " at " + capSourceURL + " is malformed", e);
+            throw new RuntimeException("URL for " + resourceID + " at " + resourceCapsURL + " is malformed", e);
         }
 
-        // obey any url overrides
-        serviceCapsURL = mangleHostname(serviceCapsURL);
         log.debug("Service capabilities URL: " + serviceCapsURL);
 
         File capabilitiesFile = this.getCapabilitiesCacheFile(resourceID);
@@ -331,18 +335,7 @@ public class RegistryClient
 
             if (intf != null)
             {
-                URL intfURL = intf.getAccessURL().getURL();
-
-                try
-                {
-                    url = mangleHostname(intfURL);
-                }
-                catch(MalformedURLException ex)
-                {
-                    String prefix = "resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID;
-                    String msg = prefix + ", malformed accessURL ";
-                    throw new RuntimeException(msg, ex);
-                }
+                url = intf.getAccessURL().getURL();
             }
         }
 
@@ -438,6 +431,11 @@ public class RegistryClient
             return null;
         }
         return hostname.substring(dotIndex + 1);
+    }
+
+    protected URL getResourceCapsURL()
+    {
+        return resourceCapsURL;
     }
 
 }
