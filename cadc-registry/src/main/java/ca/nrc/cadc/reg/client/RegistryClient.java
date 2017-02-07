@@ -144,6 +144,7 @@ public class RegistryClient
     private String shortHostname;
     private List<String>domainMatch = new ArrayList<String>();
     private URL resourceCapsURL;
+    private String capsDomain;
 
     static
     {
@@ -172,21 +173,10 @@ public class RegistryClient
         {
             throw new IllegalArgumentException("resourceCapsURL cannot be null");
         }
-        init();
-        try
-        {
-            log.debug("Original resourceCapURL: " + resourceCapsURL);
-            this.resourceCapsURL = mangleHostname(resourceCapsURL);
-            log.debug("Mangled resourceCapURL: " + this.resourceCapsURL);
-        }
-        catch (MalformedURLException e)
-        {
-            log.error("Error transforming resource-caps URL", e);
-            throw new RuntimeException(e);
-        }
+        init(resourceCapsURL);
     }
 
-    private void init()
+    private void init(URL resourceCapsURL)
     {
         try
         {
@@ -225,11 +215,24 @@ public class RegistryClient
                 String[] doms = domainMatchP.split(",");
                 this.domainMatch.addAll(Arrays.asList(doms));
             }
+
+            log.debug("Original resourceCapURL: " + resourceCapsURL);
+            this.resourceCapsURL = mangleHostname(resourceCapsURL);
+            log.debug("Mangled resourceCapURL: " + this.resourceCapsURL);
+            if (!resourceCapsURL.equals(this.resourceCapsURL))
+            {
+                capsDomain = "alt-domains/" + this.resourceCapsURL.getHost();
+            }
         }
         catch(UnknownHostException ex)
         {
             log.warn("failed to find localhost name via name resolution (" + ex.toString() + "): using localhost");
             this.hostname = "localhost";
+        }
+        catch (MalformedURLException e)
+        {
+            log.error("Error transforming resource-caps URL", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -346,15 +349,26 @@ public class RegistryClient
     private File getCapSourceCacheFile()
     {
         String cacheBaseDir = getBaseCacheDirectory();
+        if (this.capsDomain != null)
+        {
+            cacheBaseDir += "/" + this.capsDomain;
+        }
         String path = "/" + RESOURCE_CAPS_NAME;
+        log.debug("Caching file [" + path + "] in dir [" + cacheBaseDir + "]");
         File file = new File(cacheBaseDir + path);
         return file;
     }
 
     private File getCapabilitiesCacheFile(URI resourceID)
     {
-        String resourceCacheDir = getBaseCacheDirectory() + resourceID.getAuthority();
+        String baseCacheDir = getBaseCacheDirectory();
+        String resourceCacheDir = baseCacheDir + resourceID.getAuthority();
+        if (this.capsDomain != null)
+        {
+            resourceCacheDir = baseCacheDir + this.getCapsDomain() + "/" + resourceID.getAuthority();
+        }
         String path = resourceID.getPath();
+        log.debug("Caching file [" + path + "] in dir [" + resourceCacheDir + "]");
         File file =  new File(resourceCacheDir, path);
         return file;
     }
@@ -436,6 +450,11 @@ public class RegistryClient
     protected URL getResourceCapsURL()
     {
         return resourceCapsURL;
+    }
+
+    protected String getCapsDomain()
+    {
+        return capsDomain;
     }
 
 }

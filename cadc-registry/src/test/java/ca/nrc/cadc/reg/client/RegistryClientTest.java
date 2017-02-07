@@ -334,6 +334,7 @@ public class RegistryClientTest
     		URL serviceURL = rc.getServiceURL(resourceID, standardID, authMethod);
     		Assert.assertNotNull("Service URL should not be null", serviceURL);
     		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+            Assert.assertNull("wrong caps domain", rc.getCapsDomain());
     	}
     	catch (Throwable t)
     	{
@@ -362,6 +363,7 @@ public class RegistryClientTest
             URL resourceCapsURL = rc.getResourceCapsURL();
     		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
     		Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
+            Assert.assertEquals("wrong caps domain", "alt-domains/" + localhost, rc.getCapsDomain());
     	}
     	catch (Throwable t)
     	{
@@ -424,6 +426,7 @@ public class RegistryClientTest
             URL resourceCapsURL = rc.getResourceCapsURL();
     		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
     		Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL.toExternalForm());
+            Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
     	}
     	catch (Throwable t)
     	{
@@ -455,6 +458,7 @@ public class RegistryClientTest
             URL resourceCapsURL = rc.getResourceCapsURL();
     		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
     		Assert.assertEquals("got an incorrect URL", expected1, resourceCapsURL.toExternalForm());
+    		Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
     	}
     	catch (Throwable t)
     	{
