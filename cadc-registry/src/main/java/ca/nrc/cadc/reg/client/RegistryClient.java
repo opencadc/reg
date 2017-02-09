@@ -136,7 +136,7 @@ public class RegistryClient
     private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
     private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
-    private static final String CONFIG_CACHE_DIR = "/.config/cadc-registry/";
+    private static final String CONFIG_CACHE_DIR = "cadc-registry";
     private static final URL RESOURCE_CAPS_URL;
     private static final String RESOURCE_CAPS_NAME = "resource-caps";
 
@@ -348,14 +348,14 @@ public class RegistryClient
 
     private File getCapSourceCacheFile()
     {
-        String cacheBaseDir = getBaseCacheDirectory();
+        String baseCacheDir = getBaseCacheDirectory();
         if (this.capsDomain != null)
         {
-            cacheBaseDir += "/" + this.capsDomain;
+            baseCacheDir += "/" + this.capsDomain;
         }
         String path = "/" + RESOURCE_CAPS_NAME;
-        log.debug("Caching file [" + path + "] in dir [" + cacheBaseDir + "]");
-        File file = new File(cacheBaseDir + path);
+        log.debug("Caching file [" + path + "] in dir [" + baseCacheDir + "]");
+        File file = new File(baseCacheDir + path);
         return file;
     }
 
@@ -375,13 +375,24 @@ public class RegistryClient
 
     private String getBaseCacheDirectory()
     {
-        String userHome = System.getProperty("user.home");
-        log.debug("User home: " + userHome);
-        if (userHome == null)
+        String tmpDir = System.getProperty("java.io.tmpdir");
+        String userName = System.getProperty("user.name");
+        if (tmpDir == null)
         {
-            throw new RuntimeException("No home directory");
+            throw new RuntimeException("No tmp system dir defined.");
         }
-        return userHome + CONFIG_CACHE_DIR;
+        String sep = System.getProperty("file.separator");
+        String baseCacheDir = null;
+        if (userName == null)
+        {
+            baseCacheDir = tmpDir + sep + CONFIG_CACHE_DIR + sep;
+        }
+        else
+        {
+            baseCacheDir = tmpDir + sep + userName + sep + CONFIG_CACHE_DIR + sep;
+        }
+        log.debug("Base cache dir: " + baseCacheDir);
+        return baseCacheDir;
     }
 
     public URL mangleHostname(final URL url) throws MalformedURLException
