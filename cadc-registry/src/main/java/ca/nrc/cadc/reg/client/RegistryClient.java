@@ -139,6 +139,7 @@ public class RegistryClient
     private static final String CONFIG_CACHE_DIR = "cadc-registry";
     private static final URL RESOURCE_CAPS_URL;
     private static final String RESOURCE_CAPS_NAME = "resource-caps";
+    private static String FILE_SEP;
 
     private String hostname;
     private String shortHostname;
@@ -157,6 +158,8 @@ public class RegistryClient
             log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
             throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());
         }
+
+        FILE_SEP = System.getProperty("file.separator");
     }
 
     /**
@@ -351,9 +354,9 @@ public class RegistryClient
         String baseCacheDir = getBaseCacheDirectory();
         if (this.capsDomain != null)
         {
-            baseCacheDir += "/" + this.capsDomain;
+            baseCacheDir += FILE_SEP + this.capsDomain;
         }
-        String path = "/" + RESOURCE_CAPS_NAME;
+        String path = FILE_SEP + RESOURCE_CAPS_NAME;
         log.debug("Caching file [" + path + "] in dir [" + baseCacheDir + "]");
         File file = new File(baseCacheDir + path);
         return file;
@@ -365,7 +368,7 @@ public class RegistryClient
         String resourceCacheDir = baseCacheDir + resourceID.getAuthority();
         if (this.capsDomain != null)
         {
-            resourceCacheDir = baseCacheDir + this.getCapsDomain() + "/" + resourceID.getAuthority();
+            resourceCacheDir = baseCacheDir + this.getCapsDomain() + FILE_SEP + resourceID.getAuthority();
         }
         String path = resourceID.getPath();
         log.debug("Caching file [" + path + "] in dir [" + resourceCacheDir + "]");
@@ -381,15 +384,14 @@ public class RegistryClient
         {
             throw new RuntimeException("No tmp system dir defined.");
         }
-        String sep = System.getProperty("file.separator");
         String baseCacheDir = null;
         if (userName == null)
         {
-            baseCacheDir = tmpDir + sep + CONFIG_CACHE_DIR + sep;
+            baseCacheDir = tmpDir + FILE_SEP + CONFIG_CACHE_DIR + FILE_SEP;
         }
         else
         {
-            baseCacheDir = tmpDir + sep + userName + sep + CONFIG_CACHE_DIR + sep;
+            baseCacheDir = tmpDir + FILE_SEP + userName + FILE_SEP + CONFIG_CACHE_DIR + FILE_SEP;
         }
         log.debug("Base cache dir: " + baseCacheDir);
         return baseCacheDir;
