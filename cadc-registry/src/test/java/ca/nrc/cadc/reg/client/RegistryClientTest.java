@@ -157,8 +157,8 @@ public class RegistryClientTest
     @Test
     public void testGetCapabilitiesMissingPropertyValue()
     {
-        String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -182,16 +182,16 @@ public class RegistryClientTest
 		}
         finally
         {
-            // restore user.home environment
-            System.setProperty("user.home", currentUserHome);
+            // restore java.io.tmpdir environment
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
     public void testGetCapabilitiesHappyPath()
     {
-        String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -207,16 +207,16 @@ public class RegistryClientTest
 		}
         finally
         {
-            // restore user.home environment
-            System.setProperty("user.home", currentUserHome);
+            // restore java.io.tmpdir environment
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
     public void testGetServiceURLWithNullAuthMethod()
     {
-        String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -242,16 +242,16 @@ public class RegistryClientTest
 		}
         finally
         {
-            // restore user.home environment
-            System.setProperty("user.home", currentUserHome);
+            // restore java.io.tmpdir environment
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
     public void testGetServiceURLWithNullStandardID()
     {
-        String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -277,16 +277,16 @@ public class RegistryClientTest
 		}
         finally
         {
-            // restore user.home environment
-            System.setProperty("user.home", currentUserHome);
+            // restore java.io.tmpdir environment
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
     public void testGetServiceURLWithNullResourceID()
     {
-        String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -312,17 +312,17 @@ public class RegistryClientTest
 		}
         finally
         {
-            // restore user.home environment
-            System.setProperty("user.home", currentUserHome);
+            // restore java.io.tmpdir environment
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
     public void testGetServiceURLHappyPath()
     {
-    	// save user.home environment
-    	String currentUserHome = System.getProperty("user.home");
-    	System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+    	// save java.io.tmpdir environment
+    	String currentTmpDir = System.getProperty("java.io.tmpdir");
+    	System.setProperty("java.io.tmpdir", System.getProperty("user.dir") + "/build/tmp");
 
     	RegistryClient rc = new RegistryClient();
     	try
@@ -343,16 +343,16 @@ public class RegistryClientTest
 		}
     	finally
     	{
-    		// restore user.home environment
-    		System.setProperty("user.home", currentUserHome);
+    		// restore java.io.tmpdir environment
+    		System.setProperty("java.io.tmpdir", currentTmpDir);
     	}
     }
 
     @Test
     public void testGetServiceURLModifyLocal()
     {
-        String currentUserHome = System.getProperty("user.home");
-        System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	try
     	{
@@ -374,7 +374,7 @@ public class RegistryClientTest
         {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".local", "false");
-            System.setProperty("user.home", currentUserHome);
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
@@ -413,9 +413,9 @@ public class RegistryClientTest
     @Test
     public void testGetServiceURLModifyShortHostname()
     {
-    	// save user.home environment
-    	String currentUserHome = System.getProperty("user.home");
-    	System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+    	// save java.io.tmpdir environment
+    	String currentTmpDir = System.getProperty("java.io.tmpdir");
+    	System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	try
     	{
@@ -437,16 +437,16 @@ public class RegistryClientTest
         {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
-    		System.setProperty("user.home", currentUserHome);
+    		System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
     public void testGetServiceURLMatchDomain()
     {
-    	// save user.home environment
-    	String currentUserHome = System.getProperty("user.home");
-    	System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
+    	// save java.io.tmpdir environment
+    	String currentTmpDir = System.getProperty("java.io.tmpdir");
+    	System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
     	try
     	{
@@ -470,7 +470,7 @@ public class RegistryClientTest
             // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "");
-    		System.setProperty("user.home", currentUserHome);
+    		System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 }
