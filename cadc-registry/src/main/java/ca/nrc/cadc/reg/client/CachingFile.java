@@ -179,10 +179,11 @@ public class CachingFile
         {
             if (!dir.exists())
             {
-                if (!dir.mkdirs())
-                {
-                    throw new RuntimeException("Failed to create directory: " + dir);
-                }
+                // The NIO version seems to create the path properly,
+                // as opposed to the dir.mkdirs()
+                // jenkinsd 2017.03.17
+                //
+                java.nio.file.Files.createDirectories(dir.toPath());
                 log.debug("Created directory " + dir);
             }
             return dir;
