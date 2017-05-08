@@ -75,8 +75,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -94,6 +92,7 @@ public class CheckDataSource implements CheckResource
     private DataSource dataSource;
     private String testSQL;
     private boolean expectResults = true;
+    private boolean rollback = false;
 
     /**
      * Constructor to check a DataSource.
@@ -106,6 +105,23 @@ public class CheckDataSource implements CheckResource
     public CheckDataSource(DataSource dataSource, String testSQL)
     {
         this.dataSource = dataSource;
+        this.testSQL = testSQL;
+    }
+
+    /**
+     * Constructor to check a DataSource.
+     * Allows a non-JNDI dataSource to be used.
+     * The test query should be something that always executes quickly and
+     * returns a small result set, such as <code>select x from someTable limit 0</code>.
+     * 
+     * @param dataSource the DataSource to check
+     * @param dataSourceName name that identifies the dataSource
+     * @param testSQL test query that should work
+     */
+    public CheckDataSource(DataSource dataSource, String dataSourceName, String testSQL)
+    {
+        this.dataSource = dataSource;
+        this.dataSourceName = dataSourceName;
         this.testSQL = testSQL;
     }
 
@@ -127,7 +143,24 @@ public class CheckDataSource implements CheckResource
         this.testSQL = testSQL;
         this.expectResults = expectResults;
     }
-
+    
+    public CheckDataSource(String dataSourceName, String testSQL, boolean expectResults, boolean rollback)
+    {
+        this.dataSourceName = dataSourceName;
+        this.testSQL = testSQL;
+        this.expectResults = expectResults;
+        this.rollback = rollback;
+    }
+    
+    public CheckDataSource(DataSource dataSource, String dataSourceName, String testSQL, boolean expectResults, boolean rollback)
+    {
+        this.dataSource = dataSource;
+        this.dataSourceName = dataSourceName;
+        this.testSQL = testSQL;
+        this.expectResults = expectResults;
+        this.rollback = rollback;
+    }
+    
     @Override
     public void check()
         throws CheckException
@@ -142,6 +175,11 @@ public class CheckDataSource implements CheckResource
                 this.dataSource = DBUtil.findJNDIDataSource(dataSourceName);
             }
             con = dataSource.getConnection();
+            if (this.rollback)
+            {
+                con.setAutoCommit(false);
+            }
+            
             st = con.createStatement();
             if (expectResults)
             {
@@ -168,6 +206,20 @@ public class CheckDataSource implements CheckResource
         }
         finally
         {
+            if (this.rollback && con != null)
+            {
+                try
+                {
+                    con.rollback();
+                    con.setAutoCommit(true);
+                }
+                catch (SQLException e)
+                {
+                    log.debug("rollback failed: " + dataSourceName + " (" + testSQL + ")", e);
+                    log.warn("rollback failed: " + dataSourceName + " (" + testSQL + ")");
+                }
+            }
+            
             if (rs != null)
             {
                 try { rs.close(); }
