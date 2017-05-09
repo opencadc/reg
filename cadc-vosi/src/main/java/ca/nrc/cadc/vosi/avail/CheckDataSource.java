@@ -184,8 +184,15 @@ public class CheckDataSource implements CheckResource
             if (expectResults)
             {
                 log.debug("test for results");
-                rs = st.executeQuery(testSQL);
-                rs.next(); // just check the result set, but don't care if there are any rows
+                if (testSQL.trim().toLowerCase().startsWith("select "))
+                {
+                    rs = st.executeQuery(testSQL);
+                    rs.next(); // just check the result set, but don't care if there are any rows
+                }
+                else
+                {
+                    int count = st.executeUpdate(testSQL);
+                }
             }
             else
             {
