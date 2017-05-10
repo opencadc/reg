@@ -109,23 +109,6 @@ public class CheckDataSource implements CheckResource
     }
 
     /**
-     * Constructor to check a DataSource.
-     * Allows a non-JNDI dataSource to be used.
-     * The test query should be something that always executes quickly and
-     * returns a small result set, such as <code>select x from someTable limit 0</code>.
-     * 
-     * @param dataSource the DataSource to check
-     * @param dataSourceName name that identifies the dataSource
-     * @param testSQL test query that should work
-     */
-    public CheckDataSource(DataSource dataSource, String dataSourceName, String testSQL)
-    {
-        this.dataSource = dataSource;
-        this.dataSourceName = dataSourceName;
-        this.testSQL = testSQL;
-    }
-
-    /**
      * Constructor to test a DataSource via JNDI name.
      *
      * @param dataSourceName JNDI name of DataSource
@@ -146,15 +129,6 @@ public class CheckDataSource implements CheckResource
     
     public CheckDataSource(String dataSourceName, String testSQL, boolean expectResults, boolean rollback)
     {
-        this.dataSourceName = dataSourceName;
-        this.testSQL = testSQL;
-        this.expectResults = expectResults;
-        this.rollback = rollback;
-    }
-    
-    public CheckDataSource(DataSource dataSource, String dataSourceName, String testSQL, boolean expectResults, boolean rollback)
-    {
-        this.dataSource = dataSource;
         this.dataSourceName = dataSourceName;
         this.testSQL = testSQL;
         this.expectResults = expectResults;
