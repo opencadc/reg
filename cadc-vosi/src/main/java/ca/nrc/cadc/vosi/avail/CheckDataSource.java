@@ -148,6 +148,7 @@ public class CheckDataSource implements CheckResource
             {
                 this.dataSource = DBUtil.findJNDIDataSource(dataSourceName);
             }
+            
             con = dataSource.getConnection();
             if (this.rollback)
             {
