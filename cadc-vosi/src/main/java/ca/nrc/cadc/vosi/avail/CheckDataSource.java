@@ -166,7 +166,7 @@ public class CheckDataSource implements CheckResource
                 }
                 else
                 {
-                    int count = st.executeUpdate(testSQL);
+                    st.executeUpdate(testSQL);
                 }
             }
             else
@@ -197,8 +197,7 @@ public class CheckDataSource implements CheckResource
                 }
                 catch (SQLException e)
                 {
-                    log.debug("rollback failed: " + dataSourceName + " (" + testSQL + ")", e);
-                    log.warn("rollback failed: " + dataSourceName + " (" + testSQL + ")");
+                    log.error("rollback failed: " + dataSourceName + " (" + testSQL + ")", e);
                 }
             }
             
