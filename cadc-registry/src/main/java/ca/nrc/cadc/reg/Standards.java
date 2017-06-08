@@ -76,15 +76,15 @@ import java.util.Map;
 import ca.nrc.cadc.auth.AuthMethod;
 
 /**
- * This class defines the constants for the strings that conform to the IVOA 
+ * This class defines the constants for the strings that conform to the IVOA
  * service standard identifiers.
- * 
+ *
  * @author yeunga
  */
 public class Standards
 {
     /* Standard IDs */
-	// name syntax: <base service>_<feature>_<major version><minor version>    
+	// name syntax: <base service>_<feature>_<major version><minor version>
 
     public final static URI CRED_DELEGATE_10 = URI.create("ivo://ivoa.net/std/CDP#delegate-1.0");
     public final static URI CRED_PROXY_10 = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
@@ -93,7 +93,7 @@ public class Standards
 
     public final static URI GMS_GROUPS_01 = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
     public final static URI GMS_SEARCH_01 = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
-    
+
     public final static URI SIA_10 = URI.create("ivo://ivoa.net/std/SIA");
     public final static URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
     //public final static URI SIA_META_2x = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
@@ -131,34 +131,35 @@ public class Standards
 
 
     public final static URI CAOM2_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2#obs-1.0");
-    
+
     public final static URI CAOM2REPO_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.0");
     public final static URI CAOM2REPO_OBS_23 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.1");
     //public final static URI CAOM2REPO_GRANTS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#grants-1.0");
 
     public final static URI CUTOUT_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
-    
+
     public final static URI DATA_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
 
     public final static URI LOGGING_CONTROL_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Logging#control-1.0");
-    
+
     public final static URI PKG_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-1.0");
 
     public final static URI PROC_JOBS_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#jobs-1.0");
-    
+
     public final static URI UWS_UPDATE_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UWS#update-1.0");
-    
+
     public final static URI RESOLVER_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/NameResolver#names-1.0");
 
     //public final static URI VMOD_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
-    
+
     public final static URI SECURITY_METHOD_ANON = URI.create("ivo://ivoa.net/sso#anon");
     public final static URI SECURITY_METHOD_CERT = URI.create("ivo://ivoa.net/sso#tls-with-certificate");
     public final static URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");
     public final static URI SECURITY_METHOD_PASSWORD = URI.create("http://www.w3.org/Protocols/HTTP/1.0/spec.html#BasicAA");
+    public final static URI SECURITY_METHOD_HTTP_BASIC = URI.create("ivo://ivoa.net/sso#BasicAA");
     public final static URI SECURITY_METHOD_TOKEN = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0");
 
-    
+
     private static final Map<AuthMethod,URI> SEC_MAP = new HashMap<AuthMethod,URI>();
     static
     {
@@ -167,8 +168,8 @@ public class Standards
         SEC_MAP.put(AuthMethod.COOKIE, SECURITY_METHOD_COOKIE);
         SEC_MAP.put(AuthMethod.PASSWORD, SECURITY_METHOD_PASSWORD);
         SEC_MAP.put(AuthMethod.TOKEN, SECURITY_METHOD_TOKEN);
-    }  
-    
+    }
+
     public static AuthMethod getAuthMethod(URI securityMethod)
     {
         for (Map.Entry<AuthMethod,URI> me : SEC_MAP.entrySet())
@@ -178,7 +179,7 @@ public class Standards
         }
         throw new IllegalArgumentException("invalid value: " + securityMethod);
     }
-    
+
     public static URI getSecurityMethod(AuthMethod am)
     {
         return SEC_MAP.get(am);
