@@ -69,11 +69,10 @@
 
 package ca.nrc.cadc.reg;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-
-import ca.nrc.cadc.auth.AuthMethod;
 
 /**
  * This class defines the constants for the strings that conform to the IVOA
@@ -134,6 +133,7 @@ public class Standards
 
     public final static URI CAOM2REPO_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.0");
     public final static URI CAOM2REPO_OBS_23 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.1");
+    public final static URI CAOM2REPO_DEL_23 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#del-1.0");
     //public final static URI CAOM2REPO_GRANTS_20_URI = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#grants-1.0");
 
     public final static URI CUTOUT_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
