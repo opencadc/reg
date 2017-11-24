@@ -69,14 +69,12 @@
 
 package ca.nrc.cadc.reg;
 
+import ca.nrc.cadc.xml.W3CConstants;
+import ca.nrc.cadc.xml.XmlUtil;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.jdom2.Namespace;
-
-import ca.nrc.cadc.xml.W3CConstants;
-import ca.nrc.cadc.xml.XmlUtil;
 
 /**
  * This class defines the URI and corresponding namespace constants.
@@ -91,6 +89,8 @@ public class XMLConstants
     public static final URI VODATASERVICE_11_NS = URI.create("http://www.ivoa.net/xml/VODataService/v1.1");
     public static final URI VORESOURCE_10_NS = URI.create("http://www.ivoa.net/xml/VOResource/v1.0");
     public static final URI VOSICAPABILITIES_10_NS = URI.create("http://www.ivoa.net/xml/VOSICapabilities/v1.0");
+    public static final URI UWSREGEXT_10_NS = URI.create("http://www.ivoa.net/xml/UWSRegExt/v0.1");
+    
     public static final URI XLINK_NS = URI.create("http://www.w3.org/1999/xlink");
 
     private static final String SIA_11_SCHEMA = "SIA-v1.1.xsd";
@@ -99,6 +99,8 @@ public class XMLConstants
     private static final String VODATASERVICE_11_SCHEMA = "VODataService-v1.1.xsd";
     private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.0.xsd";
     private static final String VOSICAPABILITIES_10_SCHEMA = "VOSICapabilities-v1.0.xsd";
+    private static final String UWSREGEXT_10_SCHEMA = "UWSRegExt-v0.1.xsd";
+    
     private static final String XLINK_SCHEMA = "XLINK.xsd";
 
     // Maps namespace URI to xsd schema file name
@@ -122,6 +124,9 @@ public class XMLConstants
 
     	String voCapabilties10URL = XmlUtil.getResourceUrlString(VOSICAPABILITIES_10_SCHEMA, XMLConstants.class);
     	SCHEMA_MAP.put(VOSICAPABILITIES_10_NS.toString(), voCapabilties10URL);
+        
+        String uwsRegEx10URL = XmlUtil.getResourceUrlString(UWSREGEXT_10_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(UWSREGEXT_10_NS.toString(), uwsRegEx10URL);
 
     	String xlinkSchemaURL = XmlUtil.getResourceUrlString(XLINK_SCHEMA, XMLConstants.class);
     	SCHEMA_MAP.put(XLINK_NS.toString(), xlinkSchemaURL);

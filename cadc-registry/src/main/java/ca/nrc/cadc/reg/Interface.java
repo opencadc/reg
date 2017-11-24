@@ -65,69 +65,73 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.log4j.Logger;
 
 /**
  * Minimal implementation of the Interface model in VOResource 1.0.
- * 
- * accessURL is the URL (or base URL) that a client uses to access the service.  
+ *
+ * accessURL is the URL (or base URL) that a client uses to access the service.
  * If multiple accessURL is provided, each URL should point to a functionally
- * identical or "mirror" installation of the same service and administered 
+ * identical or "mirror" installation of the same service and administered
  * by the same publisher. Currently we only support one accessURL.
- * 
- * securityMethod is the mechanism the client must employ to gain secure 
+ *
+ * securityMethod is the mechanism the client must employ to gain secure
  * access to the service.
- * 
- * 
+ *
+ *
  * @author yeunga
  */
-public class Interface
-{
+public class Interface {
+
     private static Logger log = Logger.getLogger(Interface.class);
 
-    // Use List to preserve order
+    private final URI type;
     private final AccessURL accessURL;
     private final URI securityMethod;
 
-    public String role ;
+    public String role;
 
     /**
-     * Constructor. 
+     * 
+     * @param type
      * @param accessURL
-     * @param securityMethod
+     * @param securityMethod 
      */
-    public Interface(final AccessURL accessURL, final URI securityMethod) 
-    {
-    	validateParams(accessURL, securityMethod);
-    	
+    public Interface(final URI type, final AccessURL accessURL, final URI securityMethod) {
+        validateNotNull("type", type);
+        validateNotNull("accessURL", accessURL);
+        validateNotNull("securityMethod", securityMethod);
+        this.type = type;
         this.accessURL = accessURL;
         this.securityMethod = securityMethod;
     }
-    
-    public AccessURL getAccessURL() 
-    {
-		return this.accessURL;
-	}
 
+    /**
+     * Get the fully-qualified interface type URI. This URI is of the form
+     * {namespace uri}#{attribute name}.
+     * 
+     * @return 
+     */
+    public URI getType() {
+        return type;
+    }
 
-	public URI getSecurityMethod() 
-	{
-		return this.securityMethod;
-	}
-	
-	private void validateParams(final AccessURL accessURL, final URI securityMethod)
-	{
-		if (accessURL == null || securityMethod == null)
-		{
-			String msg = "accessURL or securityMethod for an Interface object cannot be null.";
-			throw new IllegalArgumentException(msg);
-		}
-	}
+    public AccessURL getAccessURL() {
+        return this.accessURL;
+    }
+
+    public URI getSecurityMethod() {
+        return this.securityMethod;
+    }
+
+    private void validateNotNull(String name, Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException(Interface.class.getSimpleName() + ": " + name + " cannot be null");
+        }
+    }
 }

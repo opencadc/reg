@@ -65,10 +65,17 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg.client;
 
+import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.reg.Capabilities;
+import ca.nrc.cadc.reg.CapabilitiesReader;
+import ca.nrc.cadc.reg.Capability;
+import ca.nrc.cadc.reg.Interface;
+import ca.nrc.cadc.reg.Standards;
+import ca.nrc.cadc.util.MultiValuedProperties;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -81,17 +88,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.apache.log4j.Logger;
-
-import ca.nrc.cadc.auth.AuthMethod;
-import ca.nrc.cadc.reg.Capabilities;
-import ca.nrc.cadc.reg.CapabilitiesReader;
-import ca.nrc.cadc.reg.Capability;
-import ca.nrc.cadc.reg.Interface;
-import ca.nrc.cadc.reg.Standards;
-import ca.nrc.cadc.util.MultiValuedProperties;
-
 
 /**
  * A very simple caching IVOA Registry client. All the lookups done by this client use a properties
@@ -127,8 +124,8 @@ import ca.nrc.cadc.util.MultiValuedProperties;
  *
  * @author pdowler
  */
-public class RegistryClient
-{
+public class RegistryClient {
+
     private static Logger log = Logger.getLogger(RegistryClient.class);
 
     private static final String LOCAL_PROPERTY = RegistryClient.class.getName() + ".local";
@@ -140,21 +137,20 @@ public class RegistryClient
     private static final URL RESOURCE_CAPS_URL;
     private static final String RESOURCE_CAPS_NAME = "resource-caps";
     private static String FILE_SEP;
-
+    
+    // fully qualified type value (see CapabilitiesReader)
+    private static final URI DEFAULT_ITYPE = Standards.INTERFACE_PARAM_HTTP;
+    
     private String hostname;
     private String shortHostname;
-    private List<String>domainMatch = new ArrayList<String>();
+    private List<String> domainMatch = new ArrayList<String>();
     private URL resourceCapsURL;
     private String capsDomain;
 
-    static
-    {
-        try
-        {
+    static {
+        try {
             RESOURCE_CAPS_URL = new URL("http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps");
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
             throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());
         }
@@ -165,56 +161,47 @@ public class RegistryClient
     /**
      * Constructor. Uses a properties file called RegistryClient.properties found in the classpath.
      */
-    public RegistryClient()
-    {
+    public RegistryClient() {
         this(RESOURCE_CAPS_URL);
     }
 
-    public RegistryClient(URL resourceCapsURL)
-    {
-        if (resourceCapsURL == null)
-        {
+    public RegistryClient(URL resourceCapsURL) {
+        if (resourceCapsURL == null) {
             throw new IllegalArgumentException("resourceCapsURL cannot be null");
         }
         init(resourceCapsURL);
     }
 
-    private void init(URL resourceCapsURL)
-    {
-        try
-        {
+    private void init(URL resourceCapsURL) {
+        try {
             String localP = System.getProperty(LOCAL_PROPERTY);
             String hostP = System.getProperty(HOST_PROPERTY);
             String shortHostP = System.getProperty(SHORT_HOST_PROPERTY);
-            String domainMatchP = System.getProperty(DOMAIN_MATCH_PROPERTY);
+            final String domainMatchP = System.getProperty(DOMAIN_MATCH_PROPERTY);
 
             log.debug("    local: " + localP);
             log.debug("     host: " + hostP);
             log.debug("shortHost: " + shortHostP);
-            if ( "true".equals(localP) )
-            {
+            if ("true".equals(localP)) {
                 log.debug(LOCAL_PROPERTY + " is set, assuming localhost runs the service");
                 this.hostname = InetAddress.getLocalHost().getCanonicalHostName();
             }
 
-            if (shortHostP != null)
-            {
+            if (shortHostP != null) {
                 shortHostP = shortHostP.trim();
-                if (shortHostP.length() > 0)
-                {
+                if (shortHostP.length() > 0) {
                     this.shortHostname = shortHostP;
                 }
             }
 
-            if (hostP != null && this.hostname == null)
-            {
+            if (hostP != null && this.hostname == null) {
                 hostP = hostP.trim();
-                if (hostP.length() > 0)
+                if (hostP.length() > 0) {
                     this.hostname = hostP;
+                }
             }
 
-            if (domainMatchP != null)
-            {
+            if (domainMatchP != null) {
                 String[] doms = domainMatchP.split(",");
                 this.domainMatch.addAll(Arrays.asList(doms));
             }
@@ -222,18 +209,13 @@ public class RegistryClient
             log.debug("Original resourceCapURL: " + resourceCapsURL);
             this.resourceCapsURL = mangleHostname(resourceCapsURL);
             log.debug("Mangled resourceCapURL: " + this.resourceCapsURL);
-            if (!resourceCapsURL.equals(this.resourceCapsURL))
-            {
+            if (!resourceCapsURL.equals(this.resourceCapsURL)) {
                 capsDomain = "alt-domains/" + this.resourceCapsURL.getHost();
             }
-        }
-        catch(UnknownHostException ex)
-        {
+        } catch (UnknownHostException ex) {
             log.warn("failed to find localhost name via name resolution (" + ex.toString() + "): using localhost");
             this.hostname = "localhost";
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             log.error("Error transforming resource-caps URL", e);
             throw new RuntimeException(e);
         }
@@ -247,10 +229,8 @@ public class RegistryClient
      * @return The associated capabilities object.
      * @throws IOException If the capabilities could not be determined.
      */
-    public Capabilities getCapabilities(URI resourceID) throws IOException
-    {
-        if (resourceID == null)
-        {
+    public Capabilities getCapabilities(URI resourceID) throws IOException {
+        if (resourceID == null) {
             String msg = "Input parameter (resourceID) should not be null";
             throw new IllegalArgumentException(msg);
         }
@@ -261,31 +241,23 @@ public class RegistryClient
         String map = cachedCapSource.getContent();
         InputStream mapStream = new ByteArrayInputStream(map.getBytes("UTF-8"));
         MultiValuedProperties mvp = new MultiValuedProperties();
-        try
-        {
+        try {
             mvp.load(mapStream);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("failed to load capabilities source map from " + resourceCapsURL, e);
         }
 
         List<String> values = mvp.getProperty(resourceID.toString());
-        if (values == null || values.isEmpty())
-        {
+        if (values == null || values.isEmpty()) {
             throw new IllegalArgumentException("Unknown service: " + resourceID);
         }
-        if (values.size() > 1)
-        {
+        if (values.size() > 1) {
             throw new RuntimeException("Multiple capability locations for " + resourceID);
         }
         URL serviceCapsURL = null;
-        try
-        {
+        try {
             serviceCapsURL = new URL(values.get(0));
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             throw new RuntimeException("URL for " + resourceID + " at " + resourceCapsURL + " is malformed", e);
         }
 
@@ -301,46 +273,59 @@ public class RegistryClient
     /**
      * Find the service URL for the service registered under the specified base resource
      * identifier and using the specified authentication method. The identifier must be an
-     * IVOA identifier (e.g. with URI scheme os "ivo").
+     * IVOA identifier (e.g. with URI scheme os "ivo"). This method uses the default
+     * interface type ParamHTTP defined in VOResource.
      *
      * @param resourceIdentifier resource identifier, e.g. ivo://cadc/nrc/ca/tap
      * @param standardID IVOA standard identifier, e.g. ivo://ivo.net/std/TAP#sync-1.1
      * @param authMethod authentication method to be used
-     * @return service URL or null if a matching service (and protocol) was not found
+     * @return service URL or null if a matching interface was not found
      * @throws RuntimeException if more than one URL match the service identifier
      */
     @Deprecated
-    public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod)
-    {
-        if (resourceIdentifier == null || standardID == null || authMethod == null)
-        {
+    public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod) {
+        return getServiceURL(resourceIdentifier, standardID, authMethod, DEFAULT_ITYPE);
+    }
+    
+    /**
+     * Find the service URL for the service registered under the specified base resource
+     * identifier and using the specified authentication method. The identifier must be an
+     * IVOA identifier (e.g. with URI scheme "ivo"). 
+     * 
+     * @param resourceIdentifier
+     * @param standardID
+     * @param authMethod
+     * @param interfaceType
+     * @return service URL or null if a matching interface was not found
+     * @throws RuntimeException if more than one URL match the service identifier
+     */
+    public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod, URI interfaceType) {
+        if (resourceIdentifier == null || standardID == null || authMethod == null || interfaceType == null) {
             String msg = "No input parameters should be null";
             throw new IllegalArgumentException(msg);
         }
 
         URL url = null;
-        log.debug("resourceIdentifier=" + resourceIdentifier + ", standardID=" + standardID + ", authMethod=" + authMethod);
+        log.debug("resourceIdentifier=" + resourceIdentifier 
+                + ", standardID=" + standardID 
+                + ", authMethod=" + authMethod
+                + ", interfaceType=" + interfaceType);
         Capabilities caps = null;
-        try
-        {
+        try {
             caps = this.getCapabilities(resourceIdentifier);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new RuntimeException("Could not obtain service URL", e);
         }
 
         // locate the associated capability
         Capability cap = caps.findCapability(standardID);
 
-        if (cap != null)
-        {
+        if (cap != null) {
             // locate the associated interface, throws RuntimeException if more than
             // one interface match
-            Interface intf = cap.findInterface(Standards.getSecurityMethod(authMethod));
+            Interface intf = cap.findInterface(Standards.getSecurityMethod(authMethod), interfaceType);
 
-            if (intf != null)
-            {
+            if (intf != null) {
                 url = intf.getAccessURL().getURL();
             }
         }
@@ -349,11 +334,9 @@ public class RegistryClient
         return url;
     }
 
-    private File getCapSourceCacheFile()
-    {
+    private File getCapSourceCacheFile() {
         String baseCacheDir = getBaseCacheDirectory();
-        if (this.capsDomain != null)
-        {
+        if (this.capsDomain != null) {
             baseCacheDir += FILE_SEP + this.capsDomain;
         }
         String path = FILE_SEP + RESOURCE_CAPS_NAME;
@@ -362,73 +345,58 @@ public class RegistryClient
         return file;
     }
 
-    private File getCapabilitiesCacheFile(URI resourceID)
-    {
+    private File getCapabilitiesCacheFile(URI resourceID) {
         String baseCacheDir = getBaseCacheDirectory();
         String resourceCacheDir = baseCacheDir + resourceID.getAuthority();
-        if (this.capsDomain != null)
-        {
+        if (this.capsDomain != null) {
             resourceCacheDir = baseCacheDir + this.getCapsDomain() + FILE_SEP + resourceID.getAuthority();
         }
         String path = resourceID.getPath();
         log.debug("Caching file [" + path + "] in dir [" + resourceCacheDir + "]");
-        File file =  new File(resourceCacheDir, path);
+        File file = new File(resourceCacheDir, path);
         return file;
     }
 
-    private String getBaseCacheDirectory()
-    {
+    private String getBaseCacheDirectory() {
         String tmpDir = System.getProperty("java.io.tmpdir");
         String userName = System.getProperty("user.name");
-        if (tmpDir == null)
-        {
+        if (tmpDir == null) {
             throw new RuntimeException("No tmp system dir defined.");
         }
         String baseCacheDir = null;
-        if (userName == null)
-        {
+        if (userName == null) {
             baseCacheDir = tmpDir + FILE_SEP + CONFIG_CACHE_DIR + FILE_SEP;
-        }
-        else
-        {
+        } else {
             baseCacheDir = tmpDir + FILE_SEP + userName + FILE_SEP + CONFIG_CACHE_DIR + FILE_SEP;
         }
         log.debug("Base cache dir: " + baseCacheDir);
         return baseCacheDir;
     }
 
-    public URL mangleHostname(final URL url) throws MalformedURLException
-    {
+    public URL mangleHostname(final URL url) throws MalformedURLException {
         URL retURL = url;
 
         log.debug("mangling URL: " + url);
-        if (this.hostname != null || this.shortHostname != null)
-        {
+        if (this.hostname != null || this.shortHostname != null) {
             String domain = getDomain(url.getHost());
 
-            if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain))
-            {
+            if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain)) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(url.getProtocol());
                 sb.append("://");
 
-                if (this.shortHostname != null)
-                {
+                if (this.shortHostname != null) {
                     sb.append(this.shortHostname);
-                    if (domain != null)
-                    {
+                    if (domain != null) {
                         sb.append(".").append(domain);
                     }
-                }
-                else
-                {
+                } else {
                     sb.append(this.hostname);
                 }
 
                 int p = url.getPort();
 
-                if (p > 0 && p != url.getDefaultPort())
-                {
+                if (p > 0 && p != url.getDefaultPort()) {
                     sb.append(":");
                     sb.append(p);
                 }
@@ -442,31 +410,25 @@ public class RegistryClient
         return retURL;
     }
 
-    public static String getDomain(String hostname)
-    {
-        if (hostname == null)
-        {
+    public static String getDomain(String hostname) {
+        if (hostname == null) {
             return null;
         }
         int dotIndex = hostname.indexOf('.');
-        if (dotIndex <= 0)
-        {
+        if (dotIndex <= 0) {
             return null;
         }
-        if (dotIndex + 1 == hostname.length())
-        {
+        if (dotIndex + 1 == hostname.length()) {
             return null;
         }
         return hostname.substring(dotIndex + 1);
     }
 
-    protected URL getResourceCapsURL()
-    {
+    protected URL getResourceCapsURL() {
         return resourceCapsURL;
     }
 
-    protected String getCapsDomain()
-    {
+    protected String getCapsDomain() {
         return capsDomain;
     }
 
