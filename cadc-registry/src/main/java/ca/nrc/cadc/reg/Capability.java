@@ -115,6 +115,10 @@ public class Capability {
         return this.interfaces;
     }
 
+    public Interface findInterface(final URI securityMethod) {
+        return findInterface(securityMethod, Standards.INTERFACE_PARAM_HTTP);
+    }
+    
     public Interface findInterface(final URI securityMethod, final URI interfaceType) {
         boolean found = false;
         Interface retIntf = null;

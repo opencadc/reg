@@ -65,16 +65,14 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.log4j.Logger;
-
 
 /**
  * Minimal implementation of the Capabilities model in VOResource 1.0.
@@ -89,8 +87,8 @@ import org.apache.log4j.Logger;
  *
  * @author yeunga
  */
-public class Capabilities
-{
+public class Capabilities {
+
     private static Logger log = Logger.getLogger(Capabilities.class);
 
     private final List<Capability> capabilities = new ArrayList<Capability>();
@@ -98,8 +96,7 @@ public class Capabilities
     /**
      * Constructor.
      */
-    public Capabilities()
-    {
+    public Capabilities() {
     }
 
     /**
@@ -107,37 +104,32 @@ public class Capabilities
      *
      * @return all associated capabilities.
      */
-	public List<Capability> getCapabilities()
-	{
-		return this.capabilities;
-	}
+    public List<Capability> getCapabilities() {
+        return this.capabilities;
+    }
 
-	/**
-	 * Find the capability associated with the specified standard identifier.
-	 *
-	 * @param standardID standard identifier for the required capability
-	 * @return capability found or null if not found
-	 */
-	public Capability findCapability(final URI standardID)
-	{
-		boolean found = false;
-		Capability retCap = null;
+    /**
+     * Find the capability associated with the specified standard identifier.
+     *
+     * @param standardID standard identifier for the required capability
+     * @return capability found or null if not found
+     */
+    public Capability findCapability(final URI standardID) {
+        boolean found = false;
+        Capability retCap = null;
 
-		for (Capability cap : this.capabilities)
-		{
-			if (cap.getStandardID().equals(standardID))
-			{
-				if (found)
-				{
-					String msg = "Matched more than one capability";
-					throw new RuntimeException(msg);
-				}
+        for (Capability cap : this.capabilities) {
+            if (cap.getStandardID().equals(standardID)) {
+                if (found) {
+                    String msg = "Matched more than one capability";
+                    throw new RuntimeException(msg);
+                }
 
-				found = true;
-				retCap = cap;
-			}
-		}
+                found = true;
+                retCap = cap;
+            }
+        }
 
-		return retCap;
-	}
+        return retCap;
+    }
 }
