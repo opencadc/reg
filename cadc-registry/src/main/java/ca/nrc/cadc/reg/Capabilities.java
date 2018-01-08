@@ -105,31 +105,23 @@ public class Capabilities {
      * @return all associated capabilities.
      */
     public List<Capability> getCapabilities() {
-        return this.capabilities;
+        return capabilities;
     }
 
     /**
-     * Find the capability associated with the specified standard identifier.
+     * Find the capability associated with the specified standard identifier. This method
+     * returns the first matching capability.
      *
      * @param standardID standard identifier for the required capability
-     * @return capability found or null if not found
+     * @return the first matching capability or null if not found
      */
     public Capability findCapability(final URI standardID) {
-        boolean found = false;
-        Capability retCap = null;
-
         for (Capability cap : this.capabilities) {
             if (cap.getStandardID().equals(standardID)) {
-                if (found) {
-                    String msg = "Matched more than one capability";
-                    throw new RuntimeException(msg);
-                }
-
-                found = true;
-                retCap = cap;
+                return cap;
             }
         }
 
-        return retCap;
+        return null;
     }
 }

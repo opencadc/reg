@@ -95,48 +95,51 @@ public class Capability {
     private final URI standardID;
     private final List<Interface> interfaces = new ArrayList<Interface>();
 
-    ;
-
     /**
      * Constructor. 
+     * @param standardID
      */
     public Capability(final URI standardID) {
         validateParams(standardID);
-
-        // TODO: check that each entry in a list is unique?
         this.standardID = standardID;
     }
 
     public URI getStandardID() {
-        return this.standardID;
+        return standardID;
     }
 
     public List<Interface> getInterfaces() {
-        return this.interfaces;
+        return interfaces;
     }
 
+    /**
+     * Find a ParamHTTP interface that uses the specified securityMethod.
+     * This method returns the first matching interface.
+     * 
+     * @param securityMethod
+     * @return the first matching interface or null
+     */
     public Interface findInterface(final URI securityMethod) {
         return findInterface(securityMethod, Standards.INTERFACE_PARAM_HTTP);
     }
     
+    /**
+     * Find an interface of the specified type that uses the specified securityMethod.
+     * This method returns the first matching interface.
+     * 
+     * @param securityMethod
+     * @param interfaceType
+     * @return the first matching interface or null
+     */
     public Interface findInterface(final URI securityMethod, final URI interfaceType) {
-        boolean found = false;
-        Interface retIntf = null;
-
         for (Interface intf : this.interfaces) {
             if (intf.getType().equals(interfaceType)
                     && intf.getSecurityMethod().equals(securityMethod)) {
-                if (found) {
-                    String msg = "Matched more than one interface";
-                    throw new RuntimeException(msg);
-                }
-
-                found = true;
-                retIntf = intf;
+                return intf;
             }
         }
 
-        return retIntf;
+        return null;
     }
 
     private void validateParams(final URI standardID) {

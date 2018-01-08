@@ -97,6 +97,7 @@ public class Interface {
     public String role;
 
     /**
+     * Constructor.
      * 
      * @param type
      * @param accessURL
@@ -121,12 +122,23 @@ public class Interface {
         return type;
     }
 
+    /**
+     * Get the access URL for this interface.
+     * 
+     * @return 
+     */
     public AccessURL getAccessURL() {
-        return this.accessURL;
+        return accessURL;
     }
 
+    /**
+     * Get the fully-qualified security method URI. This URI is of the form
+     * {namespace uri}#{attribute name}.
+     * 
+     * @return 
+     */
     public URI getSecurityMethod() {
-        return this.securityMethod;
+        return securityMethod;
     }
 
     private void validateNotNull(String name, Object value) {
