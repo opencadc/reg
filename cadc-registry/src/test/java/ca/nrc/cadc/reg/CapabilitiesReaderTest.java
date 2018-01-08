@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2011.                            (c) 2011.
+*  (c) 2017.                            (c) 2017.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -62,18 +62,16 @@
 *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 *                                       <http://www.gnu.org/licenses/>.
 *
-*  $Revision: 5 $
-*
 ************************************************************************
 */
 
 package ca.nrc.cadc.reg;
 
 
+import ca.nrc.cadc.util.FileUtil;
 import ca.nrc.cadc.util.Log4jInit;
-import java.net.URI;
-import java.net.URL;
-import java.util.List;
+import java.io.File;
+import java.io.FileReader;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -81,90 +79,73 @@ import org.junit.Test;
 
 /**
  *
- * @author yeunga
+ * @author pdowler
  */
-public class CapabilityTest 
-{
-    private static final Logger log = Logger.getLogger(CapabilityTest.class);
-
-    private URI ITYPE = Standards.INTERFACE_PARAM_HTTP;
-    private String ACCESS_URL = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/availability";
-    private String ACCESS_URL_2 = "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/capabilities";
-    private String ACCESS_URL_3 = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync";
-    private String SECURITY_METHOD = "ivo://ivoa.net/sso#tls-with-certficate";
-    private String SECURITY_METHOD_1 = "http://www.w3.org/Protocols/HTTP/1.0/spec.html#BasicAA";
-    private String SECURITY_METHOD_2 = "ivo://ivoa.net/sso#tls-with-certficate";
-    private String STANDARD_ID = "ivo://ivo.net/std/tap#sync-v1.1";
+public class CapabilitiesReaderTest {
+    private static final Logger log = Logger.getLogger(CapabilitiesReaderTest.class);
     
-    static
-    {
-        Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
+    static {
+        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
     
-    public CapabilityTest() { }
-    
-    @Test
-    public void testNullStandardID()
-    {
-        try
-        {
-            new Capability(null);
-            Assert.fail("expected IllegalArgumentException");
-        }
-        catch(IllegalArgumentException ex)
-        {
-        	// expected
-        }
-        catch(Throwable t)
-        {
-            Assert.fail("unexpected t: " + t);
-        }
+    public CapabilitiesReaderTest() { 
     }
     
     @Test
-    public void testConstruction()
-    {
-    	try
-    	{
-    		Capability cap = new Capability(new URI(STANDARD_ID));
-    		URI standardID = cap.getStandardID();
-    		Assert.assertNotNull("accessURL should not be null", standardID);
-    		Assert.assertEquals("accessURL is corrupted", STANDARD_ID, standardID.toString());
-    		Assert.assertNotNull("interfaces should not be null", cap.getInterfaces());
-    		Assert.assertEquals("interfaces should be empty", 0, cap.getInterfaces().size());
-    	}
-    	catch (Throwable t)
-    	{
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
-    	}
-    }
-    
-    @Test
-    public void testInterfaces()
-    {
-    	try
-    	{
-    		// construct an Capability object
-    		Capability cap = new Capability(new URI(STANDARD_ID));
-    		List<Interface> interfaces = cap.getInterfaces();
-    		
-    		// test correct interface is added
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD)));
-    		Assert.assertEquals("interfaces should have one entry", 1, interfaces.size());
-    		Interface[] intfArray = interfaces.toArray(new Interface[interfaces.size()]);
-    		Assert.assertEquals("interface contains a different access URL", ACCESS_URL, intfArray[0].getAccessURL().getURL().toString());
-    		
-    		// test correct number of security methods are added 
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_2)), new URI(SECURITY_METHOD_1)));
-    		Assert.assertEquals("interfaces should have one entry", 2, interfaces.size());
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_3)), new URI(SECURITY_METHOD_2)));
-    		Assert.assertEquals("interfaces should have one entry", 3, interfaces.size());
-    	}
-    	catch (Throwable t)
-    	{
-            log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-    	}
+    public void testRead() {
+        try {
+            File f = FileUtil.getFileFromResource("sample-capabilities.xml", CapabilitiesReaderTest.class);
+            Assert.assertNotNull("test setup", f);
+            
+            CapabilitiesReader r = new CapabilitiesReader();
+            Capabilities caps = r.read(new FileReader(f));
+            Assert.assertNotNull(caps);
+            Assert.assertEquals(4, caps.getCapabilities().size());
+            
+            Capability cap;
+            
+            cap = caps.findCapability(Standards.VOSI_AVAILABILITY);
+            Assert.assertNotNull(cap);
+            
+            cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
+            Assert.assertNotNull(cap);
+            
+            cap = caps.findCapability(Standards.VOSI_TABLES_11);
+            Assert.assertNotNull(cap);
+            Interface ti = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("anon tables", ti);
+            Assert.assertEquals("http://example.net/myTAP/tables", ti.getAccessURL().getURL().toExternalForm());
+            
+            ti = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("anon async", ti);
+            Assert.assertEquals("https://example.net/myTAP/cert-tables", ti.getAccessURL().getURL().toExternalForm());
+            
+            cap = caps.findCapability(Standards.TAP_10);
+            Assert.assertNotNull(cap);
+            
+            Interface bi = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("anon base", bi);
+            Assert.assertEquals("http://example.net/myTAP", bi.getAccessURL().getURL().toExternalForm());
+            
+            Interface ai = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_UWS_ASYNC);
+            Assert.assertNotNull("anon async", ai);
+            Assert.assertEquals("http://example.net/myTAP/async", ai.getAccessURL().getURL().toExternalForm());
+            
+            Interface si = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_UWS_SYNC);
+            Assert.assertNotNull("anon sync", si);
+            Assert.assertEquals("http://example.net/myTAP/sync", si.getAccessURL().getURL().toExternalForm());
+            
+            Interface ai2 = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_UWS_ASYNC);
+            Assert.assertNotNull("x509 async", ai2);
+            Assert.assertEquals("https://example.net/myTAP/cert-async", ai2.getAccessURL().getURL().toExternalForm());
+            
+            Interface si2 = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_UWS_SYNC);
+            Assert.assertNotNull("x509 sync", si2);
+            Assert.assertEquals("https://example.net/myTAP/cert-sync", si2.getAccessURL().getURL().toExternalForm());
+            
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
     }
 }

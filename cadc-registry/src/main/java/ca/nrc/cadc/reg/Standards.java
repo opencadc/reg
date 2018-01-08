@@ -82,9 +82,7 @@ import java.util.Map;
  */
 public class Standards
 {
-    /* Standard IDs */
-	// name syntax: <base service>_<feature>_<major version><minor version>
-
+    // standardID values
     public final static URI CRED_DELEGATE_10 = URI.create("ivo://ivoa.net/std/CDP#delegate-1.0");
     public final static URI CRED_PROXY_10 = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
 
@@ -159,6 +157,10 @@ public class Standards
     public final static URI SECURITY_METHOD_HTTP_BASIC = URI.create("ivo://ivoa.net/sso#BasicAA");
     public final static URI SECURITY_METHOD_TOKEN = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0");
 
+    // interface type identifiers: <namespace uri>#<type attr name without rpefix>
+    public static URI INTERFACE_PARAM_HTTP = URI.create(XMLConstants.VODATASERVICE_11_NS + "#ParamHTTP");
+    public static URI INTERFACE_UWS_ASYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Async");
+    public static URI INTERFACE_UWS_SYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Sync");
 
     private static final Map<AuthMethod,URI> SEC_MAP = new HashMap<AuthMethod,URI>();
     static

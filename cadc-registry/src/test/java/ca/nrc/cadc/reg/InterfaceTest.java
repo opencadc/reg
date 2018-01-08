@@ -70,8 +70,6 @@
 package ca.nrc.cadc.reg;
 
 
-import ca.nrc.cadc.reg.AccessURL;
-import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.util.Log4jInit;
 import java.net.URI;
 import java.net.URL;
@@ -88,6 +86,7 @@ public class InterfaceTest
 {
     private static final Logger log = Logger.getLogger(InterfaceTest.class);
 
+    private URI ITYPE = Standards.INTERFACE_PARAM_HTTP;
     private String ACCESS_URL = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/availability";
     private String SECURITY_METHOD = "ivo://ivoa.net/sso#tls-with-certficate";
     
@@ -99,11 +98,29 @@ public class InterfaceTest
     public InterfaceTest() { }
     
     @Test
+    public void testNullType()
+    {
+        try
+        {
+            new Interface(null, new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD));
+            Assert.fail("expected IllegalArgumentException");
+        }
+        catch(IllegalArgumentException ex)
+        {
+        	// expected
+        }
+        catch(Throwable t)
+        {
+            Assert.fail("unexpected t: " + t);
+        }
+    }
+    
+    @Test
     public void testNullAccessURL()
     {
         try
         {
-            new Interface(null, new URI(SECURITY_METHOD));
+            new Interface(ITYPE, null, new URI(SECURITY_METHOD));
             Assert.fail("expected IllegalArgumentException");
         }
         catch(IllegalArgumentException ex)
@@ -121,7 +138,7 @@ public class InterfaceTest
     {
         try
         {
-            new Interface(new AccessURL(new URL(ACCESS_URL)), null);
+            new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)), null);
             Assert.fail("expected IllegalArgumentException");
         }
         catch(IllegalArgumentException ex)
@@ -139,11 +156,15 @@ public class InterfaceTest
     {
     	try
     	{
-    		Interface intf = new Interface(new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD));
-    		AccessURL accessURL = intf.getAccessURL();
-    		URI securityMethod =intf.getSecurityMethod();
+    		Interface intf = new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD));
+    		URI type = intf.getType();
+                Assert.assertEquals(ITYPE, type);
+                
+                AccessURL accessURL = intf.getAccessURL();
     		Assert.assertNotNull("accessURL should not be null", accessURL);
     		Assert.assertEquals("accessURL is corrupted", ACCESS_URL, accessURL.getURL().toString());
+                
+                URI securityMethod =intf.getSecurityMethod();
     		Assert.assertNotNull("securityMethods should not be null", intf.getSecurityMethod());
     		Assert.assertEquals("securityMethod is corrupted", SECURITY_METHOD, securityMethod.toString());
     	}

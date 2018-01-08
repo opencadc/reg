@@ -65,88 +65,87 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.log4j.Logger;
-
 
 /**
  * Minimal implementation of the IVOA Capability model in VOResource 1.0.
- * 
+ *
  * standardID is a URI which represents a service standard, e.g. ivo://ivoa.net/std/TAP
- * 
+ *
  * interface specifies how the capability can be accessed. At least one interface
  * must be provided. If more than one is provided, each interface should provide
  * an alternative interface for accessing essentially the same underlying
  * capability. The interfaces can differ in their overall type or in the
  * supported input parameters or output products.
- * 
+ *
  * @author yeunga
  */
-public class Capability
-{
+public class Capability {
+
     private static Logger log = Logger.getLogger(Capability.class);
 
     // Use List to preserve the order.
     private final URI standardID;
-    private final List<Interface> interfaces = new ArrayList<Interface>();;
+    private final List<Interface> interfaces = new ArrayList<Interface>();
 
     /**
      * Constructor. 
+     * @param standardID
      */
-    public Capability(final URI standardID) 
-    {
-    	validateParams(standardID);
-
-    	// TODO: check that each entry in a list is unique?
+    public Capability(final URI standardID) {
+        validateParams(standardID);
         this.standardID = standardID;
     }
-    
-    public URI getStandardID() 
-    {
-		return this.standardID;
-	}
 
-	public List<Interface> getInterfaces() 
-	{
-		return this.interfaces;
-	}
-		
-	public Interface findInterface(final URI securityMethod)
-	{
-		boolean found = false;
-		Interface retIntf = null;
-		
-		for (Interface intf : this.interfaces)
-		{
-			if (intf.getSecurityMethod().equals(securityMethod))
-			{
-				if (found)
-				{
-					String msg = "Matched more than one interface";
-				    throw new RuntimeException(msg);
-				}
-				
-				found = true;
-				retIntf = intf;
-			}
-		}
-		
-		return retIntf;
-	}
-	
-	private void validateParams(final URI standardID)
-	{
-		if (standardID == null)
-		{
-			String msg = "standard identifier for a Capability object cannot be null.";
-			throw new IllegalArgumentException(msg);
-		}
-	}
+    public URI getStandardID() {
+        return standardID;
+    }
+
+    public List<Interface> getInterfaces() {
+        return interfaces;
+    }
+
+    /**
+     * Find a ParamHTTP interface that uses the specified securityMethod.
+     * This method returns the first matching interface.
+     * 
+     * @param securityMethod
+     * @return the first matching interface or null
+     */
+    public Interface findInterface(final URI securityMethod) {
+        return findInterface(securityMethod, Standards.INTERFACE_PARAM_HTTP);
+    }
+    
+    /**
+     * Find an interface of the specified type that uses the specified securityMethod.
+     * This method returns the first matching interface.
+     * 
+     * @param securityMethod
+     * @param interfaceType
+     * @return the first matching interface or null
+     */
+    public Interface findInterface(final URI securityMethod, final URI interfaceType) {
+        for (Interface intf : this.interfaces) {
+            if (intf.getType().equals(interfaceType)
+                    && intf.getSecurityMethod().equals(securityMethod)) {
+                return intf;
+            }
+        }
+
+        return null;
+    }
+
+    private void validateParams(final URI standardID) {
+        if (standardID == null) {
+            String msg = "standard identifier for a Capability object cannot be null.";
+            throw new IllegalArgumentException(msg);
+        }
+    }
 }
