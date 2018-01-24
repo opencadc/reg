@@ -273,16 +273,15 @@ public class RegistryClient {
     /**
      * Find the service URL for the service registered under the specified base resource
      * identifier and using the specified authentication method. The identifier must be an
-     * IVOA identifier (e.g. with URI scheme os "ivo"). This method uses the default
-     * interface type ParamHTTP defined in VOResource.
+     * IVOA identifier (e.g. with URI scheme "ivo"). This method uses the default
+     * interface type ParamHTTP defined in VOResource and returns the first matching
+     * interface.
      *
-     * @param resourceIdentifier resource identifier, e.g. ivo://cadc/nrc/ca/tap
-     * @param standardID IVOA standard identifier, e.g. ivo://ivo.net/std/TAP#sync-1.1
+     * @param resourceIdentifier resource identifier, e.g. ivo://cadc.nrc.ca/tap
+     * @param standardID IVOA standard identifier, e.g. ivo://ivo.net/std/TAP
      * @param authMethod authentication method to be used
      * @return service URL or null if a matching interface was not found
-     * @throws RuntimeException if more than one URL match the service identifier
      */
-    @Deprecated
     public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod) {
         return getServiceURL(resourceIdentifier, standardID, authMethod, DEFAULT_ITYPE);
     }
@@ -290,14 +289,14 @@ public class RegistryClient {
     /**
      * Find the service URL for the service registered under the specified base resource
      * identifier and using the specified authentication method. The identifier must be an
-     * IVOA identifier (e.g. with URI scheme "ivo"). 
+     * IVOA identifier (e.g. with URI scheme "ivo"). This method returns the first matching
+     * interface.
      * 
      * @param resourceIdentifier
      * @param standardID
      * @param authMethod
      * @param interfaceType
      * @return service URL or null if a matching interface was not found
-     * @throws RuntimeException if more than one URL match the service identifier
      */
     public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod, URI interfaceType) {
         if (resourceIdentifier == null || standardID == null || authMethod == null || interfaceType == null) {
