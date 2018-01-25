@@ -229,7 +229,7 @@ public class CapabilitiesReader {
 
         if (securityMethodElement == null) {
             // anonymous access
-            standardID = Standards.getSecurityMethod(AuthMethod.ANON);
+            standardID = Standards.SECURITY_METHOD_ANON;
         } else {
             // get the standardID for secure access
             String standardIDString = securityMethodElement.getAttributeValue("standardID");

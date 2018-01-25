@@ -322,7 +322,7 @@ public class RegistryClient {
         if (cap != null) {
             // locate the associated interface, throws RuntimeException if more than
             // one interface match
-            Interface intf = cap.findInterface(Standards.getSecurityMethod(authMethod), interfaceType);
+            Interface intf = cap.findInterface(authMethod, interfaceType);
 
             if (intf != null) {
                 url = intf.getAccessURL().getURL();

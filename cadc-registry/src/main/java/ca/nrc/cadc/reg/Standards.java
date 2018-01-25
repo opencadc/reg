@@ -166,32 +166,21 @@ public class Standards
     public static URI INTERFACE_UWS_ASYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Async");
     public static URI INTERFACE_UWS_SYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Sync");
 
-    private static final Map<AuthMethod,URI> SEC_MAP = new HashMap<AuthMethod,URI>();
+    private static final Map<URI,AuthMethod> SEC_MAP = new HashMap<URI,AuthMethod>();
     static
     {
-        SEC_MAP.put(AuthMethod.ANON, SECURITY_METHOD_ANON);
-        SEC_MAP.put(AuthMethod.CERT, SECURITY_METHOD_CERT);
-        SEC_MAP.put(AuthMethod.COOKIE, SECURITY_METHOD_COOKIE);
-        SEC_MAP.put(AuthMethod.PASSWORD, SECURITY_METHOD_HTTP_BASIC);
-        SEC_MAP.put(AuthMethod.TOKEN, SECURITY_METHOD_TOKEN);
+        SEC_MAP.put(SECURITY_METHOD_ANON, AuthMethod.ANON);
+        SEC_MAP.put(SECURITY_METHOD_CERT, AuthMethod.CERT);
+        SEC_MAP.put(SECURITY_METHOD_COOKIE, AuthMethod.COOKIE);
+        SEC_MAP.put(SECURITY_METHOD_HTTP_BASIC, AuthMethod.PASSWORD);
+        SEC_MAP.put(SECURITY_METHOD_TOKEN, AuthMethod.TOKEN);
+        
+        // backwards compatibility
+        SEC_MAP.put(SECURITY_METHOD_PASSWORD, AuthMethod.PASSWORD);
     }
 
     public static AuthMethod getAuthMethod(URI securityMethod)
     {
-        for (Map.Entry<AuthMethod,URI> me : SEC_MAP.entrySet())
-        {
-            if ( me.getValue().equals(securityMethod))
-                return me.getKey();
-        }
-        // backwards compatibility
-        if (SECURITY_METHOD_PASSWORD.equals(securityMethod)) {
-            return AuthMethod.PASSWORD;
-        }
-        throw new IllegalArgumentException("invalid value: " + securityMethod);
-    }
-
-    public static URI getSecurityMethod(AuthMethod am)
-    {
-        return SEC_MAP.get(am);
+        return SEC_MAP.get(securityMethod);
     }
 }

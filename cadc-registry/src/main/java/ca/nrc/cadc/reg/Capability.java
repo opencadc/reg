@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -142,6 +143,38 @@ public class Capability {
         return null;
     }
 
+    /**
+     * Find a ParamHTTP interface that uses the specified securityMethod.
+     * This method returns the first matching interface.
+     * 
+     * @param authMethod
+     * @return the first matching interface or null
+     */
+    public Interface findInterface(final AuthMethod authMethod) {
+        return findInterface(authMethod, Standards.INTERFACE_PARAM_HTTP);
+    }
+    
+    /**
+     * Find an interface of the specified type that uses the specified securityMethod.
+     * This method returns the first matching interface.
+     * 
+     * @param authMethod
+     * @param interfaceType
+     * @return the first matching interface or null
+     */
+    public Interface findInterface(final AuthMethod authMethod, final URI interfaceType) {
+        for (Interface intf : this.interfaces) {
+            if (intf.getType().equals(interfaceType)) {
+                AuthMethod am = Standards.getAuthMethod(intf.getSecurityMethod());
+                if (authMethod.equals(am)) {
+                    return intf;
+                }
+            }
+        }
+
+        return null;
+    }
+    
     private void validateParams(final URI standardID) {
         if (standardID == null) {
             String msg = "standard identifier for a Capability object cannot be null.";
