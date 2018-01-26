@@ -135,7 +135,7 @@ public class Capability {
     public Interface findInterface(final URI securityMethod, final URI interfaceType) {
         for (Interface intf : this.interfaces) {
             if (intf.getType().equals(interfaceType)
-                    && intf.getSecurityMethod().equals(securityMethod)) {
+                    && (intf.getSecurityMethod() == null || intf.getSecurityMethod().equals(securityMethod))) {
                 return intf;
             }
         }
