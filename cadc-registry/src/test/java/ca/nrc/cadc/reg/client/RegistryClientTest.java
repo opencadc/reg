@@ -105,7 +105,7 @@ public class RegistryClientTest
     //static String VOS_HTTP = "http://www.canfar.phys.uvic.ca/vospace";
     //static String VOS_HTTPS = "https://www.canfar.phys.uvic.ca/vospace";
 
-    static String STANDARD_ID = "ivo://ivoa.net/std/TAP#sync-1.1";
+    static String STANDARD_ID = "ivo://ivoa.net/std/TAP";
     static String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
     static String RESOURCE_ID_NO_VALUE = "ivo://cadc.nrc.ca/novalue";
     static String RESOURCE_ID_NO_AUTH_METHOD = "ivo://cadc.nrc.ca/noauthmethod";
@@ -327,18 +327,16 @@ public class RegistryClientTest
     	{
     		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync");
     		URI resourceID = new URI(RESOURCE_ID);
-    		URI standardID = new URI(STANDARD_ID);
-    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
-    		URL serviceURL = rc.getServiceURL(resourceID, standardID, authMethod);
+    		URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.CERT, Standards.INTERFACE_UWS_SYNC);
     		Assert.assertNotNull("Service URL should not be null", serviceURL);
     		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
             Assert.assertNull("wrong caps domain", rc.getCapsDomain());
     	}
-    	catch (Throwable t)
+    	catch (Exception unexpected)
     	{
-            log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+	}
     	finally
     	{
     		// restore java.io.tmpdir environment

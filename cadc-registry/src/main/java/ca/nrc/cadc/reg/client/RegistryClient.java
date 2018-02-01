@@ -172,6 +172,15 @@ public class RegistryClient {
         init(resourceCapsURL);
     }
 
+    /**
+     * Find out if registry lookup URL was modified by a system property. This 
+     * typically indicates that the code is running in a development/test environment.
+     * @return true if lookup is modified, false if default (production)
+     */
+    public boolean isRegistryLookupOverride() {
+        return !RESOURCE_CAPS_URL.equals(resourceCapsURL);
+    }
+    
     private void init(URL resourceCapsURL) {
         try {
             String localP = System.getProperty(LOCAL_PROPERTY);
