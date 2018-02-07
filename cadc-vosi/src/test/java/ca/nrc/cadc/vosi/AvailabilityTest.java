@@ -144,7 +144,7 @@ public class AvailabilityTest {
         TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:backAt", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
         TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:note", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
         Assert.assertTrue("IP Address comment missing.",
-                          TestUtil.hasCommentContaining(doc.getRootElement(), "<clientip>192.168.1.3</clientip>"));
+                          XmlUtil.hasCommentContaining(doc.getRootElement(), "<clientip>192.168.1.3</clientip>"));
     }
 
     @Test

@@ -139,21 +139,4 @@ public class TestUtil {
         rtn = rs.size();
         return rtn;
     }
-
-    /**
-     * Obtain whether the given Document contains a Comment containing the given string.
-     *
-     * @param element      The element to check.
-     * @param commentValue The value to verify exists.
-     * @return True if one or more comments match, or False otherwise.
-     */
-    static boolean hasCommentContaining(final Element element, final String commentValue) {
-        return !element.getContent(new ContentFilter(ContentFilter.COMMENT) {
-            @Override
-            public Content filter(final Object obj) {
-                final Content c = super.filter(obj);
-                return ((c != null) && c.getValue().contains(commentValue)) ? c : null;
-            }
-        }).isEmpty();
-    }
 }
