@@ -128,7 +128,7 @@ public class Availability {
             Util.addChild(eleAvailability, vosi, "note", _status.getNote());
         }
         if (_status.getClientIP() != null) {
-            eleAvailability.addContent(new Comment(String.format("Client IP: %s", _status.getClientIP())));
+            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", _status.getClientIP())));
         }
 
         Document document = new Document();
