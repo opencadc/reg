@@ -149,6 +149,6 @@ public class AvailabilityStatus {
     @Override
     public String toString() {
         return "AvailabilityStatus [_available=" + _available + ", _backAt=" + _backAt + ", _downAt=" + _downAt + ", " +
-            "_note=" + _note + ", _upSince=" + _upSince + "]";
+            "_note=" + _note + ", _upSince=" + _upSince + ", _clientIP=" + _clientIP + "]";
     }
 }
