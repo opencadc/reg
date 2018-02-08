@@ -79,7 +79,10 @@ import ca.nrc.cadc.vosi.avail.CheckWebService;
 import ca.nrc.cadc.xml.XmlUtil;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jdom2.Content;
 import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.filter.ContentFilter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -87,6 +90,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Tests the availability of a service.
@@ -138,7 +142,7 @@ public class AvailabilityTest {
         final Document xml =
             XmlUtil.buildDocument(outputStream.toString("UTF-8"),
                                   VOSI.AVAILABILITY_NS_URI, VOSI.AVAILABILITY_SCHEMA);
-        Assert.assertTrue("Should have comment.", XmlUtil.hasCommentContaining(xml.getRootElement(), "<clientip>"));
+        Assert.assertTrue("Should have comment.", hasClientIPComment(xml.getRootElement()));
     }
 
     URL lookupServiceURL() {
@@ -147,5 +151,23 @@ public class AvailabilityTest {
         log.info("availability url: " + availabilityURL);
 
         return availabilityURL;
+    }
+
+    /**
+     * Obtain whether the given Document contains a Comment containing the given string.
+     *
+     * @param element The element to check.
+     * @return True if one or more comments match, or False otherwise.
+     */
+    boolean hasClientIPComment(final Element element) {
+        final List<Content> comments = element.getContent(new ContentFilter(ContentFilter.COMMENT) {
+            @Override
+            public Content filter(final Object obj) {
+                final Content c = super.filter(obj);
+                return ((c != null) && c.getValue().contains("<clientip>")) ? c : null;
+            }
+        });
+
+        return !comments.isEmpty();
     }
 }
