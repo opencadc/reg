@@ -87,6 +87,7 @@ import ca.nrc.cadc.vosi.util.Util;
  */
 public class Availability {
     private AvailabilityStatus _status;
+    private String _clientIP;
 
     public Availability(AvailabilityStatus status) {
         super();
@@ -108,6 +109,10 @@ public class Availability {
         }
     }
 
+    public void setClientIP(final String clientIP) {
+        this._clientIP = clientIP;
+    }
+
     public Document toXmlDocument() {
         DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
         Namespace vosi = Namespace.getNamespace("vosi", VOSI.AVAILABILITY_NS_URI);
@@ -127,8 +132,8 @@ public class Availability {
         if (_status.getNote() != null) {
             Util.addChild(eleAvailability, vosi, "note", _status.getNote());
         }
-        if (_status.getClientIP() != null) {
-            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", _status.getClientIP())));
+        if (this._clientIP != null) {
+            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", this._clientIP)));
         }
 
         Document document = new Document();

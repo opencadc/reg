@@ -53,14 +53,8 @@ public class AvailabilityServlet extends HttpServlet {
 
             AvailabilityStatus status = ws.getStatus();
 
-            // TODO: Setting the client IP here may be destructive as it overrides whatever was (potentially) set in the
-            // TODO: WebService instance's constructor.
-            //
-            // TODO: jenkinsd 2018.02.06
-            //
-            status.setClientIP(NetUtil.getClientIP(request));
-
             Availability availability = new Availability(status);
+            availability.setClientIP(NetUtil.getClientIP(request));
 
             Document document = availability.toXmlDocument();
             XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());

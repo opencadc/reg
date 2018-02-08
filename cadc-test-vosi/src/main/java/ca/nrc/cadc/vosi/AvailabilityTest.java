@@ -71,7 +71,6 @@ package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.net.HttpDownload;
-import ca.nrc.cadc.net.HttpTransfer;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
@@ -87,10 +86,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+
 
 /**
  * Tests the availability of a service.
@@ -159,12 +159,15 @@ public class AvailabilityTest {
      * @param element The element to check.
      * @return True if one or more comments match, or False otherwise.
      */
-    boolean hasClientIPComment(final Element element) {
+    boolean hasClientIPComment(final Element element) throws Exception {
+        final String hostAddress = InetAddress.getLocalHost().getHostAddress();
         final List<Content> comments = element.getContent(new ContentFilter(ContentFilter.COMMENT) {
             @Override
             public Content filter(final Object obj) {
                 final Content c = super.filter(obj);
-                return ((c != null) && c.getValue().contains("<clientip>")) ? c : null;
+                return ((c != null) && c.getValue().contains(String.format("<clientip>%s</clientip>", hostAddress))) ?
+                    c :
+                    null;
             }
         });
 

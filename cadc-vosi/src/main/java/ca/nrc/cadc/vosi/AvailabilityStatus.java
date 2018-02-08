@@ -81,20 +81,14 @@ public class AvailabilityStatus {
     private Date _downAt;
     private Date _backAt;
     private String _note;
-    private String _clientIP;
 
     public AvailabilityStatus(boolean available, Date upSince, Date downAt, Date backAt, String note) {
-        this(available, upSince, downAt, backAt, note, null);
-    }
-
-    public AvailabilityStatus(boolean available, Date upSince, Date downAt, Date backAt, String note, String clientIP) {
         super();
         _available = available;
         _upSince = upSince;
         _downAt = downAt;
         _backAt = backAt;
         _note = note;
-        _clientIP = clientIP;
     }
 
     public boolean isAvailable() {
@@ -137,18 +131,10 @@ public class AvailabilityStatus {
         _note = note;
     }
 
-    public String getClientIP() {
-        return _clientIP;
-    }
-
-    public void setClientIP(final String clientIP) {
-        this._clientIP = clientIP;
-    }
-
 
     @Override
     public String toString() {
         return "AvailabilityStatus [_available=" + _available + ", _backAt=" + _backAt + ", _downAt=" + _downAt + ", " +
-            "_note=" + _note + ", _upSince=" + _upSince + ", _clientIP=" + _clientIP + "]";
+            "_note=" + _note + ", _upSince=" + _upSince + "]";
     }
 }

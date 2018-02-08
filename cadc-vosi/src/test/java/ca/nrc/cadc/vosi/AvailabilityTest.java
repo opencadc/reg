@@ -113,8 +113,8 @@ public class AvailabilityTest {
      */
     @Before
     public void setUp() throws Exception {
-        this.schemaMap.put(VOSI.AVAILABILITY_NS_URI, XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA,
-                                                                                  AvailabilityTest.class));
+        this.schemaMap.put(VOSI.AVAILABILITY_NS_URI,
+                           XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA, AvailabilityTest.class));
     }
 
     @Test
@@ -124,11 +124,12 @@ public class AvailabilityTest {
             Date d1 = df.parse("2009-04-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
             Date d2 = df.parse("2009-05-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
             Date d3 = df.parse("2009-06-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
-            status = new AvailabilityStatus(true, d1, d2, d3, "noteA", "192.168.1.3");
+            status = new AvailabilityStatus(true, d1, d2, d3, "noteA");
         } catch (ParseException e) {
             log.error("test code bug", e);
         }
         Availability availability = new Availability(status);
+        availability.setClientIP("192.168.1.3");
         Document doc = availability.toXmlDocument();
         XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
         Writer stringWriter = new StringWriter();
@@ -149,7 +150,7 @@ public class AvailabilityTest {
 
     @Test
     public void testAvailabilityEmptyStatus() throws Exception {
-        AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, null, null);
+        AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, null);
         Availability availability = new Availability(status);
         Document doc = availability.toXmlDocument();
         XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
