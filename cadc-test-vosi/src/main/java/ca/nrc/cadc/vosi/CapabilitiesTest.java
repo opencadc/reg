@@ -232,7 +232,7 @@ public class CapabilitiesTest
             // each web service supports capabilitites, availability and logControl
             // in addition to capabilities specific to the web service
             List<Capability> capList = caps.getCapabilities();
-            Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
+            Assert.assertTrue("Incorrect number of capabilities (expected > 1)", capList.size() > 1);
 
             // get the capability associated with the standard ID
             Capability cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
