@@ -133,7 +133,8 @@ public class RegistryClient {
     private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
     private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
-    private static final String CONFIG_CACHE_DIR = "cadc-registry";
+    // version the cache dir so we can increment when we have incompatible cache structure
+    private static final String CONFIG_CACHE_DIR = "cadc-registry-1.4";
     private static final URL RESOURCE_CAPS_URL;
     private static final String RESOURCE_CAPS_NAME = "resource-caps";
     private static String FILE_SEP;
@@ -359,7 +360,7 @@ public class RegistryClient {
         if (this.capsDomain != null) {
             resourceCacheDir = baseCacheDir + this.getCapsDomain() + FILE_SEP + resourceID.getAuthority();
         }
-        String path = resourceID.getPath();
+        String path = resourceID.getPath() + FILE_SEP + "capabilities.xml";
         log.debug("Caching file [" + path + "] in dir [" + resourceCacheDir + "]");
         File file = new File(resourceCacheDir, path);
         return file;
