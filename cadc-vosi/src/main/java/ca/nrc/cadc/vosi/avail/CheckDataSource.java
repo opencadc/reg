@@ -93,6 +93,7 @@ public class CheckDataSource implements CheckResource
     private String testSQL;
     private boolean expectResults = true;
     private boolean rollback = false;
+    private Integer expectNumRows;
 
     /**
      * Constructor to check a DataSource.
@@ -125,6 +126,14 @@ public class CheckDataSource implements CheckResource
         this.dataSourceName = dataSourceName;
         this.testSQL = testSQL;
         this.expectResults = expectResults;
+    }
+    
+    public CheckDataSource(String dataSourceName, String testSQL, int expectNumRows)
+    {
+        this.dataSourceName = dataSourceName;
+        this.testSQL = testSQL;
+        this.expectNumRows = expectNumRows;
+        this.expectResults = true;
     }
     
     public CheckDataSource(String dataSourceName, String testSQL, boolean expectResults, boolean rollback)
@@ -162,7 +171,20 @@ public class CheckDataSource implements CheckResource
                 if (testSQL.trim().toLowerCase().startsWith("select "))
                 {
                     rs = st.executeQuery(testSQL);
-                    rs.next(); // just check the result set, but don't care if there are any rows
+                    if (expectNumRows != null) {
+                        int numRows = 0;
+                        while ( rs.next() ) {
+                            numRows++;
+                        }
+                        if (expectNumRows != numRows) {
+                            String msg = "content fail: " + dataSourceName + " (" + testSQL + ") expected rows: " 
+                                    + expectNumRows + " found: " + numRows;
+                            log.warn(msg);
+                            throw new CheckException(msg);
+                        }
+                    } else {
+                        rs.next(); // just check the result set, but don't care if there are any rows
+                    }
                 }
                 else
                 {

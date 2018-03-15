@@ -168,15 +168,15 @@ public class CachingFile
     {
         Profiler profiler = new Profiler(CachingFile.class);
         log.debug("Cache file: " + cacheFile);
-        if (cacheFile.isDirectory())
-        {
-            throw new IllegalArgumentException("localCache must be a file, not a directory");
-        }
-        String cacheDir = cacheFile.getParent();
-        File dir = new File(cacheDir);
-        log.debug("cache file parent dir: " + dir);
         try
         {
+            File dir = cacheFile.getParentFile();
+            log.debug("cache file parent dir: " + dir);
+            
+            if (dir.exists() && !dir.isDirectory()) {
+                java.nio.file.Files.delete(dir.toPath());
+            }
+        
             if (!dir.exists())
             {
                 // The NIO version seems to create the path properly,
@@ -190,7 +190,7 @@ public class CachingFile
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Failed to create directory: " + dir, e);
+            throw new RuntimeException("Failed to create directory: " + cacheFile.getParentFile(), e);
         }
         finally
         {

@@ -80,6 +80,7 @@ import org.junit.Test;
 
 import ca.nrc.cadc.util.HexUtil;
 import ca.nrc.cadc.util.Log4jInit;
+import java.nio.file.Files;
 
 public class CachingFileTest
 {
@@ -96,7 +97,7 @@ public class CachingFileTest
         try
         {
             // make sure the cache is on alocal filesystem or small NFS time diff causes it to fail
-            File file = new File(System.getProperty("tmp.dir") + "/" + CachingFileTest.class.getSimpleName()+".cache");
+            File file = new File(System.getProperty("user.dir") + "/build/tmp/" + CachingFileTest.class.getSimpleName()+".cache");
             // web site content changes on each request
             URL url = new URL("https://www.uuidgenerator.net/");
             // cache expires in 10 seconds
@@ -153,7 +154,7 @@ public class CachingFileTest
     {
         try
         {
-            File file = new File(System.getProperty("user.dir") + "/src/test/resources/LocalAuthority.properties");
+            File file = new File(System.getProperty("user.dir") + "/build/tmp/cft/foo.properties");
             new CachingFile(file, null);
             Assert.fail("Expected exception");
         }
@@ -170,24 +171,31 @@ public class CachingFileTest
     }
 
     @Test
-    public void testNotAFile()
+    public void testReplaceFileWithDir()
     {
         try
         {
-            File file = new File(System.getProperty("user.dir") + "/src/test/resources");
+            File file = new File(System.getProperty("user.dir") + "/build/tmp/cft-replace");
+            Files.deleteIfExists(file.toPath());
+            Files.createDirectories(file.getParentFile().toPath());
+            Assert.assertTrue(file.getParentFile().exists());
+            Assert.assertTrue(file.getParentFile().isDirectory());
+            
+            file.createNewFile();
+            Assert.assertTrue(file.exists());
+            Assert.assertTrue(file.isFile());
+            
+            File cff = new File(file.getAbsoluteFile(), "TADA");
+            
             URL url = new URL("http://www.canfar.net");
-            new CachingFile(file, url);
-            Assert.fail("Expected exception");
+            CachingFile cf = new CachingFile(cff, url);
+            
+            Assert.assertTrue(file.isDirectory());
         }
-        catch (IllegalArgumentException e)
+        catch (Exception ex)
         {
-            Assert.assertTrue(e.getMessage().contains("localCache"));
-            Assert.assertTrue(e.getMessage().contains("directory"));
-        }
-        catch (Throwable t)
-        {
-            log.error("unexpected throwable", t);
-            Assert.fail("unexpected throwable: " + t.getMessage());
+            log.error("unexpected exception", ex);
+            Assert.fail("unexpected exception: " + ex);
         }
     }
 
@@ -196,7 +204,7 @@ public class CachingFileTest
     {
         try
         {
-            File file = new File(System.getProperty("user.dir") + "/src/test/resources/LocalAuthority.properties");
+            File file = new File(System.getProperty("user.dir") + "/build/tmp/cft/foo.properties");
             URL url = new URL("ftp://www.canfar.net");
             new CachingFile(file, url);
             Assert.fail("Expected exception");
