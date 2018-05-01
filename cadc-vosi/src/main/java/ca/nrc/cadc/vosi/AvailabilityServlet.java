@@ -29,12 +29,14 @@ public class AvailabilityServlet extends HttpServlet {
     private static final long serialVersionUID = 201003131300L;
 
     private String wsClassName;
+    private String appName;
 
     @Override
     public void init(ServletConfig config)
         throws ServletException {
+        this.appName = config.getServletContext().getServletContextName();
         this.wsClassName = config.getInitParameter("ca.nrc.cadc.vosi.WebService");
-        log.info("WebService class name: " + wsClassName);
+        log.info("application: " + appName + " WebService impl: " + wsClassName);
     }
 
     @Override
@@ -50,7 +52,8 @@ public class AvailabilityServlet extends HttpServlet {
 
             Class wsClass = Class.forName(wsClassName);
             WebService ws = (WebService) wsClass.newInstance();
-
+            ws.setAppName(appName);
+            
             AvailabilityStatus status = ws.getStatus();
 
             Availability availability = new Availability(status);
@@ -88,6 +91,7 @@ public class AvailabilityServlet extends HttpServlet {
 
             Class wsClass = Class.forName(wsClassName);
             WebService ws = (WebService) wsClass.newInstance();
+            ws.setAppName(appName);
 
             Subject.doAs(subject, new ChangeServiceState(ws, request));
 

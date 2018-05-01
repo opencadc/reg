@@ -75,6 +75,19 @@ package ca.nrc.cadc.vosi;
  */
 public interface WebService
 {
+    /**
+     * Set application name. The app name is a string unique to this
+     * application. 
+     * 
+     * @param appName unique application name
+     */
+    public void setAppName(String appName);
+    
+    /**
+     * Get the current availability status.
+     * 
+     * @return current status
+     */
     public AvailabilityStatus getStatus();
 
     /**
