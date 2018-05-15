@@ -28,13 +28,19 @@ public class AvailabilityServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(AvailabilityServlet.class);
     private static final long serialVersionUID = 201003131300L;
 
-    private String wsClassName;
+    private String pluginClassName;
+    private String appName;
 
     @Override
     public void init(ServletConfig config)
         throws ServletException {
-        this.wsClassName = config.getInitParameter("ca.nrc.cadc.vosi.WebService");
-        log.info("WebService class name: " + wsClassName);
+        this.appName = config.getServletContext().getServletContextName();
+        this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
+        if (pluginClassName == null) {
+            // backwards compat
+            this.pluginClassName = config.getInitParameter(WebService.class.getName());
+        }
+        log.info("application: " + appName + " plugin impl: " + pluginClassName);
     }
 
     @Override
@@ -48,9 +54,13 @@ public class AvailabilityServlet extends HttpServlet {
             logInfo.setSubject(subject);
             log.info(logInfo.start());
 
-            Class wsClass = Class.forName(wsClassName);
+            Class wsClass = Class.forName(pluginClassName);
             WebService ws = (WebService) wsClass.newInstance();
-
+            if (ws instanceof AvailabilityPlugin) {
+                AvailabilityPlugin ap = (AvailabilityPlugin) ws;
+                ap.setAppName(appName);
+            }
+            
             AvailabilityStatus status = ws.getStatus();
 
             Availability availability = new Availability(status);
@@ -86,8 +96,12 @@ public class AvailabilityServlet extends HttpServlet {
             logInfo.setSubject(subject);
             log.info(logInfo.start());
 
-            Class wsClass = Class.forName(wsClassName);
+            Class wsClass = Class.forName(pluginClassName);
             WebService ws = (WebService) wsClass.newInstance();
+            if (ws instanceof AvailabilityPlugin) {
+                AvailabilityPlugin ap = (AvailabilityPlugin) ws;
+                ap.setAppName(appName);
+            }
 
             Subject.doAs(subject, new ChangeServiceState(ws, request));
 
