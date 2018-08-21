@@ -151,6 +151,8 @@ public class Standards
 
     public final static URI RESOLVER_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/NameResolver#names-1.0");
 
+    public final static URI DOI_INSTANCES_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/DOI#instances-1.0");
+
     //public final static URI VMOD_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
 
     public final static URI SECURITY_METHOD_ANON = URI.create("ivo://ivoa.net/sso#anon");
