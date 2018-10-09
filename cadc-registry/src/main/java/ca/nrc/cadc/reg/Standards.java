@@ -91,6 +91,8 @@ public class Standards
     public final static URI GMS_GROUPS_01 = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
     public final static URI GMS_SEARCH_01 = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
 
+    public static final URI REGISTRY_10 = URI.create("ivo://ivoa.net/std/Registry");
+    
     public final static URI SIA_10 = URI.create("ivo://ivoa.net/std/SIA");
     public final static URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
     //public final static URI SIA_META_2x = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
@@ -115,6 +117,8 @@ public class Standards
     public final static URI VOSI_AVAILABILITY = URI.create("ivo://ivoa.net/std/VOSI#availability");
     public final static URI VOSI_TABLES = URI.create("ivo://ivoa.net/std/VOSI#tables");
     public final static URI VOSI_TABLES_11 = URI.create("ivo://ivoa.net/std/VOSI#tables-1.1");
+    
+    public final static URI PROTO_TABLE_UPDATE = URI.create("ivo://ivoa.net/std/VOSI#table-update-1.x");
 
     public final static URI VOSPACE_NODES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
     public final static URI VOSPACE_PROPERTIES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#properties");
@@ -167,6 +171,7 @@ public class Standards
     public static URI INTERFACE_PARAM_HTTP = URI.create(XMLConstants.VODATASERVICE_11_NS + "#ParamHTTP");
     public static URI INTERFACE_UWS_ASYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Async");
     public static URI INTERFACE_UWS_SYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Sync");
+    public static URI INTERFACE_REG_OAI = URI.create(XMLConstants.REGISTRY_10_NS.toASCIIString() + "#OAIHTTP");
 
     private static final Map<URI,AuthMethod> SEC_MAP = new HashMap<URI,AuthMethod>();
     static
