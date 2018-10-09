@@ -90,6 +90,8 @@ public class XMLConstants
     public static final URI VORESOURCE_10_NS = URI.create("http://www.ivoa.net/xml/VOResource/v1.0");
     public static final URI VOSICAPABILITIES_10_NS = URI.create("http://www.ivoa.net/xml/VOSICapabilities/v1.0");
     public static final URI UWSREGEXT_10_NS = URI.create("http://www.ivoa.net/xml/UWSRegExt/v0.1");
+    public static final URI REGISTRY_10_NS = URI.create("http://www.ivoa.net/xml/VORegistry/v1.0");
+    public static final URI REG_IFACE_10_NS = URI.create("http://www.ivoa.net/xml/RegistryInterface/v1.0");
     
     public static final URI XLINK_NS = URI.create("http://www.w3.org/1999/xlink");
 
@@ -100,6 +102,9 @@ public class XMLConstants
     private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.0.xsd";
     private static final String VOSICAPABILITIES_10_SCHEMA = "VOSICapabilities-v1.0.xsd";
     private static final String UWSREGEXT_10_SCHEMA = "UWSRegExt-v0.1.xsd";
+    private static final String REGISTRY_10_SCHEMA = "VORegistry-v1.0.xsd";
+    private static final String REG_IFACE_10_SCHEMA = "RegistryInterface-v1.0.xsd";
+    
     
     private static final String XLINK_SCHEMA = "XLINK.xsd";
 
@@ -127,6 +132,12 @@ public class XMLConstants
         
         String uwsRegEx10URL = XmlUtil.getResourceUrlString(UWSREGEXT_10_SCHEMA, XMLConstants.class);
     	SCHEMA_MAP.put(UWSREGEXT_10_NS.toString(), uwsRegEx10URL);
+        
+        String reg10URL = XmlUtil.getResourceUrlString(REGISTRY_10_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(REGISTRY_10_NS.toString(), reg10URL);
+        
+        String regInter10URL = XmlUtil.getResourceUrlString(REG_IFACE_10_SCHEMA, XMLConstants.class);
+    	SCHEMA_MAP.put(REG_IFACE_10_NS.toString(), regInter10URL);
 
     	String xlinkSchemaURL = XmlUtil.getResourceUrlString(XLINK_SCHEMA, XMLConstants.class);
     	SCHEMA_MAP.put(XLINK_NS.toString(), xlinkSchemaURL);

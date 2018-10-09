@@ -192,27 +192,14 @@ public class CapabilitiesReader {
     }
 
     private Interface buildInterface(final Element intfElement) {
-        Namespace vns = null;
-        Namespace uns = null;
+        Attribute attr = intfElement.getAttribute("type", W3CConstants.XSI_NS);
+        String type = attr.getValue();
         for (Namespace ns : intfElement.getNamespacesInScope()) {
-            log.debug("namespace: " + ns);
-            if (XMLConstants.VODATASERVICE_11_NS.toASCIIString().equals(ns.getURI())) {
-                vns = ns;
-            } else if (XMLConstants.UWSREGEXT_10_NS.toASCIIString().equals(ns.getURI())) {
-                uns = ns;
+            if (type.startsWith(ns.getPrefix() + ":")) {
+                type =  type.replace(ns.getPrefix() + ":", ns.getURI()+"#");
             }
         }
         
-        Attribute attr = intfElement.getAttribute("type", W3CConstants.XSI_NS);
-        String type = attr.getValue();
-        log.debug("VODataService ns: " + vns);
-        log.debug("UWSRegExt ns: " + uns);
-        if (vns != null) {
-            type =  type.replace(vns.getPrefix()+":", vns.getURI()+"#");
-        }
-        if (uns != null) {
-            type =  type.replace(uns.getPrefix()+":", uns.getURI()+"#");
-        }
         URI itype = URI.create(type);
         log.debug("found type: " + attr + " -> " + itype);
         
