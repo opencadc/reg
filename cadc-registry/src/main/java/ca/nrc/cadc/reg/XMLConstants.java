@@ -97,9 +97,9 @@ public class XMLConstants
 
     private static final String SIA_11_SCHEMA = "SIA-v1.1.xsd";
     private static final String STC_13_SCHEMA = "STC-v1.3.xsd";
-    private static final String TAPREGEXT_10_SCHEMA = "TAPRegExt-v1.0.xsd";
+    private static final String TAPREGEXT_10_SCHEMA = "TAPRegExt-v1.0-with-erratum1.xsd";
     private static final String VODATASERVICE_11_SCHEMA = "VODataService-v1.1.xsd";
-    private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.0.xsd";
+    private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.1.xsd"; // minor update w/ same namespace
     private static final String VOSICAPABILITIES_10_SCHEMA = "VOSICapabilities-v1.0.xsd";
     private static final String UWSREGEXT_10_SCHEMA = "UWSRegExt-v0.1.xsd";
     private static final String REGISTRY_10_SCHEMA = "VORegistry-v1.0.xsd";
