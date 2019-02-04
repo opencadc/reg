@@ -101,10 +101,6 @@ public class Standards
     public final static URI SODA_ASYNC_10 = URI.create("ivo://ivoa.net/std/SODA#async-1.0");
 
     public final static URI TAP_10 = URI.create("ivo://ivoa.net/std/TAP");
-    @Deprecated
-    public final static URI TAP_SYNC_11 = URI.create("ivo://ivoa.net/std/TAP#sync-1.1");
-    @Deprecated
-    public final static URI TAP_ASYNC_11 = URI.create("ivo://ivoa.net/std/TAP#async-1.1");
 
     public final static URI UMS_USERS_01 = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
     public final static URI UMS_REQS_01 = URI.create("ivo://ivoa.net/std/UMS#reqs-0.1");
@@ -164,15 +160,11 @@ public class Standards
     public final static URI SECURITY_METHOD_ANON = URI.create("ivo://ivoa.net/sso#anon");
     public final static URI SECURITY_METHOD_CERT = URI.create("ivo://ivoa.net/sso#tls-with-certificate");
     public final static URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");
-    @Deprecated
-    public final static URI SECURITY_METHOD_PASSWORD = URI.create("http://www.w3.org/Protocols/HTTP/1.0/spec.html#BasicAA");
     public final static URI SECURITY_METHOD_HTTP_BASIC = URI.create("ivo://ivoa.net/sso#BasicAA");
     public final static URI SECURITY_METHOD_TOKEN = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0");
 
     // interface type identifiers: <namespace uri>#<type attr name without rpefix>
     public static URI INTERFACE_PARAM_HTTP = URI.create(XMLConstants.VODATASERVICE_11_NS + "#ParamHTTP");
-    public static URI INTERFACE_UWS_ASYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Async");
-    public static URI INTERFACE_UWS_SYNC = URI.create(XMLConstants.UWSREGEXT_10_NS.toASCIIString() + "#Sync");
     public static URI INTERFACE_REG_OAI = URI.create(XMLConstants.REGISTRY_10_NS.toASCIIString() + "#OAIHTTP");
 
     private static final Map<URI,AuthMethod> SEC_MAP = new HashMap<URI,AuthMethod>();
@@ -183,9 +175,6 @@ public class Standards
         SEC_MAP.put(SECURITY_METHOD_COOKIE, AuthMethod.COOKIE);
         SEC_MAP.put(SECURITY_METHOD_HTTP_BASIC, AuthMethod.PASSWORD);
         SEC_MAP.put(SECURITY_METHOD_TOKEN, AuthMethod.TOKEN);
-        
-        // backwards compatibility
-        SEC_MAP.put(SECURITY_METHOD_PASSWORD, AuthMethod.PASSWORD);
     }
 
     public static AuthMethod getAuthMethod(URI securityMethod)

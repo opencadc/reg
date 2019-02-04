@@ -65,10 +65,9 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
-
 
 import java.net.URI;
 import java.util.List;
@@ -84,64 +83,51 @@ import ca.nrc.cadc.util.Log4jInit;
  *
  * @author yeunga
  */
-public class CapabilitiesTest
-{
+public class CapabilitiesTest {
+
     private static final Logger log = Logger.getLogger(CapabilitiesTest.class);
 
-    private URI STANDARD_ID = Standards.TAP_SYNC_11;
-    private URI STANDARD_ID_2 = Standards.TAP_ASYNC_11;
-    private URI STANDARD_ID_3= Standards.VOSI_TABLES_11;
+    private URI STANDARD_ID = Standards.TAP_10;
+    private URI STANDARD_ID_2 = Standards.VOSI_TABLES_11;
 
-    static
-    {
+    static {
         Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
     }
 
-    public CapabilitiesTest() { }
+    public CapabilitiesTest() {
+    }
 
     @Test
-    public void testNullResourceID()
-    {
-        try
-        {
+    public void testNullResourceID() {
+        try {
             new Capability(null);
             Assert.fail("expected IllegalArgumentException");
-        }
-        catch(IllegalArgumentException ex)
-        {
-        	// expected
-        }
-        catch(Throwable t)
-        {
+        } catch (IllegalArgumentException ex) {
+            // expected
+        } catch (Throwable t) {
             Assert.fail("unexpected t: " + t);
         }
     }
 
     @Test
-    public void testCapabilities()
-    {
-    	try
-    	{
-    		// construct a Capabilities object
-    		Capabilities capabilities = new Capabilities();
-    		List<Capability> caps = capabilities.getCapabilities();
+    public void testCapabilities() {
+        try {
+            // construct a Capabilities object
+            Capabilities capabilities = new Capabilities();
+            List<Capability> caps = capabilities.getCapabilities();
 
-    		// test correct capability is added
-    		caps.add(new Capability(STANDARD_ID));
-    		Assert.assertEquals("capability list should have one entry", 1, caps.size());
-    		Capability[] capArray = caps.toArray(new Capability[caps.size()]);
-    		Assert.assertEquals("capability list contains a different capability", STANDARD_ID, capArray[0].getStandardID());
+            // test correct capability is added
+            caps.add(new Capability(STANDARD_ID));
+            Assert.assertEquals("capability list should have one entry", 1, caps.size());
+            Capability[] capArray = caps.toArray(new Capability[caps.size()]);
+            Assert.assertEquals("capability list contains a different capability", STANDARD_ID, capArray[0].getStandardID());
 
-    		// test correct number of capability are added
-    		caps.add(new Capability(STANDARD_ID_2));
-    		Assert.assertEquals("capability list should have one entry", 2, caps.size());
-    		caps.add(new Capability(STANDARD_ID_3));
-    		Assert.assertEquals("capability list should have one entry", 3, caps.size());
-    	}
-    	catch (Throwable t)
-    	{
+            // test correct number of capability are added
+            caps.add(new Capability(STANDARD_ID_2));
+            Assert.assertEquals("capability list should have one entry", 2, caps.size());
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-    	}
+            Assert.fail("unexpected exception: " + t);
+        }
     }
 }

@@ -111,14 +111,6 @@ public class RegistryClientTest
     static String RESOURCE_ID_NO_AUTH_METHOD = "ivo://cadc.nrc.ca/noauthmethod";
     static String RESOURCE_ID_NOT_FOUND = "ivo://cadc.nrc.ca/notfound";
 
-    @BeforeClass
-    public static void touchConfigFile()
-    {
-        File config = new File("test/.config/cadcRegistry/cadc.nrc.ca/tap");
-        config.setLastModified(System.currentTimeMillis());
-        log.debug("Touched file: " + config);
-    }
-
     //@Test
     public void testGetCapabilitiesWithNullResourceidentifier()
     {
@@ -194,10 +186,10 @@ public class RegistryClientTest
     	RegistryClient rc = new RegistryClient();
     	try
     	{
-			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
-			List<Capability> capList = caps.getCapabilities();
-			Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
-		}
+            Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
+            List<Capability> capList = caps.getCapabilities();
+            Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
+        }
     	catch (Throwable t)
     	{
             log.error("unexpected exception", t);
@@ -220,7 +212,7 @@ public class RegistryClientTest
     	try
     	{
     		URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
-    		URI standardID = Standards.TAP_SYNC_11;
+    		URI standardID = Standards.TAP_10;
     		AuthMethod authMethod = null;
     		rc.getServiceURL(resourceID, standardID, authMethod);
     	}
@@ -280,41 +272,6 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
-    public void testGetServiceURLWithNullResourceID()
-    {
-        String currentTmpDir = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
-
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-    		URI resourceID = null;
-    		URI standardID = Standards.TAP_SYNC_11;
-    		AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
-    		rc.getServiceURL(resourceID, standardID, authMethod);
-    	}
-    	catch (IllegalArgumentException ex)
-    	{
-    		// expecting a null parameter related exception
-    		if (!ex.getMessage().contains("No input parameters should be null"))
-    		{
-                log.error("unexpected exception", ex);
-        		Assert.fail("unexpected exception: " + ex);
-    		}
-    	}
-    	catch (Throwable t)
-    	{
-            log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
-            // restore java.io.tmpdir environment
-            System.setProperty("java.io.tmpdir", currentTmpDir);
-        }
-    }
-
     @Test
     public void testGetServiceURLHappyPath()
     {
@@ -325,9 +282,9 @@ public class RegistryClientTest
     	RegistryClient rc = new RegistryClient();
     	try
     	{
-    		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync");
+    		URL expected = new URL("http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap");
     		URI resourceID = new URI(RESOURCE_ID);
-    		URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.CERT, Standards.INTERFACE_UWS_SYNC);
+    		URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.ANON);
     		Assert.assertNotNull("Service URL should not be null", serviceURL);
     		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
             Assert.assertNull("wrong caps domain", rc.getCapsDomain());
