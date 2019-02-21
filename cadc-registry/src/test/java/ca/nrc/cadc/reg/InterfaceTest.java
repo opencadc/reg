@@ -65,10 +65,9 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
-
 
 import ca.nrc.cadc.util.Log4jInit;
 import java.net.URI;
@@ -82,96 +81,78 @@ import org.junit.Test;
  *
  * @author yeunga
  */
-public class InterfaceTest 
-{
+public class InterfaceTest {
+
     private static final Logger log = Logger.getLogger(InterfaceTest.class);
 
     private URI ITYPE = Standards.INTERFACE_PARAM_HTTP;
-    private String ACCESS_URL = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/availability";
-    private String SECURITY_METHOD = "ivo://ivoa.net/sso#tls-with-certficate";
-    
-    static
-    {
+    private String ACCESS_URL = "https://example.net/tap/availability";
+
+    static {
         Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
     }
-    
-    public InterfaceTest() { }
-    
+
+    public InterfaceTest() {
+    }
+
     @Test
-    public void testNullType()
-    {
-        try
-        {
-            new Interface(null, new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD));
+    public void testNullType() {
+        try {
+            Interface i = new Interface(null, new AccessURL(new URL(ACCESS_URL)));
             Assert.fail("expected IllegalArgumentException");
-        }
-        catch(IllegalArgumentException ex)
-        {
-        	// expected
-        }
-        catch(Throwable t)
-        {
+        } catch (IllegalArgumentException ex) {
+            // expected
+        } catch (Throwable t) {
             Assert.fail("unexpected t: " + t);
         }
     }
-    
+
     @Test
-    public void testNullAccessURL()
-    {
-        try
-        {
-            new Interface(ITYPE, null, new URI(SECURITY_METHOD));
+    public void testNullAccessURL() {
+        try {
+            new Interface(ITYPE, null);
             Assert.fail("expected IllegalArgumentException");
-        }
-        catch(IllegalArgumentException ex)
-        {
-        	// expected
-        }
-        catch(Throwable t)
-        {
+        } catch (IllegalArgumentException ex) {
+            // expected
+        } catch (Throwable t) {
             Assert.fail("unexpected t: " + t);
         }
     }
-    
+
     @Test
-    public void testNullSecurityMethod()
-    {
-        try
-        {
-            new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)), null);
-            Assert.fail("expected IllegalArgumentException");
-        }
-        catch(IllegalArgumentException ex)
-        {
-        	// expected
-        }
-        catch(Throwable t)
-        {
-            Assert.fail("unexpected t: " + t);
-        }
-    }
-   
-    @Test
-    public void testConstruction()
-    {
-    	try
-    	{
-    		Interface intf = new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD));
-    		URI type = intf.getType();
-                Assert.assertEquals(ITYPE, type);
-                
-                AccessURL accessURL = intf.getAccessURL();
-    		Assert.assertNotNull("accessURL should not be null", accessURL);
-    		Assert.assertEquals("accessURL is corrupted", ACCESS_URL, accessURL.getURL().toString());
-                
-                URI securityMethod =intf.getSecurityMethod();
-    		Assert.assertNotNull("securityMethods should not be null", intf.getSecurityMethod());
-    		Assert.assertEquals("securityMethod is corrupted", SECURITY_METHOD, securityMethod.toString());
-    	}
-    	catch (Throwable t)
-    	{
+    public void testConstruction() {
+        try {
+            Interface intf = new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)));
+
+            URI type = intf.getType();
+            Assert.assertEquals(ITYPE, type);
+
+            AccessURL accessURL = intf.getAccessURL();
+            Assert.assertNotNull("accessURL should not be null", accessURL);
+            Assert.assertEquals("accessURL is corrupted", ACCESS_URL, accessURL.getURL().toString());
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
-    	}
+        }
+    }
+
+    @Test
+    public void testSecurityMethods() {
+        try {
+            Interface intf = new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)));
+            intf.getSecurityMethods().add(Standards.SECURITY_METHOD_ANON);
+            intf.getSecurityMethods().add(Standards.SECURITY_METHOD_CERT);
+
+            Assert.assertEquals(2, intf.getSecurityMethods().size());
+
+            URI anon = intf.getSecurityMethods().get(0);
+            Assert.assertEquals(Standards.SECURITY_METHOD_ANON, anon);
+            
+            URI cert = intf.getSecurityMethods().get(1);
+            Assert.assertEquals(Standards.SECURITY_METHOD_CERT, cert);
+        } catch (Throwable t) {
+            log.error("unexpected exception", t);
+            Assert.fail("unexpected exception: " + t);
+        }
     }
 }

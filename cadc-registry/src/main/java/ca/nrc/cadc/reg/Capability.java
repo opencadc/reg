@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2010.                            (c) 2010.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -76,15 +76,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /**
- * Minimal implementation of the IVOA Capability model in VOResource 1.0.
- *
- * standardID is a URI which represents a service standard, e.g. ivo://ivoa.net/std/TAP
- *
- * interface specifies how the capability can be accessed. At least one interface
- * must be provided. If more than one is provided, each interface should provide
- * an alternative interface for accessing essentially the same underlying
- * capability. The interfaces can differ in their overall type or in the
- * supported input parameters or output products.
+ * Minimal implementation of the IVOA Capability model in VOResource 1.1.
  *
  * @author yeunga
  */
@@ -134,9 +126,11 @@ public class Capability {
      */
     public Interface findInterface(final URI securityMethod, final URI interfaceType) {
         for (Interface intf : this.interfaces) {
-            if (intf.getType().equals(interfaceType)
-                    && intf.getSecurityMethod().equals(securityMethod)) {
-                return intf;
+            for (URI sm : intf.getSecurityMethods()) {
+                if (intf.getType().equals(interfaceType)
+                        && sm.equals(securityMethod)) {
+                    return intf;
+                }
             }
         }
 
@@ -155,35 +149,25 @@ public class Capability {
     }
     
     /**
-     * Find an interface of the specified type that uses the specified securityMethod.
-     * This method returns the https interface, if it exists. Otherwise it returns the first interface found.
+     * Find an interface of the specified type that uses the specified authMethdod.
+     * This method returns the first matching interface.
      * 
      * @param authMethod
      * @param interfaceType
      * @return the first matching interface or null
      */
     public Interface findInterface(final AuthMethod authMethod, final URI interfaceType) {
-        Interface retn = null;
-        Interface firstFound = null;
         for (Interface intf : this.interfaces) {
             if (intf.getType().equals(interfaceType)) {
-                AuthMethod am = Standards.getAuthMethod(intf.getSecurityMethod());
-                if (authMethod.equals(am)) {
-                    if (intf.getAccessURL().getURL().getProtocol().equals("https")) {
-                        // Filter for the https
-                        retn = intf;
-                    } else if (firstFound == null) {
-                        firstFound = intf;
+                for (URI sm : intf.getSecurityMethods()) {
+                    AuthMethod am = Standards.getAuthMethod(sm);
+                    if (authMethod.equals(am)) {
+                        return intf;
                     }
                 }
             }
         }
-
-        if (retn ==  null) {
-            retn = firstFound;
-        }
-
-        return retn;
+        return null;
     }
     
     private void validateParams(final URI standardID) {

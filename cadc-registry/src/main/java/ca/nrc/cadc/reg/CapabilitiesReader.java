@@ -100,10 +100,6 @@ public class CapabilitiesReader {
 
     private static final Logger log = Logger.getLogger(CapabilitiesReader.class);
 
-    private String resourceIDStr = "";
-    private String standardIDStr = "";
-    private String accessURLStr = "";
-    private String securityMethodStr = "";
     protected Map<String, String> schemaMap;
 
     public CapabilitiesReader() {
@@ -120,7 +116,7 @@ public class CapabilitiesReader {
      * Construct a Capabilities from an XML String source.
      *
      * @param xml String of the XML.
-     * @return Capabiltiies Capabilities.
+     * @return Capabilities object
      */
     public Capabilities read(String xml) {
         if (xml == null) {
@@ -181,7 +177,7 @@ public class CapabilitiesReader {
     }
 
     private Capability buildCapability(final Element capElement) {
-        Capability cap = new Capability(this.parseStandardID(capElement));
+        Capability cap = new Capability(this.parseStandardID(capElement, true));
         List<Element> intfElementList = capElement.getChildren("interface");
         for (Element intfElement : intfElementList) {
             Interface intf = this.buildInterface(intfElement);
@@ -196,7 +192,7 @@ public class CapabilitiesReader {
         String type = attr.getValue();
         for (Namespace ns : intfElement.getNamespacesInScope()) {
             if (type.startsWith(ns.getPrefix() + ":")) {
-                type =  type.replace(ns.getPrefix() + ":", ns.getURI()+"#");
+                type =  type.replace(ns.getPrefix() + ":", ns.getURI() + "#");
             }
         }
         
@@ -204,98 +200,54 @@ public class CapabilitiesReader {
         log.debug("found type: " + attr + " -> " + itype);
         
         AccessURL accessURL = this.parseAccessURL(intfElement.getChild("accessURL"));
-        URI securityMethod = this.parseSecurityMethod(intfElement.getChild("securityMethod"));
-        
-        Interface intf = new Interface(itype, accessURL, securityMethod);
+        Interface intf = new Interface(itype, accessURL);
         intf.role = intfElement.getAttributeValue("role");
+        
+        List<Element> sms = intfElement.getChildren("securityMethod");
+        if (sms.isEmpty()) {
+            intf.getSecurityMethods().add(Standards.SECURITY_METHOD_ANON);
+        } else {
+            for (Element sme : sms) {
+                URI sm = parseSecurityMethod(sme);
+                intf.getSecurityMethods().add(sm);
+            }
+        }
+        
         return intf;
     }
 
     private URI parseSecurityMethod(final Element securityMethodElement) {
-        URI standardID;
-
-        if (securityMethodElement == null) {
-            // anonymous access
+        URI standardID = parseStandardID(securityMethodElement, false);
+        if (standardID == null) {
             standardID = Standards.SECURITY_METHOD_ANON;
-        } else {
-            // get the standardID for secure access
-            String standardIDString = securityMethodElement.getAttributeValue("standardID");
-
-            if (standardIDString == null) {
-                String prefix = this.resourceIDStr + this.standardIDStr + this.accessURLStr;
-                String msg = prefix + ", standardID attribute not found in securityMethod element";
-                throw new RuntimeException(msg);
-            }
-
-            this.securityMethodStr = ", securityMethod standardID=" + standardIDString;
-            try {
-                standardID = new URI(standardIDString);
-            } catch (URISyntaxException e) {
-                String prefix = this.resourceIDStr + this.standardIDStr + this.accessURLStr + this.securityMethodStr;
-                String msg = prefix + ", invalid securityMethod standardID in xml: " + e.getMessage();
-                throw new RuntimeException(msg);
-            }
         }
-
-        log.debug("securityMethod standardID: " + standardID);
         return standardID;
     }
 
     private AccessURL parseAccessURL(final Element accessURLElement) {
         AccessURL accessURL = new AccessURL(this.parseURL(accessURLElement));
-        accessURL.use = this.parseUse(accessURLElement);
+        accessURL.use = accessURLElement.getAttributeValue("use");
         return accessURL;
-    }
-
-    private String parseUse(final Element accessURLElement) {
-        String useString = accessURLElement.getAttributeValue("use");
-        if (useString == null) {
-            String msg = this.resourceIDStr + this.standardIDStr + this.accessURLStr + ", use attribute not found in accessURL element";
-            throw new RuntimeException(msg);
-        }
-
-        log.debug("accessURL use: " + useString);
-        return useString;
     }
 
     private URL parseURL(final Element accessURLElement) {
         String accessURLString = accessURLElement.getText();
-        if (accessURLString == null) {
-            String msg = this.resourceIDStr + this.standardIDStr + ", URL not found in accessURL element";
-            throw new RuntimeException(msg);
-        }
-
-        log.debug("accessURL: " + accessURLString);
-        this.accessURLStr = ", accessURL=" + accessURLString;
-
-        URL accessURL;
         try {
-            accessURL = new URL(accessURLString);
-        } catch (MalformedURLException e) {
-            String msg = this.resourceIDStr + this.standardIDStr + this.accessURLStr + ", invalid accessURL in xml: " + e.getMessage();
-            throw new RuntimeException(msg);
+            return new URL(accessURLString);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException("invalid accessURL: " + accessURLString, ex);
         }
-        return accessURL;
     }
 
-    private URI parseStandardID(final Element capElement) {
-        String standardIDString = capElement.getAttributeValue("standardID");
-        if (standardIDString == null) {
-            String msg = this.resourceIDStr + ", standardID attribute not found in capability element";
-            throw new RuntimeException(msg);
+    private URI parseStandardID(final Element e, boolean required) {
+        String standardIDString = e.getAttributeValue("standardID");
+        if (standardIDString == null && !required) {
+            return null;
         }
-
-        this.standardIDStr = ", standardID=" + standardIDString;
-        URI standardID;
-
         try {
-            standardID = new URI(standardIDString);
-        } catch (URISyntaxException e) {
-            String msg = this.resourceIDStr + this.standardIDStr + ", invalid standardID in xml: " + e.getMessage();
-            throw new RuntimeException(msg);
+            return new URI(standardIDString);
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException("invalid standardID: " + standardIDString, ex);
         }
-
-        log.debug("capabilities standardID: " + standardIDString);
-        return standardID;
     }
 }

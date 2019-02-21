@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2011.                            (c) 2011.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,50 +65,43 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg.client;
 
-
+import ca.nrc.cadc.util.MultiValuedProperties;
+import ca.nrc.cadc.util.PropertiesReader;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
-
-import ca.nrc.cadc.util.MultiValuedProperties;
-import ca.nrc.cadc.util.PropertiesReader;
 
 /**
  *
  * @author pdowler
  */
-public class LocalAuthority
-{
+public class LocalAuthority {
+
     private static final Logger log = Logger.getLogger(LocalAuthority.class);
 
     private static final String LOCAL_AUTH_PROP_FILE = LocalAuthority.class.getSimpleName() + ".properties";
 
-    private Map<String,String> authorityMap = new TreeMap<String,String>();
+    private Map<String, String> authorityMap = new TreeMap<String, String>();
 
-    public LocalAuthority()
-    {
+    public LocalAuthority() {
         PropertiesReader propReader = new PropertiesReader(LOCAL_AUTH_PROP_FILE);
         MultiValuedProperties mvp = propReader.getAllProperties();
 
-        for (String std : mvp.keySet())
-        {
+        for (String std : mvp.keySet()) {
             List<String> values = mvp.getProperty(std);
-            if (values.size() > 1)
+            if (values.size() > 1) {
                 throw new IllegalStateException("found " + values.size() + " values for " + std);
-            if (values.isEmpty())
-            {
-                log.debug(std + " has no value, skipping");
             }
-            else
-            {
+            if (values.isEmpty()) {
+                log.debug(std + " has no value, skipping");
+            } else {
                 String val = values.get(0);
                 log.debug("authorityMap: " + std + " -> " + val);
                 authorityMap.put(std, val);
@@ -116,11 +109,11 @@ public class LocalAuthority
         }
     }
 
-    public URI getServiceURI(String baseStandardID)
-    {
+    public URI getServiceURI(String baseStandardID) {
         String resourceIdentifier = authorityMap.get(baseStandardID);
-        if (resourceIdentifier == null)
+        if (resourceIdentifier == null) {
             throw new NoSuchElementException("not found: " + baseStandardID);
+        }
         return URI.create(resourceIdentifier);
     }
 }

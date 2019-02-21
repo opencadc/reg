@@ -150,7 +150,7 @@ public class RegistryClient {
 
     static {
         try {
-            RESOURCE_CAPS_URL = new URL("http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps");
+            RESOURCE_CAPS_URL = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps");
         } catch (MalformedURLException e) {
             log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
             throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());

@@ -136,4 +136,40 @@ public class CapabilitiesReaderTest {
             Assert.fail("unexpected exception: " + unexpected);
         }
     }
+    
+    @Test
+    public void testMultipleSecurityMethods() {
+        try {
+            File f = FileUtil.getFileFromResource("multi-sec-capabilities.xml", CapabilitiesReaderTest.class);
+            Assert.assertNotNull("test setup", f);
+
+            CapabilitiesReader r = new CapabilitiesReader();
+            Capabilities caps = r.read(new FileReader(f));
+            Assert.assertNotNull(caps);
+            Assert.assertEquals(1, caps.getCapabilities().size());
+
+            Capability cap;
+
+            cap = caps.findCapability(Standards.TAP_10);
+            Assert.assertNotNull(cap);
+            
+            String expectedURL = "https://example.net/srv";
+
+            Interface bi = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("anon base", bi);
+            Assert.assertEquals(expectedURL, bi.getAccessURL().getURL().toExternalForm());
+
+            bi = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("cert base", bi);
+            Assert.assertEquals(expectedURL, bi.getAccessURL().getURL().toExternalForm());
+
+            bi = cap.findInterface(Standards.SECURITY_METHOD_TOKEN, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("token base", bi);
+            Assert.assertEquals(expectedURL, bi.getAccessURL().getURL().toExternalForm());
+
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
 }

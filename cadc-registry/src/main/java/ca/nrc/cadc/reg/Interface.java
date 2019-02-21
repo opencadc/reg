@@ -70,20 +70,13 @@
 package ca.nrc.cadc.reg;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.log4j.Logger;
 
 /**
- * Minimal implementation of the Interface model in VOResource 1.0.
- *
- * accessURL is the URL (or base URL) that a client uses to access the service.
- * If multiple accessURL is provided, each URL should point to a functionally
- * identical or "mirror" installation of the same service and administered
- * by the same publisher. Currently we only support one accessURL.
- *
- * securityMethod is the mechanism the client must employ to gain secure
- * access to the service.
- *
- *
+ * Minimal implementation of the Interface model in VOResource 1.1.
+ * 
  * @author yeunga
  */
 public class Interface {
@@ -92,24 +85,15 @@ public class Interface {
 
     private final URI type;
     private final AccessURL accessURL;
-    private final URI securityMethod;
+    private final List<URI> securityMethods = new ArrayList<URI>();
 
     public String role;
 
-    /**
-     * Constructor.
-     * 
-     * @param type
-     * @param accessURL
-     * @param securityMethod 
-     */
-    public Interface(final URI type, final AccessURL accessURL, final URI securityMethod) {
+    public Interface(final URI type, final AccessURL accessURL) {
         validateNotNull("type", type);
         validateNotNull("accessURL", accessURL);
-        validateNotNull("securityMethod", securityMethod);
         this.type = type;
         this.accessURL = accessURL;
-        this.securityMethod = securityMethod;
     }
 
     /**
@@ -132,13 +116,12 @@ public class Interface {
     }
 
     /**
-     * Get the fully-qualified security method URI. This URI is of the form
-     * {namespace uri}#{attribute name}.
+     * Get the list of security methods for this interface.
      * 
      * @return 
      */
-    public URI getSecurityMethod() {
-        return securityMethod;
+    public List<URI> getSecurityMethods() {
+        return securityMethods;
     }
 
     private void validateNotNull(String name, Object value) {

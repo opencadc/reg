@@ -150,15 +150,15 @@ public class CapabilityTest
     		List<Interface> interfaces = cap.getInterfaces();
     		
     		// test correct interface is added
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD)));
+    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL))));
     		Assert.assertEquals("interfaces should have one entry", 1, interfaces.size());
     		Interface[] intfArray = interfaces.toArray(new Interface[interfaces.size()]);
     		Assert.assertEquals("interface contains a different access URL", ACCESS_URL, intfArray[0].getAccessURL().getURL().toString());
     		
     		// test correct number of security methods are added 
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_2)), new URI(SECURITY_METHOD_1)));
+    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_2))));
     		Assert.assertEquals("interfaces should have one entry", 2, interfaces.size());
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_3)), new URI(SECURITY_METHOD_2)));
+    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_3))));
     		Assert.assertEquals("interfaces should have one entry", 3, interfaces.size());
     	}
     	catch (Throwable t)

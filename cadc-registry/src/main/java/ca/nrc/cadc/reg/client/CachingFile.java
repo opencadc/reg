@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2017.                            (c) 2017.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,12 +65,15 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg.client;
 
+import ca.nrc.cadc.net.HttpDownload;
+import ca.nrc.cadc.profiler.Profiler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,30 +85,25 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
-
 import org.apache.log4j.Logger;
-
-import ca.nrc.cadc.net.HttpDownload;
-import ca.nrc.cadc.profiler.Profiler;
-import java.io.FileInputStream;
 
 /**
  * This class will handle the caching of a file based on a remote source.
- *
  * Strategy for caching:
- *
- * 1. Open existing file and check timestamp.
- * 2. If not expired, open file and return to user
- * 3. Otherwise: read capabilities from web service
- * 4. Write new capabilities to temp file
- * 5. Atomically move temp file to real file
- * 6. Return these refreshed capabilities
- *
+ * <ul>
+ * <li>1. Open existing file and check timestamp.
+ * <li>2. If not expired, open file and return to user
+ * <li>3. Otherwise: read capabilities from web service
+ * <li>4. Write new capabilities to temp file
+ * <li>5. Atomically move temp file to real file
+ * <li>6. Return these refreshed capabilities
+ * </ul>
+ * 
  * @author majorb
  *
- **/
-public class CachingFile
-{
+ *
+ */
+public class CachingFile {
 
     private static Logger log = Logger.getLogger(CachingFile.class);
 
@@ -119,14 +117,13 @@ public class CachingFile
 
     /**
      * Construct a caching file with the local file and
-     * the remote source.  Cache is checked for updates
+     * the remote source. Cache is checked for updates
      * every 10 minutes by default.
      *
      * @param localCache Where to keep the cache
      * @param remoteSource Where to get the content
      */
-    public CachingFile(File localCache, URL remoteSource)
-    {
+    public CachingFile(File localCache, URL remoteSource) {
         this(localCache, remoteSource, DEFAULT_EXPRIY_SECONDS);
     }
 
@@ -138,24 +135,20 @@ public class CachingFile
      * @param remoteSource Where to get the content
      * @param expirySeconds The number of seconds between cache update checks.
      */
-    public CachingFile(File localCache, URL remoteSource, long expirySeconds)
-    {
-        if (localCache == null)
-        {
+    public CachingFile(File localCache, URL remoteSource, long expirySeconds) {
+        if (localCache == null) {
             throw new IllegalArgumentException("localCache param required.");
         }
 
         this.cacheDir = checkCacheDirectory(localCache);
 
-        if (remoteSource == null)
-        {
+        if (remoteSource == null) {
             throw new IllegalArgumentException("remoteSource param required.");
         }
 
-        if (remoteSource.getProtocol() == null ||
-            (!remoteSource.getProtocol().toLowerCase().equals("http") &&
-             !remoteSource.getProtocol().toLowerCase().equals("https")))
-        {
+        if (remoteSource.getProtocol() == null
+                || (!remoteSource.getProtocol().toLowerCase().equals("http")
+                && !remoteSource.getProtocol().toLowerCase().equals("https"))) {
             throw new IllegalArgumentException("only http/https schemes allowed in remoteSource");
         }
 
@@ -164,21 +157,18 @@ public class CachingFile
         this.expirySeconds = expirySeconds;
     }
 
-    private File checkCacheDirectory(File cacheFile)
-    {
+    private File checkCacheDirectory(File cacheFile) {
         Profiler profiler = new Profiler(CachingFile.class);
         log.debug("Cache file: " + cacheFile);
-        try
-        {
+        try {
             File dir = cacheFile.getParentFile();
             log.debug("cache file parent dir: " + dir);
-            
+
             if (dir.exists() && !dir.isDirectory()) {
                 java.nio.file.Files.delete(dir.toPath());
             }
-        
-            if (!dir.exists())
-            {
+
+            if (!dir.exists()) {
                 // The NIO version seems to create the path properly,
                 // as opposed to the dir.mkdirs()
                 // jenkinsd 2017.03.17
@@ -187,62 +177,44 @@ public class CachingFile
                 log.debug("Created directory " + dir);
             }
             return dir;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to create directory: " + cacheFile.getParentFile(), e);
-        }
-        finally
-        {
+        } finally {
             profiler.checkpoint("checkCacheDirectory");
         }
     }
 
-    public String getContent() throws IOException
-    {
+    public String getContent() throws IOException {
 
         boolean cacheExists = localCache.exists() && localCache.canRead();
-        if (cacheExists && !hasExpired())
-        {
+        if (cacheExists && !hasExpired()) {
             // read from cached configuration
             log.debug("Reading cache for file " + localCache);
-            try
-            {
+            try {
                 return readCache();
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 log.warn("Failed to read cached file: " + localCache);
                 log.warn("Attempting to read capabilities from source.");
             }
         }
 
         // read the capabilities from the web service
-        try
-        {
+        try {
             // create a temp file in the directory
             File tmpFile = File.createTempFile(UUID.randomUUID().toString(), null, cacheDir);
 
             // write the contents to the file
             FileOutputStream fos = new FileOutputStream(tmpFile);
-            try
-            {
+            try {
                 loadRemoteContent(fos);
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 log.warn("Deleting tmp cache file because download failed.");
                 tmpFile.delete();
                 throw e;
-            }
-            finally
-            {
-                try
-                {
+            } finally {
+                try {
                     fos.close();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     log.warn("Failed to close output stream", e);
                 }
             }
@@ -251,78 +223,57 @@ public class CachingFile
             Path source = Paths.get(tmpFile.getAbsolutePath());
             Path dest = Paths.get(localCache.getAbsolutePath());
 
-            try
-            {
+            try {
                 Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
                 log.debug("Replaced file " + localCache + " with fresh copy atomically.");
-            }
-            catch (AtomicMoveNotSupportedException e)
-            {
+            } catch (AtomicMoveNotSupportedException e) {
                 log.warn("Atomic file replacement not supported", e);
                 Files.move(source, dest, StandardCopyOption.REPLACE_EXISTING);
                 log.debug("Replaced file " + localCache + " with fresh copy (not atomically).");
             }
 
             return readCache();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.warn("Failed to cache capabilities to file: " + localCache, e);
             // for any error return the cached copy if available, otherwise return
             // the capabilities from source
-            if (cacheExists)
-            {
+            if (cacheExists) {
                 log.warn("Returning expired cached capabilities.");
                 return readCache();
-            }
-            else
-            {
+            } else {
                 log.info("Attemping to return capabilities from source.");
                 return getRemoteContent();
             }
         }
     }
 
-    private String readCache() throws IOException
-    {
+    private String readCache() throws IOException {
         // read from cached configuration
         Profiler profiler = new Profiler(CachingFile.class);
         log.debug("Reading cache from " + localCache.getAbsolutePath());
         InputStream in = null;
         ByteArrayOutputStream out = null;
-        try
-        {
+        try {
             in = new FileInputStream(localCache);
             out = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int length;
-            while ((length = in.read(buffer)) != -1)
-            {
+            while ((length = in.read(buffer)) != -1) {
                 out.write(buffer, 0, length);
             }
             return out.toString("UTF-8");
-        }
-        finally
-        {
-            if (in != null)
-            {
-                try
-                {
+        } finally {
+            if (in != null) {
+                try {
                     in.close();
-                }
-                catch(Throwable t)
-                {
+                } catch (Throwable t) {
                     log.warn("failed to close input stream", t);
                 }
             }
-            if (out != null)
-            {
-                try
-                {
+            if (out != null) {
+                try {
                     out.close();
-                }
-                catch(Throwable t)
-                {
+                } catch (Throwable t) {
                     log.warn("failed to close output stream", t);
                 }
             }
@@ -330,35 +281,28 @@ public class CachingFile
         }
     }
 
-    private String getRemoteContent() throws IOException
-    {
+    private String getRemoteContent() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         loadRemoteContent(out);
         return out.toString("UTF-8");
     }
 
-    private void loadRemoteContent(OutputStream dest) throws IOException
-    {
+    private void loadRemoteContent(OutputStream dest) throws IOException {
         Profiler profiler = new Profiler(CachingFile.class);
-        try
-        {
+        try {
             HttpDownload download = new HttpDownload(remoteSource, dest);
             download.run();
 
-            if (download.getThrowable() != null)
-            {
+            if (download.getThrowable() != null) {
                 log.warn("Could not get source from " + remoteSource, download.getThrowable());
                 throw new IOException(download.getThrowable());
             }
-        }
-        finally
-        {
+        } finally {
             profiler.checkpoint("loadRemoteContent");
         }
     }
 
-    private boolean hasExpired()
-    {
+    private boolean hasExpired() {
         long lastModified = localCache.lastModified();
         long expiryMillis = expirySeconds * 1000;
         long now = System.currentTimeMillis();
