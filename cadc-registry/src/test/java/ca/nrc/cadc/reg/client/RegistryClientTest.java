@@ -111,7 +111,7 @@ public class RegistryClientTest
     static String RESOURCE_ID_NO_AUTH_METHOD = "ivo://cadc.nrc.ca/noauthmethod";
     static String RESOURCE_ID_NOT_FOUND = "ivo://cadc.nrc.ca/notfound";
 
-    //@Test
+    @Test
     public void testGetCapabilitiesWithNullResourceidentifier()
     {
         String currentUserHome = System.getProperty("user.home");
@@ -177,7 +177,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetCapabilitiesHappyPath()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -202,7 +202,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullAuthMethod()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -237,7 +237,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullStandardID()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -301,7 +301,7 @@ public class RegistryClientTest
     	}
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLModifyLocal()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -331,7 +331,7 @@ public class RegistryClientTest
         }
     }
 
-    ////@Test
+//    @Test
     public void testGetServiceURLModifyHost()
     {
         String currentUserHome = System.getProperty("user.home");
@@ -363,7 +363,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLModifyShortHostname()
     {
     	// save java.io.tmpdir environment
@@ -394,7 +394,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLMatchDomain()
     {
     	// save java.io.tmpdir environment
@@ -426,4 +426,5 @@ public class RegistryClientTest
     		System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
+    
 }
