@@ -119,7 +119,7 @@ public class RegistryClientTest
         log.debug("Touched file: " + config);
     }
 
-    //@Test
+    @Test
     public void testGetCapabilitiesWithNullResourceidentifier()
     {
         String currentUserHome = System.getProperty("user.home");
@@ -185,7 +185,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetCapabilitiesHappyPath()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -210,7 +210,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullAuthMethod()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -245,7 +245,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullStandardID()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -280,7 +280,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullResourceID()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -344,7 +344,7 @@ public class RegistryClientTest
     	}
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLModifyLocal()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -374,7 +374,7 @@ public class RegistryClientTest
         }
     }
 
-    ////@Test
+//    @Test
     public void testGetServiceURLModifyHost()
     {
         String currentUserHome = System.getProperty("user.home");
@@ -406,7 +406,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLModifyShortHostname()
     {
     	// save java.io.tmpdir environment
@@ -437,7 +437,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLMatchDomain()
     {
     	// save java.io.tmpdir environment
@@ -469,4 +469,5 @@ public class RegistryClientTest
     		System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
+    
 }

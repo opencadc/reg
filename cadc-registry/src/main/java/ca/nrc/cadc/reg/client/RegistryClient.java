@@ -316,7 +316,7 @@ public class RegistryClient {
 
         URL url = null;
         log.debug("resourceIdentifier=" + resourceIdentifier 
-                + ", standardID=" + standardID 
+                + ", standardID=" + standardID
                 + ", authMethod=" + authMethod
                 + ", interfaceType=" + interfaceType);
         Capabilities caps = null;
