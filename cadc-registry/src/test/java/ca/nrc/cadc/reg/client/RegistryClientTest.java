@@ -119,7 +119,7 @@ public class RegistryClientTest
         log.debug("Touched file: " + config);
     }
 
-    //@Test
+    @Test
     public void testGetCapabilitiesWithNullResourceidentifier()
     {
         String currentUserHome = System.getProperty("user.home");
@@ -185,7 +185,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetCapabilitiesHappyPath()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -210,7 +210,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullAuthMethod()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -245,7 +245,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullStandardID()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -280,7 +280,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLWithNullResourceID()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -344,7 +344,7 @@ public class RegistryClientTest
     	}
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLModifyLocal()
     {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
@@ -374,7 +374,7 @@ public class RegistryClientTest
         }
     }
 
-    ////@Test
+//    @Test
     public void testGetServiceURLModifyHost()
     {
         String currentUserHome = System.getProperty("user.home");
@@ -406,7 +406,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLModifyShortHostname()
     {
     	// save java.io.tmpdir environment
@@ -437,7 +437,7 @@ public class RegistryClientTest
         }
     }
 
-    //@Test
+    @Test
     public void testGetServiceURLMatchDomain()
     {
     	// save java.io.tmpdir environment
@@ -469,4 +469,40 @@ public class RegistryClientTest
     		System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
+
+//	@Test
+//	public void testGetHttpsInterface()
+//	{
+//		// Create a Capability with a couple of interfaces - one https, one http
+//
+//		RegistryClient rc = new RegistryClient();
+//		try
+//		{
+//			// Create a Capability with a couple of interfaces - one https, one http
+//			URI test_uri = new URI("vos://cadc.nrc.ca~test/CADC/std/TEST#instances-1.0");
+//
+//			Capability testCapability = new Capability(test_uri);
+//			testCapability.getInterfaces().add()
+//
+//
+//			URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync");
+//			URI resourceID = new URI(RESOURCE_ID);
+//			URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.CERT, Standards.INTERFACE_UWS_SYNC);
+//			Assert.assertNotNull("Service URL should not be null", serviceURL);
+//			Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+//			Assert.assertNull("wrong caps domain", rc.getCapsDomain());
+//		}
+//		catch (Exception unexpected)
+//		{
+//			log.error("unexpected exception", unexpected);
+//			Assert.fail("unexpected exception: " + unexpected);
+//		}
+//		finally
+//		{
+//			// restore java.io.tmpdir environment
+//			System.setProperty("java.io.tmpdir", currentTmpDir);
+//		}
+//	}
+
+
 }

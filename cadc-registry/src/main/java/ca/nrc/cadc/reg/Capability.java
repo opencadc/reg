@@ -156,23 +156,34 @@ public class Capability {
     
     /**
      * Find an interface of the specified type that uses the specified securityMethod.
-     * This method returns the first matching interface.
+     * This method returns the https interface, if it exists. Otherwise it returns the first interface found.
      * 
      * @param authMethod
      * @param interfaceType
      * @return the first matching interface or null
      */
     public Interface findInterface(final AuthMethod authMethod, final URI interfaceType) {
+        Interface retn = null;
+        Interface firstFound = null;
         for (Interface intf : this.interfaces) {
             if (intf.getType().equals(interfaceType)) {
                 AuthMethod am = Standards.getAuthMethod(intf.getSecurityMethod());
                 if (authMethod.equals(am)) {
-                    return intf;
+                    if (intf.getAccessURL().getURL().getProtocol().equals("https")) {
+                        // Filter for the https
+                        retn = intf;
+                    } else if (firstFound == null) {
+                        firstFound = intf;
+                    }
                 }
             }
         }
 
-        return null;
+        if (retn ==  null) {
+            retn = firstFound;
+        }
+
+        return retn;
     }
     
     private void validateParams(final URI standardID) {
