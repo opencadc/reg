@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2010.                            (c) 2010.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -150,7 +150,7 @@ public class RegistryClient {
 
     static {
         try {
-            RESOURCE_CAPS_URL = new URL("http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps");
+            RESOURCE_CAPS_URL = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps");
         } catch (MalformedURLException e) {
             log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
             throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());
