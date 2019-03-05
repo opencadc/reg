@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2017.                            (c) 2017.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -96,14 +96,6 @@ public class RegistryClientTest
     {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
     }
-
-    //static String GMS_URI = "ivo://cadc.nrc.ca/gms";
-    //static String GMS_HTTP = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
-    //static String GMS_HTTPS = "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/gms";
-
-    //static String VOS_URI = "ivo://cadc.nrc.ca/vospace";
-    //static String VOS_HTTP = "http://www.canfar.phys.uvic.ca/vospace";
-    //static String VOS_HTTPS = "https://www.canfar.phys.uvic.ca/vospace";
 
     static String STANDARD_ID = "ivo://ivoa.net/std/TAP";
     static String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
@@ -312,7 +304,7 @@ public class RegistryClientTest
             System.setProperty(RegistryClient.class.getName() + ".local", "true");
             RegistryClient rc = new RegistryClient();
             String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-			URL expected = new URL("http://" + localhost + "/reg/resource-caps");
+			URL expected = new URL("https://" + localhost + "/reg/resource-caps");
             URL resourceCapsURL = rc.getResourceCapsURL();
     		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
     		Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
@@ -374,7 +366,7 @@ public class RegistryClientTest
     	{
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             RegistryClient rc = new RegistryClient();
-            String expected = "http://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
+            String expected = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
 
             URL resourceCapsURL = rc.getResourceCapsURL();
     		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
@@ -406,7 +398,7 @@ public class RegistryClientTest
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "cadc-ccda.hia-iha.nrc-cnrc.gc.ca,other.com");
             RegistryClient rc = new RegistryClient();
-            String expected1 = "http://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
+            String expected1 = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
 
             URL resourceCapsURL = rc.getResourceCapsURL();
     		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
