@@ -1,0 +1,15 @@
+<vosi:capabilities
+   xmlns:vosi="http://www.ivoa.net/xml/VOSICapabilities/v1.0"
+   xmlns:vs="http://www.ivoa.net/xml/VODataService/v1.1"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <capability standardID="ivo://ivoa.net/std/TAP">
+    <interface xsi:type="vs:ParamHTTP" role="std" version="1.1">
+      <accessURL use="base"> https://example.net/srv </accessURL>
+      <securityMethod/>
+      <securityMethod standardID="ivo://ivoa.net/sso#tls-with-certificate"/>
+      <securityMethod standardID="vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0"/>
+    </interface>
+  </capability>
+
+</vosi:capabilities>
