@@ -30,5 +30,4 @@ dependencies {
 }
 
 apply from: '../opencadc.gradle'
-apply from: '../intTest.gradle'
 
