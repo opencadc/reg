@@ -65,7 +65,7 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg.client;
 
@@ -89,11 +89,11 @@ import org.junit.Test;
  *
  * @author pdowler
  */
-public class RegistryClientTest
-{
+public class RegistryClientTest {
+
     private static Logger log = Logger.getLogger(RegistryClientTest.class);
-    static
-    {
+
+    static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
     }
 
@@ -103,295 +103,190 @@ public class RegistryClientTest
     static String RESOURCE_ID_NO_AUTH_METHOD = "ivo://cadc.nrc.ca/noauthmethod";
     static String RESOURCE_ID_NOT_FOUND = "ivo://cadc.nrc.ca/notfound";
 
-    @BeforeClass
-    public static void touchConfigFile()
-    {
-        File config = new File("test/.config/cadcRegistry/cadc.nrc.ca/tap");
-        config.setLastModified(System.currentTimeMillis());
-        log.debug("Touched file: " + config);
-    }
-
     @Test
-    public void testGetCapabilitiesWithNullResourceidentifier()
-    {
+    public void testGetCapabilitiesWithNullResourceidentifier() {
         String currentUserHome = System.getProperty("user.home");
         System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-			rc.getCapabilities(null);
+        RegistryClient rc = new RegistryClient();
+        try {
+            rc.getCapabilities(null);
             Assert.fail("expected IllegalArgumentException");
-		}
-    	catch (IllegalArgumentException ex)
-    	{
-    		// expecting null input parameter message
-    		if (!ex.getMessage().contains("should not be null"))
-    		{
+        } catch (IllegalArgumentException ex) {
+            // expecting null input parameter message
+            if (!ex.getMessage().contains("should not be null")) {
                 log.error("unexpected exception", ex);
-        		Assert.fail("unexpected exception: " + ex);
-    		}
-    	}
-    	catch (Throwable t)
-    	{
+                Assert.fail("unexpected exception: " + ex);
+            }
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // restore user.home environment
             System.setProperty("user.home", currentUserHome);
         }
     }
 
-    //@Test
-    public void testGetCapabilitiesMissingPropertyValue()
-    {
+    @Test
+    public void testGetCapabilitiesMissingPropertyValue() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-			rc.getCapabilities(new URI(RESOURCE_ID_NO_VALUE));
+        RegistryClient rc = new RegistryClient();
+        try {
+            rc.getCapabilities(new URI(RESOURCE_ID_NO_VALUE));
             Assert.fail("expected RuntimeException");
-		}
-    	catch (RuntimeException ex)
-    	{
-    		// expecting not able to find the cache resource
-    		if (!ex.getMessage().toLowerCase().contains("unknown service"))
-    		{
+        } catch (RuntimeException ex) {
+            // expecting not able to find the cache resource
+            if (!ex.getMessage().toLowerCase().contains("unknown service")) {
                 log.error("unexpected exception", ex);
-        		Assert.fail("unexpected exception: " + ex);
-    		}
-    	}
-    	catch (Throwable t)
-    	{
+                Assert.fail("unexpected exception: " + ex);
+            }
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
-    public void testGetCapabilitiesHappyPath()
-    {
+    public void testGetCapabilitiesHappyPath() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-			Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
-			List<Capability> capList = caps.getCapabilities();
-			Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
-		}
-    	catch (Throwable t)
-    	{
+        RegistryClient rc = new RegistryClient();
+        try {
+            Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
+            List<Capability> capList = caps.getCapabilities();
+            Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
-    public void testGetServiceURLWithNullAuthMethod()
-    {
+    public void testGetServiceURLWithNullAuthMethod() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-    		URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
-    		URI standardID = Standards.TAP_SYNC_11;
-    		AuthMethod authMethod = null;
-    		rc.getServiceURL(resourceID, standardID, authMethod);
-    	}
-    	catch (IllegalArgumentException ex)
-    	{
-    		// expecting a null parameter related exception
-    		if (!ex.getMessage().contains("No input parameters should be null"))
-    		{
+        RegistryClient rc = new RegistryClient();
+        try {
+            URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
+            URI standardID = Standards.TAP_10;
+            AuthMethod authMethod = null;
+            rc.getServiceURL(resourceID, standardID, authMethod);
+        } catch (IllegalArgumentException ex) {
+            // expecting a null parameter related exception
+            if (!ex.getMessage().contains("No input parameters should be null")) {
                 log.error("unexpected exception", ex);
-        		Assert.fail("unexpected exception: " + ex);
-    		}
-    	}
-    	catch (Throwable t)
-    	{
+                Assert.fail("unexpected exception: " + ex);
+            }
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
-    public void testGetServiceURLWithNullStandardID()
-    {
+    public void testGetServiceURLWithNullStandardID() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-    		URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
-    		URI standardID = null;
-    		AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
-    		rc.getServiceURL(resourceID, standardID, authMethod);
-    	}
-    	catch (IllegalArgumentException ex)
-    	{
-    		// expecting a null parameter related exception
-    		if (!ex.getMessage().contains("No input parameters should be null"))
-    		{
+        RegistryClient rc = new RegistryClient();
+        try {
+            URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
+            URI standardID = null;
+            AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
+            rc.getServiceURL(resourceID, standardID, authMethod);
+        } catch (IllegalArgumentException ex) {
+            // expecting a null parameter related exception
+            if (!ex.getMessage().contains("No input parameters should be null")) {
                 log.error("unexpected exception", ex);
-        		Assert.fail("unexpected exception: " + ex);
-    		}
-    	}
-    	catch (Throwable t)
-    	{
+                Assert.fail("unexpected exception: " + ex);
+            }
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
-    public void testGetServiceURLWithNullResourceID()
-    {
+    public void testGetServiceURLHappyPath() {
+        // save java.io.tmpdir environment
         String currentTmpDir = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
+        System.setProperty("java.io.tmpdir", System.getProperty("user.dir") + "/build/tmp");
 
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-    		URI resourceID = null;
-    		URI standardID = Standards.TAP_SYNC_11;
-    		AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
-    		rc.getServiceURL(resourceID, standardID, authMethod);
-    	}
-    	catch (IllegalArgumentException ex)
-    	{
-    		// expecting a null parameter related exception
-    		if (!ex.getMessage().contains("No input parameters should be null"))
-    		{
-                log.error("unexpected exception", ex);
-        		Assert.fail("unexpected exception: " + ex);
-    		}
-    	}
-    	catch (Throwable t)
-    	{
-            log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
-            // restore java.io.tmpdir environment
-            System.setProperty("java.io.tmpdir", currentTmpDir);
-        }
-    }
-
-    @Test
-    public void testGetServiceURLHappyPath()
-    {
-    	// save java.io.tmpdir environment
-    	String currentTmpDir = System.getProperty("java.io.tmpdir");
-    	System.setProperty("java.io.tmpdir", System.getProperty("user.dir") + "/build/tmp");
-
-    	RegistryClient rc = new RegistryClient();
-    	try
-    	{
-    		URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync");
-    		URI resourceID = new URI(RESOURCE_ID);
-    		URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.CERT, Standards.INTERFACE_UWS_SYNC);
-    		Assert.assertNotNull("Service URL should not be null", serviceURL);
-    		Assert.assertEquals("got an incorrect URL", expected, serviceURL);
+        RegistryClient rc = new RegistryClient();
+        try {
+            URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap");
+            URI resourceID = new URI(RESOURCE_ID);
+            URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.ANON);
+            Assert.assertNotNull("Service URL should not be null", serviceURL);
+            Assert.assertEquals("got an incorrect URL", expected, serviceURL);
             Assert.assertNull("wrong caps domain", rc.getCapsDomain());
-    	}
-    	catch (Exception unexpected)
-    	{
+        } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
-	}
-    	finally
-    	{
-    		// restore java.io.tmpdir environment
-    		System.setProperty("java.io.tmpdir", currentTmpDir);
-    	}
+        } finally {
+            // restore java.io.tmpdir environment
+            System.setProperty("java.io.tmpdir", currentTmpDir);
+        }
     }
 
     @Test
-    public void testGetServiceURLModifyLocal()
-    {
+    public void testGetServiceURLModifyLocal() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
-    	try
-    	{
+        try {
             System.setProperty(RegistryClient.class.getName() + ".local", "true");
             RegistryClient rc = new RegistryClient();
             String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-			URL expected = new URL("https://" + localhost + "/reg/resource-caps");
+            URL expected = new URL("https://" + localhost + "/reg/resource-caps");
             URL resourceCapsURL = rc.getResourceCapsURL();
-    		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
-    		Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
+            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+            Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
             Assert.assertEquals("wrong caps domain", "alt-domains/" + localhost, rc.getCapsDomain());
-    	}
-    	catch (Throwable t)
-    	{
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".local", "false");
             System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
-//    @Test
-    public void testGetServiceURLModifyHost()
-    {
+    @Test
+    public void testGetServiceURLModifyHost() {
         String currentUserHome = System.getProperty("user.home");
         System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
 
-    	try
-    	{
+        try {
             System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
-            String expected = "https://foo.bar.com/tap/sync";
 
-    		URI resourceID = new URI(RESOURCE_ID);
-    		URI standardID = new URI(STANDARD_ID);
-    		AuthMethod authMethod = AuthMethod.getAuthMethod("cert");
-    		URL serviceURL = rc.getServiceURL(resourceID, standardID, authMethod);
-    		Assert.assertNotNull("Service URL should not be null", serviceURL);
-    		Assert.assertEquals("got an incorrect URL", expected, serviceURL.toExternalForm());
-    	}
-    	catch (Throwable t)
-    	{
+            URL expected = new URL("https://foo.bar.com/reg/resource-caps");
+            URL resourceCapsURL = rc.getResourceCapsURL();
+            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+            Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
+            Assert.assertEquals("wrong caps domain", "alt-domains/foo.bar.com", rc.getCapsDomain());
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".host", "");
             System.setProperty("user.home", currentUserHome);
@@ -399,67 +294,55 @@ public class RegistryClientTest
     }
 
     @Test
-    public void testGetServiceURLModifyShortHostname()
-    {
-    	// save java.io.tmpdir environment
-    	String currentTmpDir = System.getProperty("java.io.tmpdir");
-    	System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
+    public void testGetServiceURLModifyShortHostname() {
+        // save java.io.tmpdir environment
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
-    	try
-    	{
+        try {
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             RegistryClient rc = new RegistryClient();
             String expected = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
 
             URL resourceCapsURL = rc.getResourceCapsURL();
-    		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
-    		Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL.toExternalForm());
+            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+            Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL.toExternalForm());
             Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
-    	}
-    	catch (Throwable t)
-    	{
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
-    		System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
     @Test
-    public void testGetServiceURLMatchDomain()
-    {
-    	// save java.io.tmpdir environment
-    	String currentTmpDir = System.getProperty("java.io.tmpdir");
-    	System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
+    public void testGetServiceURLMatchDomain() {
+        // save java.io.tmpdir environment
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
-    	try
-    	{
+        try {
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "cadc-ccda.hia-iha.nrc-cnrc.gc.ca,other.com");
             RegistryClient rc = new RegistryClient();
             String expected1 = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps";
 
             URL resourceCapsURL = rc.getResourceCapsURL();
-    		Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
-    		Assert.assertEquals("got an incorrect URL", expected1, resourceCapsURL.toExternalForm());
-    		Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
-    	}
-    	catch (Throwable t)
-    	{
+            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+            Assert.assertEquals("got an incorrect URL", expected1, resourceCapsURL.toExternalForm());
+            Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-		}
-        finally
-        {
+            Assert.fail("unexpected exception: " + t);
+        } finally {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "");
-    		System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
-    
+
 }

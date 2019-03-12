@@ -85,7 +85,7 @@ import java.nio.file.Files;
 public class CachingFileTest
 {
 
-    private static Logger log = Logger.getLogger(RegistryClientTest.class);
+    private static Logger log = Logger.getLogger(CachingFileTest.class);
     static
     {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);

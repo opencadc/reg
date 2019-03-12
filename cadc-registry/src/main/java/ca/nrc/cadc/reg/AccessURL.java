@@ -65,50 +65,36 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
 
 import java.net.URL;
-
 import org.apache.log4j.Logger;
 
-
 /**
- * The URL (or base URL) that a client uses to access a service.  
- * 
+ * The URL (or base URL) that a client uses to access a service.
+ *
  * @author yeunga
  */
-public class AccessURL
-{
-    private static Logger log = Logger.getLogger(AccessURL.class);
+public class AccessURL {
+    private static final Logger log = Logger.getLogger(AccessURL.class);
 
-    // Use List to preserve order
     private URL url;
     public String use;
-    
+
     /**
-     * Constructor. 
+     * Constructor.
+     * @param url
      */
-    public AccessURL(final URL url) 
-    {
-    	validateParams(url);
-    	
-    	// TODO: check that each entry in a list is unique?
+    public AccessURL(final URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("url cannot be null");
+        }
         this.url = url;
     }
-    
-    public URL getURL() 
-    {
-		return this.url;
-	}
-	
-	private void validateParams(final URL url)
-	{
-		if (url == null)
-		{
-			String msg = "access URL for an Interface object cannot be null.";
-			throw new IllegalArgumentException(msg);
-		}
-	}
+
+    public URL getURL() {
+        return this.url;
+    }
 }

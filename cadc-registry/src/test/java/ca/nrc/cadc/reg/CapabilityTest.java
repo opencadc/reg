@@ -65,10 +65,9 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
-
 
 import ca.nrc.cadc.util.Log4jInit;
 import java.net.URI;
@@ -83,8 +82,8 @@ import org.junit.Test;
  *
  * @author yeunga
  */
-public class CapabilityTest 
-{
+public class CapabilityTest {
+
     private static final Logger log = Logger.getLogger(CapabilityTest.class);
 
     private URI ITYPE = Standards.INTERFACE_PARAM_HTTP;
@@ -92,79 +91,65 @@ public class CapabilityTest
     private String ACCESS_URL_2 = "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/capabilities";
     private String ACCESS_URL_3 = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync";
     private String SECURITY_METHOD = "ivo://ivoa.net/sso#tls-with-certficate";
-    private String SECURITY_METHOD_1 = "http://www.w3.org/Protocols/HTTP/1.0/spec.html#BasicAA";
+    private String SECURITY_METHOD_1 = "http://ivoa.net/sso#BasicAA";
     private String SECURITY_METHOD_2 = "ivo://ivoa.net/sso#tls-with-certficate";
     private String STANDARD_ID = "ivo://ivo.net/std/tap#sync-v1.1";
-    
-    static
-    {
-        Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
+
+    static {
+        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
-    
-    public CapabilityTest() { }
-    
+
+    public CapabilityTest() {
+    }
+
     @Test
-    public void testNullStandardID()
-    {
-        try
-        {
+    public void testNullStandardID() {
+        try {
             new Capability(null);
             Assert.fail("expected IllegalArgumentException");
-        }
-        catch(IllegalArgumentException ex)
-        {
-        	// expected
-        }
-        catch(Throwable t)
-        {
+        } catch (IllegalArgumentException ex) {
+            // expected
+        } catch (Throwable t) {
             Assert.fail("unexpected t: " + t);
         }
     }
-    
+
     @Test
-    public void testConstruction()
-    {
-    	try
-    	{
-    		Capability cap = new Capability(new URI(STANDARD_ID));
-    		URI standardID = cap.getStandardID();
-    		Assert.assertNotNull("accessURL should not be null", standardID);
-    		Assert.assertEquals("accessURL is corrupted", STANDARD_ID, standardID.toString());
-    		Assert.assertNotNull("interfaces should not be null", cap.getInterfaces());
-    		Assert.assertEquals("interfaces should be empty", 0, cap.getInterfaces().size());
-    	}
-    	catch (Throwable t)
-    	{
+    public void testConstruction() {
+        try {
+            Capability cap = new Capability(new URI(STANDARD_ID));
+            URI standardID = cap.getStandardID();
+            Assert.assertNotNull("accessURL should not be null", standardID);
+            Assert.assertEquals("accessURL is corrupted", STANDARD_ID, standardID.toString());
+            Assert.assertNotNull("interfaces should not be null", cap.getInterfaces());
+            Assert.assertEquals("interfaces should be empty", 0, cap.getInterfaces().size());
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
-    	}
+        }
     }
-    
+
     @Test
-    public void testInterfaces()
-    {
-    	try
-    	{
-    		// construct an Capability object
-    		Capability cap = new Capability(new URI(STANDARD_ID));
-    		List<Interface> interfaces = cap.getInterfaces();
-    		
-    		// test correct interface is added
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL)), new URI(SECURITY_METHOD)));
-    		Assert.assertEquals("interfaces should have one entry", 1, interfaces.size());
-    		Interface[] intfArray = interfaces.toArray(new Interface[interfaces.size()]);
-    		Assert.assertEquals("interface contains a different access URL", ACCESS_URL, intfArray[0].getAccessURL().getURL().toString());
-    		
-    		// test correct number of security methods are added 
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_2)), new URI(SECURITY_METHOD_1)));
-    		Assert.assertEquals("interfaces should have one entry", 2, interfaces.size());
-    		interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_3)), new URI(SECURITY_METHOD_2)));
-    		Assert.assertEquals("interfaces should have one entry", 3, interfaces.size());
-    	}
-    	catch (Throwable t)
-    	{
+    public void testInterfaces() {
+        try {
+            // construct an Capability object
+            Capability cap = new Capability(new URI(STANDARD_ID));
+            List<Interface> interfaces = cap.getInterfaces();
+
+            // test correct interface is added
+            interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL))));
+            Assert.assertEquals("interfaces should have one entry", 1, interfaces.size());
+            Interface[] intfArray = interfaces.toArray(new Interface[interfaces.size()]);
+            Assert.assertEquals("interface contains a different access URL", ACCESS_URL, intfArray[0].getAccessURL().getURL().toString());
+
+            // test correct number of security methods are added 
+            interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_2))));
+            Assert.assertEquals("interfaces should have one entry", 2, interfaces.size());
+            interfaces.add(new Interface(ITYPE, new AccessURL(new URL(ACCESS_URL_3))));
+            Assert.assertEquals("interfaces should have one entry", 3, interfaces.size());
+        } catch (Throwable t) {
             log.error("unexpected exception", t);
-    		Assert.fail("unexpected exception: " + t);
-    	}
+            Assert.fail("unexpected exception: " + t);
+        }
     }
 }

@@ -75,15 +75,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /**
- * Minimal implementation of the Capabilities model in VOResource 1.0.
- *
- * resourceIdentifier is a base URI which identifies a service provided by
- * the managed authority, e.g. ivoa://cadc.nrc.ca/vospacev2.1.
- *
- * capability represents a general function of the service, usually in terms
- * of a standard service protocol (e.g. SIA), but not necessarily. A service
- * can have many capabilities associated with it, each reflecting a
- * different aspect of the functionality it provides.
+ * Minimal implementation of the Capabilities model in VOResource 1.1.
  *
  * @author yeunga
  */

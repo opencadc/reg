@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2017.                            (c) 2017.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -63,10 +63,9 @@
 *                                       <http://www.gnu.org/licenses/>.
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg;
-
 
 import ca.nrc.cadc.util.FileUtil;
 import ca.nrc.cadc.util.Log4jInit;
@@ -82,67 +81,92 @@ import org.junit.Test;
  * @author pdowler
  */
 public class CapabilitiesReaderTest {
+
     private static final Logger log = Logger.getLogger(CapabilitiesReaderTest.class);
-    
+
     static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
-    
-    public CapabilitiesReaderTest() { 
+
+    public CapabilitiesReaderTest() {
     }
-    
+
     @Test
     public void testRead() {
         try {
             File f = FileUtil.getFileFromResource("sample-capabilities.xml", CapabilitiesReaderTest.class);
             Assert.assertNotNull("test setup", f);
-            
+
             CapabilitiesReader r = new CapabilitiesReader();
             Capabilities caps = r.read(new FileReader(f));
             Assert.assertNotNull(caps);
             Assert.assertEquals(4, caps.getCapabilities().size());
-            
+
             Capability cap;
-            
+
             cap = caps.findCapability(Standards.VOSI_AVAILABILITY);
             Assert.assertNotNull(cap);
-            
+
             cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
             Assert.assertNotNull(cap);
-            
+
             cap = caps.findCapability(Standards.VOSI_TABLES_11);
             Assert.assertNotNull(cap);
             Interface ti = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
             Assert.assertNotNull("anon tables", ti);
-            Assert.assertEquals("http://example.net/myTAP/tables", ti.getAccessURL().getURL().toExternalForm());
-            
-            ti = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_PARAM_HTTP);
-            Assert.assertNotNull("anon async", ti);
-            Assert.assertEquals("https://example.net/myTAP/cert-tables", ti.getAccessURL().getURL().toExternalForm());
-            
+            Assert.assertEquals("http://example.net/srv/tables", ti.getAccessURL().getURL().toExternalForm());
+
+            cap = caps.findCapability(Standards.TAP_10);
+            Assert.assertNotNull(cap);
+
+            Interface bi = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("anon base", bi);
+            Assert.assertEquals("http://example.net/srv", bi.getAccessURL().getURL().toExternalForm());
+
+            bi = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("cert base", bi);
+            Assert.assertEquals("https://example.net/srv", bi.getAccessURL().getURL().toExternalForm());
+
+            bi = cap.findInterface(Standards.SECURITY_METHOD_HTTP_BASIC, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("basic-aa base", bi);
+            Assert.assertEquals("https://example.net/srv/up", bi.getAccessURL().getURL().toExternalForm());
+
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
+    
+    @Test
+    public void testMultipleSecurityMethods() {
+        try {
+            File f = FileUtil.getFileFromResource("multi-sec-capabilities.xml", CapabilitiesReaderTest.class);
+            Assert.assertNotNull("test setup", f);
+
+            CapabilitiesReader r = new CapabilitiesReader();
+            Capabilities caps = r.read(new FileReader(f));
+            Assert.assertNotNull(caps);
+            Assert.assertEquals(1, caps.getCapabilities().size());
+
+            Capability cap;
+
             cap = caps.findCapability(Standards.TAP_10);
             Assert.assertNotNull(cap);
             
+            String expectedURL = "https://example.net/srv";
+
             Interface bi = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
             Assert.assertNotNull("anon base", bi);
-            Assert.assertEquals("http://example.net/myTAP", bi.getAccessURL().getURL().toExternalForm());
-            
-            Interface ai = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_UWS_ASYNC);
-            Assert.assertNotNull("anon async", ai);
-            Assert.assertEquals("http://example.net/myTAP/async", ai.getAccessURL().getURL().toExternalForm());
-            
-            Interface si = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_UWS_SYNC);
-            Assert.assertNotNull("anon sync", si);
-            Assert.assertEquals("http://example.net/myTAP/sync", si.getAccessURL().getURL().toExternalForm());
-            
-            Interface ai2 = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_UWS_ASYNC);
-            Assert.assertNotNull("x509 async", ai2);
-            Assert.assertEquals("https://example.net/myTAP/cert-async", ai2.getAccessURL().getURL().toExternalForm());
-            
-            Interface si2 = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_UWS_SYNC);
-            Assert.assertNotNull("x509 sync", si2);
-            Assert.assertEquals("https://example.net/myTAP/cert-sync", si2.getAccessURL().getURL().toExternalForm());
-            
+            Assert.assertEquals(expectedURL, bi.getAccessURL().getURL().toExternalForm());
+
+            bi = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("cert base", bi);
+            Assert.assertEquals(expectedURL, bi.getAccessURL().getURL().toExternalForm());
+
+            bi = cap.findInterface(Standards.SECURITY_METHOD_TOKEN, Standards.INTERFACE_PARAM_HTTP);
+            Assert.assertNotNull("token base", bi);
+            Assert.assertEquals(expectedURL, bi.getAccessURL().getURL().toExternalForm());
+
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);

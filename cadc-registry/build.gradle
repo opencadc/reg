@@ -15,7 +15,7 @@ sourceCompatibility = 1.7
 
 group = 'org.opencadc'
 
-version = '1.4.7'
+version = '1.5.0'
 
 dependencies {
     compile 'log4j:log4j:1.2.+'
@@ -30,3 +30,4 @@ dependencies {
 }
 
 apply from: '../opencadc.gradle'
+
