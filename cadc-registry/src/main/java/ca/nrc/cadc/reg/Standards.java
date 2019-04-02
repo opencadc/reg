@@ -126,6 +126,7 @@ public class Standards {
     public static final URI VOSPACE_SYNC_21 = URI.create("ivo://ivoa.net/std/VOSpace#sync-2.1");
     public static final URI VOSPACE_TRANSFERS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
     public static final URI VOSPACE_VIEWS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
+    public static final URI VOSPACE_FILES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.x#files");
 
     public static final URI VOSPACE_XFER_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOSpace#xfer");
     public static final URI VOSPACE_NODEPROPS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOSpace#nodeprops");
