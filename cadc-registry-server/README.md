@@ -21,3 +21,9 @@ the accessURL for browser-based UI applications. The code in this library allows
 by writing a suitable properties file. The cadc-registry (client) is written to make use of the resource-caps and 
 VOSI-capabilities approach.
 
+* TODO
+1. move the code from internal repository to github
+2. document use of the canned query setup
+3. document use the the OAI publishing setup
+4. ...
+5. implement a proper back end to support queries (RegTAP) and content curation
