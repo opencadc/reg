@@ -89,10 +89,10 @@ import org.apache.log4j.Logger;
  * list of resourceID(s) and the accessURL of the associated VOSI-capabilities
  * endpoint.
  * For access to resource capabilities for web services, add this to a web.xml:
- * <init-param>
- * <param-name>queryFile</param-name>
- * <param-value>(query file name as found in /config directory on server)</param-value>
- * </init-param>
+ * &lt;init-param&gt;
+ * &lt;param-name&gt;queryFile&lt;/param-name&gt;
+ * &lt;param-value&gt;(query file name as found in /config directory on server)&lt;/param-value&gt;
+ * &lt;/init-param&gt;
  *
  * @author jeevesh
  */
