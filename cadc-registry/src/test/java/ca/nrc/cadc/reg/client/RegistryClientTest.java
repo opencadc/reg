@@ -75,6 +75,7 @@ import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.Log4jInit;
 import java.io.File;
+import java.io.FileWriter;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
@@ -341,6 +342,35 @@ public class RegistryClientTest {
             // reset
             System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "");
+            System.setProperty("java.io.tmpdir", currentTmpDir);
+        }
+    }
+
+    @Test
+    public void testGetCapSourceCacheFile() throws Exception {
+        final String currentTmpDir = System.getProperty("java.io.tmpdir");
+        final String fileSeparator = System.getProperty("file.separator");
+        System.setProperty("java.io.tmpdir", currentTmpDir + (currentTmpDir.endsWith(fileSeparator) ? "" :
+                fileSeparator) + "build" + fileSeparator + "tmp");
+
+        try {
+            final RegistryClient registryClient =
+                    new RegistryClient(new URL("https://www.mysite.com/registry/registry-entries/"));
+            final File cacheFile = File.createTempFile("registry-entries", null);
+            final FileWriter fileWriter = new FileWriter(cacheFile);
+            fileWriter.write("ivo://cadc.nrc.ca/myservice/entry\thttps://mysite.com/services/myservice");
+            fileWriter.close();
+
+            final File capSourceCacheFile = registryClient.getCapSourceCacheFile();
+            Assert.assertEquals("Wrong file.",
+                                System.getProperty("java.io.tmpdir") + "/" + System.getProperty("user.name") +
+                                        "/" + RegistryClient.CONFIG_CACHE_DIR + "/registry-entries",
+                                capSourceCacheFile.getAbsolutePath());
+        } catch (Throwable t) {
+            log.error("unexpected exception", t);
+            throw t;
+        } finally {
+            // reset
             System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
