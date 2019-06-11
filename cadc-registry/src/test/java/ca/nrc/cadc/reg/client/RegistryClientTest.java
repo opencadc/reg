@@ -84,6 +84,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -356,10 +357,6 @@ public class RegistryClientTest {
         try {
             final RegistryClient registryClient =
                     new RegistryClient(new URL("https://www.mysite.com/registry/registry-entries/"));
-            final File cacheFile = File.createTempFile("registry-entries", null);
-            final FileWriter fileWriter = new FileWriter(cacheFile);
-            fileWriter.write("ivo://cadc.nrc.ca/myservice/entry\thttps://mysite.com/services/myservice");
-            fileWriter.close();
 
             final File capSourceCacheFile = registryClient.getCapSourceCacheFile();
             Assert.assertEquals("Wrong file.",
@@ -375,4 +372,36 @@ public class RegistryClientTest {
         }
     }
 
+    @Test
+    public void testGetCapabilitiesURL() throws Exception {
+        final String currentTmpDir = System.getProperty("java.io.tmpdir");
+        final String fileSeparator = System.getProperty("file.separator");
+        System.setProperty("java.io.tmpdir", currentTmpDir + (currentTmpDir.endsWith(fileSeparator) ? "" :
+                fileSeparator) + "build" + fileSeparator + "tmp");
+
+        try {
+            final RegistryClient registryClient =
+                    new RegistryClient(new URL("https://www.mysite.com/registry/registry-entries"));
+            final File cacheFile =
+                    new File(new File(System.getProperty("java.io.tmpdir") + fileSeparator
+                                              + System.getProperty("user.name") + fileSeparator + "cadc-registry-1.4"),
+                             "registry-entries");
+            final FileWriter fileWriter = new FileWriter(cacheFile);
+            fileWriter.write("ivo://cadc.nrc.ca/myservice/entry = https://mysite.com/services/mygreatservice");
+            fileWriter.close();
+
+            final URL capabilitiesURL =
+                    registryClient.getCapabilitiesURL(URI.create("ivo://cadc.nrc.ca/myservice/entry"));
+
+            Assert.assertEquals("Wrong URL.",
+                                "https://mysite.com/services/mygreatservice",
+                                capabilitiesURL.toExternalForm());
+        } catch (Throwable t) {
+            log.error("unexpected exception", t);
+            throw t;
+        } finally {
+            // reset
+            System.setProperty("java.io.tmpdir", currentTmpDir);
+        }
+    }
 }

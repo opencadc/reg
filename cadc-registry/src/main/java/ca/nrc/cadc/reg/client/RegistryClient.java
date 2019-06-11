@@ -253,20 +253,18 @@ public class RegistryClient {
     }
 
     /**
-     * Get the capabilities object for the resource identified
-     * by resourceID.
+     * Obtain the URL of the capabilities document for the given resourceID.  Useful when the resource entries do not
+     * point to a capabilities document, but rather just a URL.
      *
-     * @param resourceID Identifies the resource.
-     * @return The associated capabilities object.
+     * If the given resource ID is not in the list of services located at <code>resourceCapsURL</code> then expect an
+     * <code>IllegalArgumentException</code> to be thrown.  If multiples ones are found, then expect a
+     * <code>RuntimeException</code> as the system will not select one for you.
      *
-     * @throws IOException If the capabilities could not be determined.
+     * @param resourceID        URI of the resource to lookup.
+     * @return URL              Location of the document.
+     * @throws IOException      If the cache file cannot be read.
      */
-    public Capabilities getCapabilities(URI resourceID) throws IOException {
-        if (resourceID == null) {
-            String msg = "Input parameter (resourceID) should not be null";
-            throw new IllegalArgumentException(msg);
-        }
-
+    public URL getCapabilitiesURL(URI resourceID) throws IOException {
         File capCacheFile = getCapSourceCacheFile();
         log.debug("Capabilities cache file: " + capCacheFile);
         CachingFile cachedCapSource = new CachingFile(capCacheFile, resourceCapsURL);
@@ -286,12 +284,29 @@ public class RegistryClient {
         if (values.size() > 1) {
             throw new RuntimeException("Multiple capability locations for " + resourceID);
         }
-        URL serviceCapsURL = null;
         try {
-            serviceCapsURL = new URL(values.get(0));
+            return new URL(values.get(0));
         } catch (MalformedURLException e) {
             throw new RuntimeException("URL for " + resourceID + " at " + resourceCapsURL + " is malformed", e);
         }
+    }
+
+    /**
+     * Get the capabilities object for the resource identified
+     * by resourceID.
+     *
+     * @param resourceID Identifies the resource.
+     * @return The associated capabilities object.
+     *
+     * @throws IOException If the capabilities could not be determined.
+     */
+    public Capabilities getCapabilities(URI resourceID) throws IOException {
+        if (resourceID == null) {
+            String msg = "Input parameter (resourceID) should not be null";
+            throw new IllegalArgumentException(msg);
+        }
+
+        final URL serviceCapsURL = getCapabilitiesURL(resourceID);
 
         log.debug("Service capabilities URL: " + serviceCapsURL);
 
@@ -324,10 +339,12 @@ public class RegistryClient {
      * IVOA identifier (e.g. with URI scheme "ivo"). This method returns the first matching
      * interface.
      *
-     * @param resourceIdentifier
-     * @param standardID
-     * @param authMethod
-     * @param interfaceType
+     * @param resourceIdentifier        ID of the resource to lookup.
+     * @param standardID                The standard ID of the resource to look up.  Indicates the specific purpose of
+     *                                  the resource to get a URL for.
+     * @param authMethod                What Authentication method to use (certificate, cookie, etc.)
+     * @param interfaceType             Interface type indicating how to access the resource (e.g. HTTP).  See IVOA
+     *                                  resource identifiers
      * @return service URL or null if a matching interface was not found
      */
     public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod,
@@ -463,5 +480,4 @@ public class RegistryClient {
     protected String getCapsDomain() {
         return capsDomain;
     }
-
 }
