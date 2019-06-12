@@ -253,8 +253,8 @@ public class RegistryClient {
     }
 
     /**
-     * Obtain the URL of the capabilities document for the given resourceID.  Useful when the resource entries do not
-     * point to a capabilities document, but rather just a URL.
+     * Obtain the URL of the capabilities document (or canned query) for the given resourceID.  Useful when the
+     * resource entries do not point to a capabilities document, but rather just a URL.
      *
      * If the given resource ID is not in the list of services located at <code>resourceCapsURL</code> then expect an
      * <code>IllegalArgumentException</code> to be thrown.  If multiples ones are found, then expect a
@@ -264,7 +264,7 @@ public class RegistryClient {
      * @return URL              Location of the document.
      * @throws IOException      If the cache file cannot be read.
      */
-    public URL getCapabilitiesURL(URI resourceID) throws IOException {
+    public URL getAccessURL(URI resourceID) throws IOException {
         File capCacheFile = getCapSourceCacheFile();
         log.debug("Capabilities cache file: " + capCacheFile);
         CachingFile cachedCapSource = new CachingFile(capCacheFile, resourceCapsURL);
@@ -306,7 +306,7 @@ public class RegistryClient {
             throw new IllegalArgumentException(msg);
         }
 
-        final URL serviceCapsURL = getCapabilitiesURL(resourceID);
+        final URL serviceCapsURL = getAccessURL(resourceID);
 
         log.debug("Service capabilities URL: " + serviceCapsURL);
 

@@ -83,8 +83,6 @@ import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -391,7 +389,7 @@ public class RegistryClientTest {
             fileWriter.close();
 
             final URL capabilitiesURL =
-                    registryClient.getCapabilitiesURL(URI.create("ivo://cadc.nrc.ca/myservice/entry"));
+                    registryClient.getAccessURL(URI.create("ivo://cadc.nrc.ca/myservice/entry"));
 
             Assert.assertEquals("Wrong URL.",
                                 "https://mysite.com/services/mygreatservice",
