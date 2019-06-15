@@ -272,8 +272,11 @@ public class OAIQueryRunner implements JobRunner {
                         if (metadataPrefix == null) {
                             throw new IllegalArgumentException("badArgument");
                         }
-
-                        doGetRecord(identifier, metadataPrefix);
+                        try {
+                            doGetRecord(identifier, metadataPrefix);
+                        } catch (URISyntaxException ex) {
+                            throw new IllegalArgumentException("badArgument");
+                        }
                         break;
                     default:
                         logInfo.setMessage("badVerb: " + verb);
