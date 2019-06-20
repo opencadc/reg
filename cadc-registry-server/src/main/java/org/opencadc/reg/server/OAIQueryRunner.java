@@ -242,10 +242,12 @@ public class OAIQueryRunner implements JobRunner {
                         }
                         if (metadataPrefix == null) {
                             throw new IllegalArgumentException("badArgument");
-                        } else if (!"ivo_vor".equals(metadataPrefix)) {
-                            throw new IllegalArgumentException("cannotDisseminateFormat");
+                        } 
+                        if (start != null && end != null && start.after(end)) {
+                            throw new IllegalArgumentException("noRecordsMatch");
                         }
-                        doListIdentifiers(start, end);
+                        
+                        doListIdentifiers(start, end, metadataPrefix);
                         break;
                     case "ListRecords":
                         if (set != null && !"ivo_managed".equals(set)) {
@@ -255,10 +257,12 @@ public class OAIQueryRunner implements JobRunner {
                         }
                         if (metadataPrefix == null) {
                             throw new IllegalArgumentException("badArgument");
-                        } else if (!"ivo_vor".equals(metadataPrefix)) {
-                            throw new IllegalArgumentException("cannotDisseminateFormat");
+                        } 
+                        if (start != null && end != null && start.after(end)) {
+                            throw new IllegalArgumentException("noRecordsMatch");
                         }
-                        doListRecords(start, end);
+                        
+                        doListRecords(start, end, metadataPrefix);
                         break;
                     case "GetRecord":
                         String identifier = getParamValue(OAI.identifier.name());
@@ -267,10 +271,12 @@ public class OAIQueryRunner implements JobRunner {
                         }
                         if (metadataPrefix == null) {
                             throw new IllegalArgumentException("badArgument");
-                        } else if (!"ivo_vor".equals(metadataPrefix)) {
-                            throw new IllegalArgumentException("cannotDisseminateFormat");
                         }
-                        doGetRecord(identifier);
+                        try {
+                            doGetRecord(identifier, metadataPrefix);
+                        } catch (URISyntaxException ex) {
+                            throw new IllegalArgumentException("badArgument");
+                        }
                         break;
                     default:
                         logInfo.setMessage("badVerb: " + verb);
@@ -331,9 +337,15 @@ public class OAIQueryRunner implements JobRunner {
         w.write(oaiEndpoint, oaiRequest, istream, syncOut.getOutputStream());
     }
 
-    private void doListIdentifiers(Date start, Date end) throws IOException {
+    private void doListIdentifiers(Date start, Date end, String metadataPrefix) throws IOException {
         log.warn("doListIdentifiers: " + start + " " + end);
         List<OAIHeader> headers = getHeaders(start, end);
+        if (headers.isEmpty()) {
+            sendError("ListRecords", 200, "noRecordsMatch");
+        }
+        if (!"ivo_vor".equals(metadataPrefix)) {
+            throw new IllegalArgumentException("cannotDisseminateFormat");
+        }
         List<OAIHeader> out = new ArrayList<>(headers);
         OAIWriter w = new OAIWriter();
         syncOut.setCode(200);
@@ -341,11 +353,14 @@ public class OAIQueryRunner implements JobRunner {
         w.writeList(oaiEndpoint, "ListIdentifiers", out, syncOut.getOutputStream());
     }
 
-    private void doListRecords(Date start, Date end) throws IOException {
+    private void doListRecords(Date start, Date end, String metadataPrefix) throws IOException {
         log.warn("doListIdentifiers: " + start + " " + end);
         List<OAIHeader> headers = getHeaders(start, end);
         if (headers.isEmpty()) {
             sendError("ListRecords", 200, "noRecordsMatch");
+        }
+        if (!"ivo_vor".equals(metadataPrefix)) {
+            throw new IllegalArgumentException("cannotDisseminateFormat");
         }
         List<OAIHeader> out = new ArrayList<>(headers);
         OAIWriter w = new OAIWriter();
@@ -354,10 +369,13 @@ public class OAIQueryRunner implements JobRunner {
         w.writeList(oaiEndpoint, "ListRecords", out, syncOut.getOutputStream());
     }
 
-    private void doGetRecord(String identifier) throws IOException, ResourceNotFoundException, URISyntaxException {
+    private void doGetRecord(String identifier, String metadataPrefix) throws IOException, ResourceNotFoundException, URISyntaxException {
         URI uri = new URI(identifier);
         if (!AUTHORITY.equals(uri.getAuthority())) {
             throw new IllegalArgumentException("idDoesNotExist");
+        }
+        if (!"ivo_vor".equals(metadataPrefix)) {
+            throw new IllegalArgumentException("cannotDisseminateFormat");
         }
         InputStream istream = getInputStream(AUTHORITY, uri.getPath().toLowerCase());
         if (istream == null) {
