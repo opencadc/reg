@@ -67,7 +67,6 @@
 
 package org.opencadc.reg.server;
 
-
 import ca.nrc.cadc.vosi.AvailabilityPlugin;
 import ca.nrc.cadc.vosi.AvailabilityStatus;
 

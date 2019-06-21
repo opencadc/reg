@@ -67,7 +67,6 @@
 
 package org.opencadc.reg.server;
 
-
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.dali.ParamExtractor;
 import ca.nrc.cadc.date.DateUtil;

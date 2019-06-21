@@ -181,6 +181,17 @@ public class OAIWriter {
         return ret;
     }
 
+    private void recursiveSetNS(Element e, Namespace ns) {
+        if (e.getNamespace() != null && !Namespace.NO_NAMESPACE.equals(e.getNamespace())) {
+            log.debug("recursiveSetNS: stop at " + e.getNamespace());
+            return;
+        }
+        e.setNamespace(ns);
+        for (Element c : e.getChildren()) {
+            recursiveSetNS(c, ns);
+        }
+    }
+
     private void addContent(Document doc, String oaiRequest, InputStream src) {
 
         Element root = doc.getRootElement();
@@ -204,17 +215,6 @@ public class OAIWriter {
 
         // reqContent may contain URLs that are currently production values in the input documents
         // TODO: we could at least fix the OAI endpoint in Identify.baseURL but fixing capabilities docs? meh
-    }
-
-    private void recursiveSetNS(Element e, Namespace ns) {
-        if (e.getNamespace() != null && !Namespace.NO_NAMESPACE.equals(e.getNamespace())) {
-            log.debug("recursiveSetNS: stop at " + e.getNamespace());
-            return;
-        }
-        e.setNamespace(ns);
-        for (Element c : e.getChildren()) {
-            recursiveSetNS(c, ns);
-        }
     }
 
     private void addContent(Document doc, String oaiRequest, List<OAIHeader> headers) {
