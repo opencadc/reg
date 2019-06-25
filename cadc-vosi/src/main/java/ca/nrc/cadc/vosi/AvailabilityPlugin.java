@@ -100,6 +100,7 @@ public interface AvailabilityPlugin {
     /**
      * A light weight method to check if a service is alive.
      * This method is to be implemented by all services.
+     * @throws RuntimeException if an error is detected (future expansion)
      */
     public void heartbeat() throws RuntimeException;
 }

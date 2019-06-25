@@ -85,7 +85,7 @@ public class ServiceAvailability implements AvailabilityPlugin {
     }
 
     @Override
-    public void heartBeat() {
+    public void heartbeat() {
         //no-op
     }
 
