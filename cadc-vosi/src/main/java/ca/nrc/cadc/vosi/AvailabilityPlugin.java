@@ -98,8 +98,8 @@ public interface AvailabilityPlugin {
     public void setState(String state);
     
     /**
-     * Returns HTTP status 200 OK to indicate that a service is alive.
+     * A light weight method to check if a service is alive.
      * This method is to be implemented by all services.
      */
-    public void heartBeat();
+    public void heartbeat() throws RuntimeException;
 }

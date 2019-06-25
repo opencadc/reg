@@ -124,18 +124,15 @@ public class AvailabilityServlet extends HttpServlet {
             log.info(logInfo.start());
 
             Class wsClass = Class.forName(pluginClassName);
-            AvailabilityPlugin ws = (AvailabilityPlugin) wsClass.newInstance();
-            if (ws instanceof AvailabilityPlugin) {
-                AvailabilityPlugin ap = (AvailabilityPlugin) ws;
-                ap.setAppName(appName);
-            }
+            AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.newInstance();
+            ap.setAppName(appName);
             
             String detail = request.getParameter("detail");
             if (detail != null && detail.equals("min")) {
-                ws.heartBeat();
+                ap.heartbeat();
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
-                AvailabilityStatus status = ws.getStatus();
+                AvailabilityStatus status = ap.getStatus();
     
                 Availability availability = new Availability(status);
                 availability.setClientIP(NetUtil.getClientIP(request));
@@ -172,13 +169,10 @@ public class AvailabilityServlet extends HttpServlet {
             log.info(logInfo.start());
 
             Class wsClass = Class.forName(pluginClassName);
-            AvailabilityPlugin ws = (AvailabilityPlugin) wsClass.newInstance();
-            if (ws instanceof AvailabilityPlugin) {
-                AvailabilityPlugin ap = (AvailabilityPlugin) ws;
-                ap.setAppName(appName);
-            }
+            AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.newInstance();
+            ap.setAppName(appName);
 
-            Subject.doAs(subject, new ChangeServiceState(ws, request));
+            Subject.doAs(subject, new ChangeServiceState(ap, request));
 
             response.sendRedirect(request.getRequestURL().toString());
 
