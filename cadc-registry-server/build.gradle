@@ -29,7 +29,7 @@ dependencies {
     compile 'org.opencadc:cadc-uws-server:[1.2.0,)'
     compile 'org.opencadc:cadc-registry:[1.4.6,)'
 
-    testCompile 'junit:junit:4.+'
+    testCompile 'junit:junit:[4.0,)'
     testCompile 'org.opencadc:cadc-quality:[1.0,)'
 }
 
