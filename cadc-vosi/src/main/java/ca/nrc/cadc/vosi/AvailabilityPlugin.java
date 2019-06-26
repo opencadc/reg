@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2018.                            (c) 2018.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -72,7 +72,7 @@ package ca.nrc.cadc.vosi;
  * 
  * @author pdowler
  */
-public interface AvailabilityPlugin extends WebService {
+public interface AvailabilityPlugin {
     /**
      * Set application name. The appName is a string unique to this
      * application.
@@ -96,4 +96,12 @@ public interface AvailabilityPlugin extends WebService {
      * @param state requested state
      */
     public void setState(String state);
+    
+    /**
+     * A very lightweight method that can be called every few seconds to test if a service is (probably) working.
+     * This method is to be implemented by all services.
+     * 
+     * @return true if successful, false otherwise
+     */
+    public boolean heartbeat();
 }

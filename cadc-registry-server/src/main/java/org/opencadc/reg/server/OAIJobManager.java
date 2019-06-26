@@ -67,7 +67,6 @@
 
 package org.opencadc.reg.server;
 
-
 import ca.nrc.cadc.auth.ACIdentityManager;
 import ca.nrc.cadc.uws.server.JobExecutor;
 import ca.nrc.cadc.uws.server.MemoryJobPersistence;

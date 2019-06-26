@@ -67,7 +67,6 @@
 
 package org.opencadc.reg.oai;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

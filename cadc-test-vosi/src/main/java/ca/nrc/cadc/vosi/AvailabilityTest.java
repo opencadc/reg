@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2016.                            (c) 2016.
+ *  (c) 2019.                            (c) 2019.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -86,10 +86,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -125,6 +129,25 @@ public class AvailabilityTest {
         try {
             CheckWebService checkWebService = new CheckWebService(lookupServiceURL().toString());
             checkWebService.check();
+        } catch (Throwable t) {
+            log.error("unexpected exception", t);
+            Assert.fail("unexpected exception: " + t);
+        }
+    }
+
+    @Test
+    public void testHeartBeat() {
+        try {
+            String heartbeatURLString = lookupServiceURL().toString() + "?detail=min";
+            URL url = new URL(heartbeatURLString);
+            URLConnection conn = url.openConnection();
+            int code = ((HttpURLConnection) conn).getResponseCode();
+            if (code == HttpServletResponse.SC_OK) {
+                log.debug("test succeeded: " + heartbeatURLString);
+            } else {
+                log.debug("test failed: " + heartbeatURLString);
+                throw new RuntimeException("heart beat test failed with status code " + code);
+            }
         } catch (Throwable t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
