@@ -129,8 +129,11 @@ public class AvailabilityServlet extends HttpServlet {
             
             String detail = request.getParameter("detail");
             if (detail != null && detail.equals("min")) {
-                ap.heartbeat();
-                response.setStatus(HttpServletResponse.SC_OK);
+                if (ap.heartbeat()) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                } else {
+                    response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+                }
             } else {
                 AvailabilityStatus status = ap.getStatus();
     

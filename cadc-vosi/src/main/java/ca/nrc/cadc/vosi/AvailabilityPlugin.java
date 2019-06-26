@@ -100,7 +100,8 @@ public interface AvailabilityPlugin {
     /**
      * A very lightweight method that can be called every few seconds to test if a service is (probably) working.
      * This method is to be implemented by all services.
-     * @throws RuntimeException if an error is detected (future expansion)
+     * 
+     * @return true if successful, false otherwise
      */
-    public void heartbeat() throws RuntimeException;
+    public boolean heartbeat();
 }
