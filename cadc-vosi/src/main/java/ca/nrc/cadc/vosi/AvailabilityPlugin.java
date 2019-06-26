@@ -98,7 +98,7 @@ public interface AvailabilityPlugin {
     public void setState(String state);
     
     /**
-     * A light weight method to check if a service is alive.
+     * A very lightweight method that can be called every few seconds to test if a service is (probably) working.
      * This method is to be implemented by all services.
      * @throws RuntimeException if an error is detected (future expansion)
      */
