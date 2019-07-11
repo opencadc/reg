@@ -117,6 +117,7 @@ public class Standards {
     public static final URI PROTO_TABLE_UPDATE_ASYNC = URI.create("ivo://ivoa.net/std/VOSI#table-update-async-1.x");
     public static final URI PROTO_TABLE_UPDATE_SYNC = URI.create("ivo://ivoa.net/std/VOSI#table-update-sync-1.x");
     public static final URI PROTO_TABLE_LOAD_SYNC = URI.create("ivo://ivoa.net/std/VOSI#table-load-sync-1.x");
+    public static final URI PROTO_TABLE_PERMISSIONS = URI.create("ivo://ivoa.net/std/VOSI#table-permissions-1.x");
 
     public static final URI VOSPACE_NODES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
     public static final URI VOSPACE_PROPERTIES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#properties");
