@@ -140,9 +140,6 @@ public class XMLConstants {
 
         String xlinkSchemaURL = XmlUtil.getResourceUrlString(XLINK_SCHEMA, XMLConstants.class);
         SCHEMA_MAP.put(XLINK_NS.toString(), xlinkSchemaURL);
-
-        String w3cSchemaURL = XmlUtil.getResourceUrlString(W3CConstants.XSI_SCHEMA, XMLConstants.class);
-        SCHEMA_MAP.put(W3CConstants.XSI_NS_URI.toString(), w3cSchemaURL);
     }
 
     public static final Namespace CAPABILITIES_NS = Namespace.getNamespace("vosi", VOSICAPABILITIES_10_NS.toString());
