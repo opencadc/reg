@@ -105,10 +105,6 @@ public class AvailabilityServlet extends HttpServlet {
         throws ServletException {
         this.appName = config.getServletContext().getServletContextName();
         this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
-        if (pluginClassName == null) {
-            // backwards compat
-            this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
-        }
         log.info("application: " + appName + " plugin impl: " + pluginClassName);
     }
 
@@ -126,7 +122,7 @@ public class AvailabilityServlet extends HttpServlet {
             Class wsClass = Class.forName(pluginClassName);
             AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.newInstance();
             ap.setAppName(appName);
-            
+
             String detail = request.getParameter("detail");
             if (detail != null && detail.equals("min")) {
                 if (ap.heartbeat()) {
@@ -136,10 +132,10 @@ public class AvailabilityServlet extends HttpServlet {
                 }
             } else {
                 AvailabilityStatus status = ap.getStatus();
-    
+
                 Availability availability = new Availability(status);
                 availability.setClientIP(NetUtil.getClientIP(request));
-    
+
                 Document document = availability.toXmlDocument();
                 XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
                 started = true;
