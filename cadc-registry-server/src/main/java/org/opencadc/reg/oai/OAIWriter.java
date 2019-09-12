@@ -227,6 +227,9 @@ public class OAIWriter {
             for (OAIHeader h : headers) {
                 log.debug("adding: " + h);
                 Element he = new Element("header", oai);
+                if (h.getStatus() != null) {
+                    he.setAttribute("status", h.getStatus(), Namespace.NO_NAMESPACE);
+                }
                 reqContent.addContent(he);
 
                 Element id = new Element("identifier", oai);
