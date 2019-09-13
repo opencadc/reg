@@ -337,7 +337,7 @@ public class OAIQueryRunner implements JobRunner {
     }
 
     private void doListIdentifiers(Date start, Date end, String metadataPrefix) throws IOException {
-        log.warn("doListIdentifiers: " + start + " " + end);
+        log.debug("doListIdentifiers: " + start + " " + end);
         List<OAIHeader> headers = getHeaders(start, end);
         if (headers.isEmpty()) {
             sendError("ListRecords", 200, "noRecordsMatch");
@@ -353,7 +353,7 @@ public class OAIQueryRunner implements JobRunner {
     }
 
     private void doListRecords(Date start, Date end, String metadataPrefix) throws IOException {
-        log.warn("doListIdentifiers: " + start + " " + end);
+        log.debug("doListRecords: " + start + " " + end);
         List<OAIHeader> headers = getHeaders(start, end);
         if (headers.isEmpty()) {
             sendError("ListRecords", 200, "noRecordsMatch");
@@ -445,6 +445,7 @@ public class OAIQueryRunner implements JobRunner {
             Element record = root.getChild("record", Namespace.NO_NAMESPACE);
             Element header = record.getChild("header", Namespace.NO_NAMESPACE);
 
+            String status = header.getAttributeValue("status", Namespace.NO_NAMESPACE);
             DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
             URI id = URI.create(header.getChildText("identifier", Namespace.NO_NAMESPACE));
             String dsVal = header.getChildText("datestamp", Namespace.NO_NAMESPACE);
@@ -452,7 +453,7 @@ public class OAIQueryRunner implements JobRunner {
                 dsVal = dsVal.substring(0, dsVal.length() - 2);
             }
             Date ds = DateUtil.flexToDate(dsVal, df);
-            OAIHeader ret = new OAIHeader(id, ds, "ivo_managed", f);
+            OAIHeader ret = new OAIHeader(id, ds, "ivo_managed", status, f);
             log.debug("found: " + ret);
             return ret;
         } catch (Exception ex) {

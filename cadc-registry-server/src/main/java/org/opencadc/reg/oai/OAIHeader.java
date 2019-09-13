@@ -83,17 +83,23 @@ public class OAIHeader implements Comparable<OAIHeader> {
     private final URI identifier;
     private final Date datestamp;
     private final String setSpec;
-
+    private final String status;
     private File src;
+    
 
-    public OAIHeader(URI identifier, Date datestamp, String setSpec, File src) {
+    public OAIHeader(URI identifier, Date datestamp, String setSpec, String status, File src) {
         if (identifier == null || datestamp == null) {
             throw new IllegalArgumentException("constructor args cannot be null");
         }
         this.identifier = identifier;
         this.datestamp = datestamp;
         this.setSpec = setSpec;
+        this.status = status;
         this.src = src;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public URI getIdentifier() {
