@@ -15,7 +15,7 @@ sourceCompatibility = 1.7
 
 group = 'org.opencadc'
 
-version = '1.0.7'
+version = '1.0.8'
 
 dependencies {
     compile 'log4j:log4j:[1.2.0,)'
@@ -24,9 +24,8 @@ dependencies {
 
     compile 'org.opencadc:cadc-util:[1.2,)'
     compile 'org.opencadc:cadc-log:[1.0,)'
-    compile 'org.opencadc:cadc-access-control-identity:[1.0,2.0)'
     compile 'org.opencadc:cadc-dali:[1.1,)'
-    compile 'org.opencadc:cadc-uws-server:[1.2.0,)'
+    compile 'org.opencadc:cadc-uws-server:[1.2.3,)'
     compile 'org.opencadc:cadc-registry:[1.4.6,)'
 
     testCompile 'junit:junit:[4.0,)'
