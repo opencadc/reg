@@ -337,7 +337,7 @@ public class OAIQueryRunner implements JobRunner {
     }
 
     private void doListIdentifiers(Date start, Date end, String metadataPrefix) throws IOException {
-        log.warn("doListIdentifiers: " + start + " " + end);
+        log.debug("doListIdentifiers: " + start + " " + end);
         List<OAIHeader> headers = getHeaders(start, end);
         if (headers.isEmpty()) {
             sendError("ListRecords", 200, "noRecordsMatch");
@@ -353,7 +353,7 @@ public class OAIQueryRunner implements JobRunner {
     }
 
     private void doListRecords(Date start, Date end, String metadataPrefix) throws IOException {
-        log.warn("doListIdentifiers: " + start + " " + end);
+        log.debug("doListRecords: " + start + " " + end);
         List<OAIHeader> headers = getHeaders(start, end);
         if (headers.isEmpty()) {
             sendError("ListRecords", 200, "noRecordsMatch");
