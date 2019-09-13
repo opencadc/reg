@@ -67,26 +67,27 @@
 
 package org.opencadc.reg.server;
 
-import ca.nrc.cadc.auth.ACIdentityManager;
 import ca.nrc.cadc.uws.server.JobExecutor;
 import ca.nrc.cadc.uws.server.MemoryJobPersistence;
 import ca.nrc.cadc.uws.server.RandomStringGenerator;
 import ca.nrc.cadc.uws.server.SimpleJobManager;
 import ca.nrc.cadc.uws.server.ThreadExecutor;
+import ca.nrc.cadc.uws.server.impl.AnonOnlyIdentityManager;
 
 
 /**
+ * Usable JobManager implementation for anonymous-only OAI deployment.
+ * 
  * @author pdowler
  */
 public class OAIJobManager extends SimpleJobManager {
 
     public OAIJobManager() {
         super();
-        MemoryJobPersistence jp = new MemoryJobPersistence(new RandomStringGenerator(16), new ACIdentityManager(), 60L);
+        MemoryJobPersistence jp = new MemoryJobPersistence(new RandomStringGenerator(16), new AnonOnlyIdentityManager(), 60000L);
         JobExecutor je = new ThreadExecutor(jp, OAIQueryRunner.class);
         setJobPersistence(jp);
         setJobExecutor(je);
-
         setMaxDestruction(60L);
     }
 }
