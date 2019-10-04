@@ -138,7 +138,7 @@ public class CannedQueryServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
-        WebServiceLogInfo logInfo = new ServletLogInfo(request);
+        WebServiceLogInfo logInfo = new ServletLogInfo(request, this.getServletName());
         long start = System.currentTimeMillis();
 
         try {
