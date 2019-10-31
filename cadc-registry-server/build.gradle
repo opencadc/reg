@@ -23,7 +23,7 @@ dependencies {
     compile 'xerces:xercesImpl:[2.0,)'
 
     compile 'org.opencadc:cadc-util:[1.2.25,)'
-    compile 'org.opencadc:cadc-log:[1.0.9,)'
+    compile 'org.opencadc:cadc-log:[1.1.0,)'
     compile 'org.opencadc:cadc-dali:[1.1,)'
     compile 'org.opencadc:cadc-uws-server:[1.2.4,)'
     compile 'org.opencadc:cadc-registry:[1.4.6,)'
