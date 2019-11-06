@@ -113,7 +113,6 @@ public class AvailabilityServlet extends HttpServlet {
         throws ServletException, IOException {
         boolean started = false;
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
-        logInfo.setClass(this.getClass());
         long start = System.currentTimeMillis();
         try {
             Subject subject = AuthenticationUtil.getSubject(request);
@@ -162,7 +161,6 @@ public class AvailabilityServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
-        logInfo.setClass(this.getClass());
         long start = System.currentTimeMillis();
         try {
             Subject subject = AuthenticationUtil.getSubject(request);

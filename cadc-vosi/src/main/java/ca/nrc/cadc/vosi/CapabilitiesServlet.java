@@ -92,7 +92,6 @@ public class CapabilitiesServlet extends HttpServlet {
             throws ServletException, IOException {
 
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
-        logInfo.setClass(this.getClass());
         long start = System.currentTimeMillis();
 
         try {

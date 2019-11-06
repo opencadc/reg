@@ -139,7 +139,6 @@ public class CannedQueryServlet extends HttpServlet {
             throws IOException {
 
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
-        logInfo.setClass(this.getClass());
         long start = System.currentTimeMillis();
 
         try {
