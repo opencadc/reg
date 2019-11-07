@@ -77,8 +77,7 @@ import org.jdom2.Namespace;
  * @author zhangsa
  *
  */
-public class Util
-{
+public class Util {
 
     /**
      * find the part of a string that is before the first occurance of a sub-string named searched. 
@@ -89,8 +88,7 @@ public class Util
      * @param searched: the string being searched
      * @return substring before the first occurance of searched.  If searched is not found, return the original full string.
      */
-    public static String getStringPartBefore(String full, String searched)
-    {
+    public static String getStringPartBefore(String full, String searched) {
         String rtn = full;
         int idx = full.indexOf(searched);
         if (idx >= 0)
@@ -107,8 +105,7 @@ public class Util
      * @param searched: the string being searched
      * @return substring after the first occurance of searched.  If searched is not found, return NULL.
      */
-    public static String getStringPartAfter(String full, String searched)
-    {
+    public static String getStringPartAfter(String full, String searched) {
         String rtn = null;
         int idx = full.indexOf(searched);
         if (idx >= 0)
@@ -129,15 +126,14 @@ public class Util
         return addChild(ele0, null, chdName, chdText);
     }
 
-    public static Element addChild(Element ele0, Namespace ns, String chdName, String chdText)
-    {
+    public static Element addChild(Element ele0, Namespace ns, String chdName, String chdText) {
         Element ele = null;
-        if (chdText != null && !chdText.equals(""))
-        {
-            if (ns != null)
+        if (chdText != null && !chdText.equals("")) {
+            if (ns != null) {
                 ele = new Element(chdName, ns);
-            else
+            } else {
                 ele = new Element(chdName);
+            }
             ele.setText(chdText);
             ele0.addContent(ele);
         }
