@@ -136,6 +136,7 @@ public class Standards {
 
     public static final URI CAOM2REPO_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.0");
     public static final URI CAOM2REPO_OBS_23 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.1");
+    public static final URI CAOM2REPO_OBS_24 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.2");
     public static final URI CAOM2REPO_DEL_23 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#del-1.0");
     public static final URI CAOM2REPO_PERMS = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#perms-1.0");
 
