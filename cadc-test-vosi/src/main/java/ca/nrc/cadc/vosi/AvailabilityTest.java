@@ -87,7 +87,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
@@ -183,7 +182,6 @@ public class AvailabilityTest {
      * @return True if one or more comments match, or False otherwise.
      */
     boolean hasClientIPComment(final Element element) throws Exception {
-        final String hostAddress = InetAddress.getLocalHost().getHostAddress();
         final List<Content> comments = element.getContent(new ContentFilter(ContentFilter.COMMENT) {
             @Override
             public Content filter(final Object obj) {
