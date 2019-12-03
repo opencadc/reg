@@ -188,9 +188,8 @@ public class AvailabilityTest {
             @Override
             public Content filter(final Object obj) {
                 final Content c = super.filter(obj);
-                return ((c != null) && c.getValue().contains(String.format("<clientip>%s</clientip>", hostAddress))) ?
-                    c :
-                    null;
+                return ((c != null) && (c.getValue().indexOf("</clientip>") > -1) &&
+                        (c.getValue().indexOf("</clientip>") > c.getValue().indexOf("<clientip>"))) ?  c : null;
             }
         });
 
