@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2009.                            (c) 2009.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,7 +65,7 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi.avail;
 
@@ -74,18 +74,16 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
 
 /**
  * @author zhangsa
  *
  */
-public class CheckDataSource implements CheckResource
-{
+public class CheckDataSource implements CheckResource {
+
     private static Logger log = Logger.getLogger(CheckDataSource.class);
 
     private String dataSourceName;
@@ -99,12 +97,11 @@ public class CheckDataSource implements CheckResource
      * Constructor to check a DataSource.
      * The test query should be something that always executes quickly and
      * returns a small result set, such as <code>select x from someTable limit 0</code>.
-     * 
+     *
      * @param dataSource the DataSource to check
      * @param testSQL test query that should work
      */
-    public CheckDataSource(DataSource dataSource, String testSQL)
-    {
+    public CheckDataSource(DataSource dataSource, String testSQL) {
         this.dataSource = dataSource;
         this.testSQL = testSQL;
     }
@@ -115,69 +112,59 @@ public class CheckDataSource implements CheckResource
      * @param dataSourceName JNDI name of DataSource
      * @param testSQL test query that should work
      */
-    public CheckDataSource(String dataSourceName, String testSQL)
-    {
+    public CheckDataSource(String dataSourceName, String testSQL) {
         this.dataSourceName = dataSourceName;
         this.testSQL = testSQL;
     }
-    
-    public CheckDataSource(String dataSourceName, String testSQL, boolean expectResults)
-    {
+
+    public CheckDataSource(String dataSourceName, String testSQL, boolean expectResults) {
         this.dataSourceName = dataSourceName;
         this.testSQL = testSQL;
         this.expectResults = expectResults;
     }
-    
-    public CheckDataSource(String dataSourceName, String testSQL, int expectNumRows)
-    {
+
+    public CheckDataSource(String dataSourceName, String testSQL, int expectNumRows) {
         this.dataSourceName = dataSourceName;
         this.testSQL = testSQL;
         this.expectNumRows = expectNumRows;
         this.expectResults = true;
     }
-    
-    public CheckDataSource(String dataSourceName, String testSQL, boolean expectResults, boolean rollback)
-    {
+
+    public CheckDataSource(String dataSourceName, String testSQL, boolean expectResults, boolean rollback) {
         this.dataSourceName = dataSourceName;
         this.testSQL = testSQL;
         this.expectResults = expectResults;
         this.rollback = rollback;
     }
-    
+
     @Override
     public void check()
-        throws CheckException
-    {
+            throws CheckException {
         Connection con = null;
         Statement st = null;
         ResultSet rs = null;
-        try
-        {
-            if (dataSource == null && dataSourceName != null)
-            {
+        try {
+            if (dataSource == null && dataSourceName != null) {
                 this.dataSource = DBUtil.findJNDIDataSource(dataSourceName);
             }
-            
+
             con = dataSource.getConnection();
-            if (this.rollback)
-            {
+            if (this.rollback) {
                 con.setAutoCommit(false);
             }
-            
+
             st = con.createStatement();
-            if (expectResults)
-            {
+            if (expectResults) {
                 log.debug("test for results");
-                if (testSQL.trim().toLowerCase().startsWith("select "))
-                {
+                if (testSQL.trim().toLowerCase().startsWith("select ")) {
                     rs = st.executeQuery(testSQL);
                     if (expectNumRows != null) {
                         int numRows = 0;
-                        while ( rs.next() ) {
+                        while (rs.next()) {
                             numRows++;
                         }
                         if (expectNumRows != numRows) {
-                            String msg = "content fail: " + dataSourceName + " (" + testSQL + ") expected rows: " 
+                            String msg = "content fail: " + dataSourceName + " (" + testSQL + ") expected rows: "
                                     + expectNumRows + " found: " + numRows;
                             log.warn(msg);
                             throw new CheckException(msg);
@@ -185,58 +172,50 @@ public class CheckDataSource implements CheckResource
                     } else {
                         rs.next(); // just check the result set, but don't care if there are any rows
                     }
-                }
-                else
-                {
+                } else {
                     st.executeUpdate(testSQL);
                 }
-            }
-            else
-            {
+            } else {
                 st.execute(testSQL);
             }
             log.debug("test succeeded: " + dataSourceName + " (" + testSQL + ")");
-        }
-        catch(NamingException e)
-        {
+        } catch (NamingException e) {
             log.warn("test failed: " + dataSourceName + " (" + testSQL + ")");
             throw new CheckException("DataSource not found: " + dataSourceName, e);
-        }
-        catch (SQLException e)
-        {
+        } catch (SQLException e) {
             log.debug("test failed: " + dataSourceName + " (" + testSQL + ")", e);
             log.warn("test failed: " + dataSourceName + " (" + testSQL + ")");
             throw new CheckException("DataSource is not usable: " + dataSourceName, e);
-        }
-        finally
-        {
-            if (this.rollback && con != null)
-            {
-                try
-                {
+        } finally {
+            if (this.rollback && con != null) {
+                try {
                     con.rollback();
                     con.setAutoCommit(true);
-                }
-                catch (SQLException e)
-                {
+                } catch (SQLException e) {
                     log.error("rollback failed: " + dataSourceName + " (" + testSQL + ")", e);
                 }
             }
-            
-            if (rs != null)
-            {
-                try { rs.close(); }
-                catch(Throwable ignore) { }
+
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (Throwable ignore) {
+                    log.debug("ResultSet.close failed: ignore", ignore);
+                }
             }
-            if (st != null)
-            {
-                try { st.close(); }
-                catch(Throwable ignore) { }
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (Throwable ignore) {
+                    log.debug("Statement.close failed: ignore", ignore);
+                }
             }
-            if (con != null)
-            {
-                try { con.close(); }
-                catch(Throwable ignore) { }
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (Throwable ignore) {
+                    log.debug("Connection.close failed: ignore", ignore);
+                }
             }
         }
     }

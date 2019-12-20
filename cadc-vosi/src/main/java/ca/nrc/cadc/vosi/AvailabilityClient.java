@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2014.                            (c) 2014.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,68 +65,58 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
-package ca.nrc.cadc.vosi;
+ */
 
+package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.net.HttpDownload;
 import ca.nrc.cadc.net.HttpTransfer;
 import ca.nrc.cadc.xml.XmlUtil;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URL;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URL;
+public class AvailabilityClient {
 
-public class AvailabilityClient
-{
     private static Logger log = Logger.getLogger(AvailabilityClient.class);
 
     public static final String AVAILABILITY_ENDPOINT = "/availability";
 
-    public AvailabilityClient() {}
+    public AvailabilityClient() {
+    }
 
-    public Availability getAvailability(final URL serviceUrl)
-    {
-        if (serviceUrl == null)
-        {
+    public Availability getAvailability(final URL serviceUrl) {
+        if (serviceUrl == null) {
             throw new IllegalArgumentException("null URL");
         }
 
         Availability availability;
-        try
-        {
-            URL availabilityURL =
-                    new URL(serviceUrl.getProtocol(), serviceUrl.getHost(),
+        try {
+            URL availabilityURL
+                    = new URL(serviceUrl.getProtocol(), serviceUrl.getHost(),
                             serviceUrl.getPort(), serviceUrl.getPath() + AVAILABILITY_ENDPOINT);
 
             ByteArrayOutputStream outputStream = getOutputStream();
             HttpDownload httpDownload = getHttpDownload(availabilityURL, outputStream);
             httpDownload.run();
 
-            if (httpDownload.getResponseCode() == 200)
-            {
-                Document xml =
-                        XmlUtil.buildDocument(outputStream.toString("UTF-8"),
+            if (httpDownload.getResponseCode() == 200) {
+                Document xml
+                        = XmlUtil.buildDocument(outputStream.toString("UTF-8"),
                                 VOSI.AVAILABILITY_NS_URI, VOSI.AVAILABILITY_SCHEMA);
                 availability = new Availability(xml);
-            }
-            else
-            {
+            } else {
                 availability = getFalseAvailability();
             }
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             final String message = "Error getting availability for "
-                                 + serviceUrl + " because " + e.getMessage();
+                    + serviceUrl + " because " + e.getMessage();
             log.error(message);
             availability = getFalseAvailability();
-        }
-        catch (JDOMException e)
-        {
+        } catch (JDOMException e) {
             final String message = "Error parsing availability for "
                     + serviceUrl + " because " + e.getMessage();
             log.error(message);
@@ -135,19 +125,16 @@ public class AvailabilityClient
         return availability;
     }
 
-    protected Availability getFalseAvailability()
-    {
+    protected Availability getFalseAvailability() {
         AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, null);
         return new Availability(status);
     }
 
-    protected HttpDownload getHttpDownload(final URL url, final ByteArrayOutputStream out)
-    {
+    protected HttpDownload getHttpDownload(final URL url, final ByteArrayOutputStream out) {
         return new HttpDownload(url, out);
     }
 
-    protected ByteArrayOutputStream getOutputStream()
-    {
+    protected ByteArrayOutputStream getOutputStream() {
         return new ByteArrayOutputStream(HttpTransfer.DEFAULT_BUFFER_SIZE);
     }
 

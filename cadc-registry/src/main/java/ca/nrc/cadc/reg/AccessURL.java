@@ -85,7 +85,7 @@ public class AccessURL {
 
     /**
      * Constructor.
-     * @param url
+     * @param url wrapped URL
      */
     public AccessURL(final URL url) {
         if (url == null) {

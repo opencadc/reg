@@ -63,27 +63,28 @@
 *                                       <http://www.gnu.org/licenses/>.
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi;
 
 /**
  * Plugin interface for the AvailabilityServlet.
- * 
+ *
  * @author pdowler
  */
 public interface AvailabilityPlugin {
+
     /**
      * Set application name. The appName is a string unique to this
      * application.
-     * 
+     *
      * @param appName unique application name
      */
     public void setAppName(String appName);
-    
+
     /**
      * Get the current status.
-     * 
+     *
      * @return current status
      */
     public AvailabilityStatus getStatus();
@@ -92,15 +93,15 @@ public interface AvailabilityPlugin {
      * The AvailabilitySerlet supports a POST with state=??? that it will pass
      * on to the WebService. This can be used to implement state-changes in the
      * service, e.g. disabling or enabling features.
-     * 
+     *
      * @param state requested state
      */
     public void setState(String state);
-    
+
     /**
      * A very lightweight method that can be called every few seconds to test if a service is (probably) working.
      * This method is to be implemented by all services.
-     * 
+     *
      * @return true if successful, false otherwise
      */
     public boolean heartbeat();

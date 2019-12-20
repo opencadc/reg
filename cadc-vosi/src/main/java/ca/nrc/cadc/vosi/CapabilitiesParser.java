@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2011.                            (c) 2011.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,69 +65,62 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi;
 
+import ca.nrc.cadc.reg.XMLConstants;
+import ca.nrc.cadc.xml.XmlUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-
-import ca.nrc.cadc.reg.XMLConstants;
-import ca.nrc.cadc.xml.XmlUtil;
 
 /**
  * Parser to setup the schema map for parsing a VOSI-capabilities document.
  *
  * @author pdowler
  */
-public class CapabilitiesParser
-{
+public class CapabilitiesParser {
+
     private static final Logger log = Logger.getLogger(CapabilitiesParser.class);
 
-    protected Map<String,String> schemaMap;
+    protected Map<String, String> schemaMap;
 
-    public CapabilitiesParser()
-    {
+    public CapabilitiesParser() {
         this(true);
     }
 
-    public CapabilitiesParser(boolean enableSchemaValidation)
-    {
-        if (enableSchemaValidation)
-        {
+    public CapabilitiesParser(boolean enableSchemaValidation) {
+        if (enableSchemaValidation) {
             this.schemaMap = XMLConstants.SCHEMA_MAP;
         }
     }
+
     /**
      * Add an additional schema to the parser configuration. This is needed if the VOSI-capabilities
      * uses an extension schema for xsi:type.
      *
-     * @param namespace
-     * @param schemaLocation
+     * @param namespace VOSI-capabilities namespace
+     * @param schemaLocation VOSI-capabilities xsd location
      */
-    public void addSchemaLocation(String namespace, String schemaLocation)
-    {
+    public void addSchemaLocation(String namespace, String schemaLocation) {
         log.debug("addSchemaLocation: " + namespace + " -> " + schemaLocation);
         schemaMap.put(namespace, schemaLocation);
     }
 
     public Document parse(Reader rdr)
-        throws IOException, JDOMException
-    {
+            throws IOException, JDOMException {
         SAXBuilder sb = XmlUtil.createBuilder(schemaMap);
         return sb.build(rdr);
     }
 
     public Document parse(InputStream istream)
-        throws IOException, JDOMException
-    {
+            throws IOException, JDOMException {
         SAXBuilder sb = XmlUtil.createBuilder(schemaMap);
         return sb.build(istream);
     }

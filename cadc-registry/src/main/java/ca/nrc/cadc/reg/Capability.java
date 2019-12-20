@@ -90,7 +90,7 @@ public class Capability {
 
     /**
      * Constructor. 
-     * @param standardID
+     * @param standardID standardID of this capability
      */
     public Capability(final URI standardID) {
         validateParams(standardID);
@@ -109,7 +109,7 @@ public class Capability {
      * Find a ParamHTTP interface that uses the specified securityMethod.
      * This method returns the first matching interface.
      * 
-     * @param securityMethod
+     * @param securityMethod securityMethod to match
      * @return the first matching interface or null
      */
     public Interface findInterface(final URI securityMethod) {
@@ -120,8 +120,8 @@ public class Capability {
      * Find an interface of the specified type that uses the specified securityMethod.
      * This method returns the first matching interface.
      * 
-     * @param securityMethod
-     * @param interfaceType
+     * @param securityMethod  SecurityMethod to match
+     * @param interfaceType interface type to match
      * @return the first matching interface or null
      */
     public Interface findInterface(final URI securityMethod, final URI interfaceType) {
@@ -141,7 +141,7 @@ public class Capability {
      * Find a ParamHTTP interface that uses the specified securityMethod.
      * This method returns the first matching interface.
      * 
-     * @param authMethod
+     * @param authMethod AuthMethod to match
      * @return the first matching interface or null
      */
     public Interface findInterface(final AuthMethod authMethod) {
@@ -152,8 +152,8 @@ public class Capability {
      * Find an interface of the specified type that uses the specified authMethdod.
      * This method returns the first matching interface.
      * 
-     * @param authMethod
-     * @param interfaceType
+     * @param authMethod AuthMethod to match
+     * @param interfaceType interface type to match
      * @return the first matching interface or null
      */
     public Interface findInterface(final AuthMethod authMethod, final URI interfaceType) {

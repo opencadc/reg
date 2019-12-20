@@ -176,15 +176,17 @@ public class AvailabilityTest {
         Calendar c3 = new GregorianCalendar();
         c2.add(Calendar.MONTH, 1);
         c3.add(Calendar.MONTH, 2);
-        AvailabilityStatus status1 = new AvailabilityStatus(false, c1.getTime(), c2.getTime(), c3.getTime(), "status " +
-            "message");
-
+        AvailabilityStatus status1 = new AvailabilityStatus(false, c1.getTime(), c2.getTime(), c3.getTime(), 
+                "status message");
+        log.info("before: " + status1);
+        
         Availability availability = new Availability(status1);
         Document doc = availability.toXmlDocument();
 
         availability = new Availability(doc);
         AvailabilityStatus status2 = availability.fromXmlDocument(doc);
-
+        log.info(" after: " + status2); 
+        
         Assert.assertEquals("is available", status1.isAvailable(), status2.isAvailable());
         Assert.assertEquals("up since", status1.getUpSince(), status2.getUpSince());
         Assert.assertEquals("down at", status1.getDownAt(), status2.getDownAt());

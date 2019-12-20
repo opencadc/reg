@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2009.                            (c) 2009.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,7 +65,7 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi.avail;
 
@@ -80,71 +80,62 @@ import org.apache.log4j.Logger;
  *
  * @author pdowler
  */
-public class CheckURL  implements CheckResource
-{
-    private final static Logger log = Logger.getLogger(CheckURL.class);
+public class CheckURL implements CheckResource {
+    private static final Logger log = Logger.getLogger(CheckURL.class);
 
     private final String name;
     private final URL url;
     private final int expectedResponseCode;
     private final String expectedContentType;
-    
-    public CheckURL(String name, URL url, int expectedResponseCode, String expectedContentType)
-    {
+
+    public CheckURL(String name, URL url, int expectedResponseCode, String expectedContentType) {
         this.name = name;
         this.url = url;
         this.expectedResponseCode = expectedResponseCode;
         this.expectedContentType = expectedContentType;
     }
-    
+
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "CheckURL[" + name + "," + url + "]";
     }
 
-    public void check() 
-        throws CheckException 
-    {
+    public void check()
+            throws CheckException {
         HttpDownload get = null;
-        try
-        {
-            InputStreamWrapper dump = new InputStreamWrapper() 
-            {
-                public void read(InputStream in) 
-                    throws IOException 
-                {
+        try {
+            InputStreamWrapper dump = new InputStreamWrapper() {
+                public void read(InputStream in)
+                        throws IOException {
                     byte[] buf = new byte[8192];
                     int num;
-                    while ( (num = in.read(buf)) != -1 )
+                    while ((num = in.read(buf)) != -1) {
                         log.debug("read: " + num);
+                    }
                 }
             };
             get = new HttpDownload(url, dump);
             get.setHeadOnly(true);
             get.setFollowRedirects(true);
             get.run();
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
             log.debug("FAIL", ex);
             throw new CheckException(name + " " + url.toExternalForm() + " test failed: " + ex);
         }
-            
-        if (get.getThrowable() != null)
-        {
+
+        if (get.getThrowable() != null) {
             log.debug("FAIL", get.getThrowable());
             throw new CheckException(name + " " + url.toExternalForm() + " test failed: " + get.getThrowable());
         }
-        
+
         int responseCode = get.getResponseCode();
         String contentType = get.getContentType();
         int i = contentType.indexOf(';');
-        if (i > 0)
+        if (i > 0) {
             contentType = contentType.substring(0, i);
-        if ( responseCode != expectedResponseCode
-                || (expectedContentType != null && !expectedContentType.equals(contentType)) )
-        {
+        }
+        if (responseCode != expectedResponseCode
+                || (expectedContentType != null && !expectedContentType.equals(contentType))) {
             StringBuilder sb = new StringBuilder();
             sb.append(name).append(" ").append(url.toExternalForm()).append(" failed:");
             sb.append(" found ").append(contentType).append(" (").append(responseCode).append(")");

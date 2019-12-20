@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2009.                            (c) 2009.
+ *  (c) 2019.                            (c) 2019.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,71 +69,70 @@
 
 package ca.nrc.cadc.vosi;
 
+import ca.nrc.cadc.date.DateUtil;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-
 import org.jdom2.Comment;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 
-
-import ca.nrc.cadc.date.DateUtil;
-import ca.nrc.cadc.vosi.util.Util;
-
 /**
  * @author zhangsa
  */
 public class Availability {
-    private AvailabilityStatus _status;
-    private String _clientIP;
+
+    private AvailabilityStatus status;
+    private String clientIP;
 
     public Availability(AvailabilityStatus status) {
         super();
         if (status == null) {
             throw new IllegalArgumentException("Availability Status is null.");
         }
-        _status = status;
+        this.status = status;
     }
 
+    @Deprecated
     public Availability(Document xml) {
         super();
         if (xml == null) {
             throw new IllegalArgumentException("Document is null.");
         }
         try {
-            _status = fromXmlDocument(xml);
+            status = fromXmlDocument(xml);
         } catch (ParseException e) {
             throw new IllegalStateException("Invalid date format in XML", e);
         }
     }
 
     public void setClientIP(final String clientIP) {
-        this._clientIP = clientIP;
+        this.clientIP = clientIP;
     }
 
+    @Deprecated
     public Document toXmlDocument() {
         DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
         Namespace vosi = Namespace.getNamespace("vosi", VOSI.AVAILABILITY_NS_URI);
 
         Element eleAvailability = new Element("availability", vosi);
 
-        Util.addChild(eleAvailability, vosi, "available", Boolean.toString(_status.isAvailable()));
-        if (_status.getUpSince() != null) {
-            Util.addChild(eleAvailability, vosi, "upSince", df.format(_status.getUpSince()));
+        Util.addChild(eleAvailability, vosi, "available", Boolean.toString(status.isAvailable()));
+        if (status.getUpSince() != null) {
+            Util.addChild(eleAvailability, vosi, "upSince", df.format(status.getUpSince()));
         }
-        if (_status.getDownAt() != null) {
-            Util.addChild(eleAvailability, vosi, "downAt", df.format(_status.getDownAt()));
+        if (status.getDownAt() != null) {
+            Util.addChild(eleAvailability, vosi, "downAt", df.format(status.getDownAt()));
         }
-        if (_status.getBackAt() != null) {
-            Util.addChild(eleAvailability, vosi, "backAt", df.format(_status.getBackAt()));
+        if (status.getBackAt() != null) {
+            Util.addChild(eleAvailability, vosi, "backAt", df.format(status.getBackAt()));
         }
-        if (_status.getNote() != null) {
-            Util.addChild(eleAvailability, vosi, "note", _status.getNote());
+        if (status.getNote() != null) {
+            Util.addChild(eleAvailability, vosi, "note", status.getNote());
         }
-        if (this._clientIP != null) {
-            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", this._clientIP)));
+        if (this.clientIP != null) {
+            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", this.clientIP)));
         }
 
         Document document = new Document();
@@ -142,6 +141,7 @@ public class Availability {
         return document;
     }
 
+    @Deprecated
     public AvailabilityStatus fromXmlDocument(Document doc) throws ParseException {
         Namespace vosi = Namespace.getNamespace("vosi", VOSI.AVAILABILITY_NS_URI);
         Element availability = doc.getRootElement();
@@ -153,56 +153,52 @@ public class Availability {
         if (elemAvailable == null) {
             throw new IllegalArgumentException("missing element 'available'");
         }
-        boolean available = elemAvailable.getText().equalsIgnoreCase("true");
+        final boolean available = elemAvailable.getText().equalsIgnoreCase("true");
 
         DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
 
         Element elemUpSince = availability.getChild("upSince", vosi);
+        final Date upSince = safeParseDate(elemUpSince, df);
+        
         Element elemDownAt = availability.getChild("downAt", vosi);
+        final Date downAt = safeParseDate(elemDownAt, df);
+        
         Element elemBackAt = availability.getChild("backAt", vosi);
+        final Date backAt = safeParseDate(elemBackAt, df);
+        
         Element elemNote = availability.getChild("note", vosi);
-
-        Date upSince = null;
-        Date downAt = null;
-        Date backAt = null;
-        String note = null;
-
-        if (elemUpSince != null) {
-            upSince = df.parse(elemUpSince.getText());
-        }
-        if (elemDownAt != null) {
-            downAt = df.parse(elemDownAt.getText());
-        }
-        if (elemBackAt != null) {
-            backAt = df.parse(elemBackAt.getText());
-        }
-        if (elemNote != null) {
-            note = elemNote.getText();
-        }
+        String note = elemNote.getText();;
 
         return new AvailabilityStatus(available, upSince, downAt, backAt, note);
     }
+    
+    private Date safeParseDate(Element e, DateFormat df) throws ParseException {
+        if (e == null || e.getTextTrim().isEmpty()) {
+            return null;
+        }
+        return df.parse(e.getTextTrim());
+    }
 
     public AvailabilityStatus getStatus() {
-        return _status;
+        return status;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Availability[");
-        sb.append("available=").append(_status.isAvailable());
-        if (_status.getUpSince() != null) {
-            sb.append(",upSince=").append(_status.getUpSince());
+        sb.append("available=").append(status.isAvailable());
+        if (status.getUpSince() != null) {
+            sb.append(",upSince=").append(status.getUpSince());
         }
-        if (_status.getDownAt() != null) {
-            sb.append(",downAt=").append(_status.getDownAt());
+        if (status.getDownAt() != null) {
+            sb.append(",downAt=").append(status.getDownAt());
         }
-        if (_status.getBackAt() != null) {
-            sb.append(",backAt=").append(_status.getBackAt());
+        if (status.getBackAt() != null) {
+            sb.append(",backAt=").append(status.getBackAt());
         }
-        if (_status.getNote() != null) {
-            sb.append(",note=").append(_status.getNote());
+        if (status.getNote() != null) {
+            sb.append(",note=").append(status.getNote());
         }
         sb.append("]");
         return sb.toString();

@@ -65,13 +65,18 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi.avail;
 
 import ca.nrc.cadc.vosi.VOSI;
 import ca.nrc.cadc.vosi.util.WebGet;
 import ca.nrc.cadc.xml.XmlUtil;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -82,32 +87,25 @@ import org.jdom2.xpath.XPathBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Check the /availability resource of another web service.
- * 
+ *
  * @author zhangsa
  *
  */
-public class CheckWebService implements CheckResource
-{
+public class CheckWebService implements CheckResource {
+
     private static Logger log = Logger.getLogger(CheckWebService.class);
 
-    private Map<String,String> schemaMap = new HashMap<String,String>();
+    private Map<String, String> schemaMap = new HashMap<String, String>();
     private String wsURL;
 
     /**
      * @param url the URL of availability checking, e.g. http://www.sample.com/myservice/availability
      */
-    public CheckWebService(String url)
-    {
+    public CheckWebService(String url) {
         wsURL = url;
-        this.schemaMap.put( VOSI.AVAILABILITY_NS_URI, XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA, CheckWebService.class));
+        this.schemaMap.put(VOSI.AVAILABILITY_NS_URI, XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA, CheckWebService.class));
     }
 
     /* (non-Javadoc)
@@ -115,45 +113,38 @@ public class CheckWebService implements CheckResource
      */
     @Override
     public void check()
-        throws CheckException
-    {
+            throws CheckException {
         String wgReturn = null;
-        try
-        {
+        try {
             WebGet webGet = new WebGet(wsURL);
             wgReturn = webGet.submit();
             checkReturnedXml(wgReturn);
             log.debug("test succeeded: " + wsURL);
-        }
-        catch (MalformedURLException e)
-        {
+        } catch (MalformedURLException e) {
             log.warn("test failed: " + wsURL);
             throw new RuntimeException("test URL is malformed: " + wsURL, e);
-        }
-        catch(IOException e)
-        {
+        } catch (IOException e) {
             log.warn("test failed: " + wsURL);
             throw new CheckException("service not responding: " + wsURL, e);
         }
     }
-    
+
     void checkReturnedXml(String strXml)
-        throws CheckException
-    {
+            throws CheckException {
         Document doc;
         String xpathStr;
 
-        try
-        {
+        try {
             StringReader reader = new StringReader(strXml);
             doc = XmlUtil.buildDocument(reader, schemaMap);
 
             //get namespace and/or prefix from Document, then create xpath based on the prefix
             String nsp = doc.getRootElement().getNamespacePrefix(); //Namespace Prefix
-            if (nsp != null && nsp.length() > 0)
+            if (nsp != null && nsp.length() > 0) {
                 nsp = nsp + ":";
-            else
+            } else {
                 nsp = "";
+            }
             xpathStr = "/" + nsp + "availability/" + nsp + "available";
             XPathBuilder<Element> builder = new XPathBuilder<Element>(xpathStr, Filters.element());
             Namespace ns = Namespace.getNamespace(VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
@@ -164,11 +155,11 @@ public class CheckWebService implements CheckResource
             String textAvail = eleAvail.getText();
 
             // TODO: is this is actually valid? is the content not constrained by the schema?
-            if (textAvail == null)
+            if (textAvail == null) {
                 throw new CheckException(wsURL + " output is invalid: no content in <available> element", null);
+            }
 
-            if (!textAvail.equalsIgnoreCase("true"))
-            {
+            if (!textAvail.equalsIgnoreCase("true")) {
                 xpathStr = "/" + nsp + "availability/" + nsp + "note";
                 builder = new XPathBuilder<Element>(xpathStr, Filters.element());
                 builder.setNamespace(ns);
@@ -178,14 +169,10 @@ public class CheckWebService implements CheckResource
                 String textNotes = eleNotes.getText();
                 throw new CheckException("service " + wsURL + " is not available, reported reason: " + textNotes, null);
             }
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             // probably an incorrect setup or bug in the checks
             throw new RuntimeException("failed to test " + wsURL, e);
-        }
-        catch (JDOMException e)
-        {
+        } catch (JDOMException e) {
             throw new CheckException(wsURL + " output is invalid", e);
         }
     }

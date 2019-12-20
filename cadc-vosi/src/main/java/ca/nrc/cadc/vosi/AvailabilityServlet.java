@@ -73,7 +73,6 @@ import ca.nrc.cadc.auth.AuthenticationUtil;
 import ca.nrc.cadc.log.ServletLogInfo;
 import ca.nrc.cadc.log.WebServiceLogInfo;
 import ca.nrc.cadc.net.NetUtil;
-
 import ca.nrc.cadc.util.PropertiesReader;
 import ca.nrc.cadc.util.StringUtil;
 import java.io.IOException;
@@ -84,22 +83,20 @@ import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.ServletConfig;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-
 /**
  * Servlet implementation class CapabilityServlet
  */
 public class AvailabilityServlet extends HttpServlet {
+
     private static Logger log = Logger.getLogger(AvailabilityServlet.class);
     private static final long serialVersionUID = 201003131300L;
 
@@ -112,7 +109,7 @@ public class AvailabilityServlet extends HttpServlet {
 
     @Override
     public void init(ServletConfig config)
-        throws ServletException {
+            throws ServletException {
         this.appName = config.getServletContext().getServletContextName();
         this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
         log.info("application: " + appName + " plugin impl: " + pluginClassName);
@@ -123,7 +120,7 @@ public class AvailabilityServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         boolean started = false;
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
         long start = System.currentTimeMillis();
@@ -172,7 +169,7 @@ public class AvailabilityServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
+            throws ServletException, IOException {
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
         long start = System.currentTimeMillis();
         try {

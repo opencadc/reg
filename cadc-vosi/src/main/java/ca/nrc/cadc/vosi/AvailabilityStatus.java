@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2009.                            (c) 2009.
+ *  (c) 2019.                            (c) 2019.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -71,70 +71,68 @@ package ca.nrc.cadc.vosi;
 
 import java.util.Date;
 
-
 /**
  * @author zhangsa
  */
 public class AvailabilityStatus {
-    private boolean _available;
-    private Date _upSince;
-    private Date _downAt;
-    private Date _backAt;
-    private String _note;
+    private boolean available;
+    private Date upSince;
+    private Date downAt;
+    private Date backAt;
+    private String note;
 
     public AvailabilityStatus(boolean available, Date upSince, Date downAt, Date backAt, String note) {
         super();
-        _available = available;
-        _upSince = upSince;
-        _downAt = downAt;
-        _backAt = backAt;
-        _note = note;
+        this.available = available;
+        this.upSince = upSince;
+        this.downAt = downAt;
+        this.backAt = backAt;
+        this.note = note;
     }
 
     public boolean isAvailable() {
-        return _available;
+        return available;
     }
 
     public void setAvailable(boolean available) {
-        _available = available;
+        this.available = available;
     }
 
     public Date getUpSince() {
-        return _upSince;
+        return upSince;
     }
 
     public void setUpSince(Date upSince) {
-        _upSince = upSince;
+        this.upSince = upSince;
     }
 
     public Date getDownAt() {
-        return _downAt;
+        return downAt;
     }
 
     public void setDownAt(Date downAt) {
-        _downAt = downAt;
+        this.downAt = downAt;
     }
 
     public Date getBackAt() {
-        return _backAt;
+        return backAt;
     }
 
     public void setBackAt(Date backAt) {
-        _backAt = backAt;
+        this.backAt = backAt;
     }
 
     public String getNote() {
-        return _note;
+        return note;
     }
 
     public void setNote(String note) {
-        _note = note;
+        this.note = note;
     }
-
 
     @Override
     public String toString() {
-        return "AvailabilityStatus [_available=" + _available + ", _backAt=" + _backAt + ", _downAt=" + _downAt + ", " +
-            "_note=" + _note + ", _upSince=" + _upSince + "]";
+        return "AvailabilityStatus [_available=" + available + ", _backAt=" + backAt + ", _downAt=" + downAt + ", "
+                + "_note=" + note + ", _upSince=" + upSince + "]";
     }
 }
