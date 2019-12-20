@@ -17,7 +17,7 @@ sourceCompatibility = 1.7
 
 group = 'org.opencadc'
 
-version = '1.3.2'
+version = '1.3.3'
 
 dependencies {
     compile 'log4j:log4j:[1.2.0,)'
@@ -28,7 +28,7 @@ dependencies {
     runtime 'org.jdom:jaxen-core:[1.0-FCS,)'
     runtime 'org.jdom:jaxen-jdom:[1.0-FCS,)'
 
-    compile 'org.opencadc:cadc-util:[1.2.25,)'
+    compile 'org.opencadc:cadc-util:[1.2.26,)'
     compile 'org.opencadc:cadc-log:[1.1.0,)'
     compile 'org.opencadc:cadc-registry:[1.3.5,)'
 

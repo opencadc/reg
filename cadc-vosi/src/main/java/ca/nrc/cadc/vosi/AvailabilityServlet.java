@@ -73,9 +73,15 @@ import ca.nrc.cadc.auth.AuthenticationUtil;
 import ca.nrc.cadc.log.ServletLogInfo;
 import ca.nrc.cadc.log.WebServiceLogInfo;
 import ca.nrc.cadc.net.NetUtil;
+import ca.nrc.cadc.util.PropertiesReader;
+import ca.nrc.cadc.util.StringUtil;
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.security.auth.Subject;
+import javax.security.auth.x500.X500Principal;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -94,8 +100,12 @@ public class AvailabilityServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(AvailabilityServlet.class);
     private static final long serialVersionUID = 201003131300L;
 
+    private static final String AVAILABILITY_PROPERTIES = "availabilityProperties";
+    private static final String USERS_PROPERTY = "users";
+
     private String pluginClassName;
     private String appName;
+    private String availabilityProperties;
 
     @Override
     public void init(ServletConfig config)
@@ -103,6 +113,9 @@ public class AvailabilityServlet extends HttpServlet {
         this.appName = config.getServletContext().getServletContextName();
         this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
         log.info("application: " + appName + " plugin impl: " + pluginClassName);
+
+        // get the logControl.properties file for this service if it exists
+        availabilityProperties = config.getInitParameter(AVAILABILITY_PROPERTIES);
     }
 
     @Override
@@ -112,7 +125,7 @@ public class AvailabilityServlet extends HttpServlet {
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
         long start = System.currentTimeMillis();
         try {
-            Subject subject = AuthenticationUtil.getSubject(request);
+            Subject subject = AuthenticationUtil.getSubject(request, false);
             logInfo.setSubject(subject);
             log.info(logInfo.start());
 
@@ -160,7 +173,7 @@ public class AvailabilityServlet extends HttpServlet {
         WebServiceLogInfo logInfo = new ServletLogInfo(request);
         long start = System.currentTimeMillis();
         try {
-            Subject subject = AuthenticationUtil.getSubject(request);
+            Subject subject = AuthenticationUtil.getSubject(request, false);
             logInfo.setSubject(subject);
             log.info(logInfo.start());
 
@@ -168,7 +181,14 @@ public class AvailabilityServlet extends HttpServlet {
             AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.newInstance();
             ap.setAppName(appName);
 
-            Subject.doAs(subject, new ChangeServiceState(ap, request));
+            Principal caller = AuthenticationUtil.getX500Principal(subject);
+            if (authorized(caller)) {
+                String state = request.getParameter("state");
+                ap.setState(state);
+                log.info("WebService state change by " + caller + " [OK]");
+            } else {
+                log.warn("WebService state change by " + caller + " [DENIED]");
+            }
 
             response.sendRedirect(request.getRequestURL().toString());
 
@@ -184,20 +204,65 @@ public class AvailabilityServlet extends HttpServlet {
         }
     }
 
-    private class ChangeServiceState implements PrivilegedExceptionAction {
-
-        private AvailabilityPlugin ws;
-        private HttpServletRequest req;
-
-        ChangeServiceState(AvailabilityPlugin ws, HttpServletRequest req) {
-            this.ws = ws;
-            this.req = req;
+    /**
+     * Checks if the caller Principal matches an authorized Principal
+     * from the properties file.
+     *
+     * @param caller The calling Principal
+     * @return true if the calling Principal matches an authorized principal.
+     */
+    private boolean authorized(Principal caller) {
+        if (caller != null) {
+            Set<Principal> authorizedPrincipals = getAuthorizedPrincipals();
+            for (Principal authorizedPrincipal : authorizedPrincipals) {
+                if (AuthenticationUtil.equals(authorizedPrincipal, caller)) {
+                    log.debug("Authorized Principal: " + authorizedPrincipal.getName());
+                    return true;
+                }
+            }
         }
-
-        public Object run() throws Exception {
-            String state = req.getParameter("state");
-            ws.setState(state);
-            return null;
-        }
+        return false;
     }
+
+    /**
+     * Get a Set of X500Principal's from the availability properties. Return
+     * an empty set if the properties do not exist or can't be read.
+     *
+     * @return Set of X500Principals, can be an empty Set if there are no authorized principals.
+     */
+    private Set<Principal> getAuthorizedPrincipals() {
+        Set<Principal> authorizedPrincipals = new HashSet<Principal>();
+        PropertiesReader propertiesReader = getAvailabilityProperties();
+        if (propertiesReader != null) {
+            try {
+                List<String> authorizedUsers = propertiesReader.getPropertyValues(USERS_PROPERTY);
+                for (String authorizedUser : authorizedUsers) {
+                    if (StringUtil.hasLength(authorizedUser)) {
+                        authorizedPrincipals.add(new X500Principal(authorizedUser));
+                    }
+                }
+            } catch (IllegalArgumentException e) {
+                log.debug("No authorized users configured");
+            }
+        }
+        return authorizedPrincipals;
+    }
+
+    /**
+     * Read the availability properties file and returns a PropertiesReader.
+     *
+     * @return A PropertiesReader, or null if the properties file does not
+     *          exist or can not be read.
+     */
+    private PropertiesReader getAvailabilityProperties() {
+        PropertiesReader reader = null;
+        if (availabilityProperties != null) {
+            reader = new PropertiesReader(availabilityProperties);
+            if (!reader.canRead()) {
+                reader = null;
+            }
+        }
+        return reader;
+    }
+
 }
