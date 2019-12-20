@@ -144,7 +144,22 @@ public class Standards {
     public static final URI CUTOUT_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
 
     public static final URI DATA_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
-
+    
+    /**
+     * Storage Inventory files API. Supports persistence, management, retrieval, and operations on files.
+     */
+    public static final URI SI_FILES = URI.create("http://www.opencadc.org/std/storage#files-1.0");
+    
+    /**
+     * Storage Inventory locate API. Supports transfer negotiation for files.
+     */
+    public static final URI SI_LOCATE = URI.create("http://www.opencadc.org/std/storage#locate-1.0"); // approximately VOSPACE_SYNC_21
+    
+    /**
+     * Storage Inventory permissions API. Supports getting current permission info for files.
+     */
+    public static final URI SI_PERMISSIONS = URI.create("http://www.opencadc.org/std/storage#permissions-1.0");
+    
     public static final URI LOGGING_CONTROL_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Logging#control-1.0");
 
     public static final URI PKG_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-1.0");
@@ -157,7 +172,6 @@ public class Standards {
 
     public static final URI DOI_INSTANCES_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/DOI#instances-1.0");
 
-    //public static final URI VMOD_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VMOD");
     public static final URI SECURITY_METHOD_ANON = URI.create("ivo://ivoa.net/sso#anon");
     public static final URI SECURITY_METHOD_CERT = URI.create("ivo://ivoa.net/sso#tls-with-certificate");
     public static final URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");

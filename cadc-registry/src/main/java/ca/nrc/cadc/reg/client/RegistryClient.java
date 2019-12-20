@@ -255,8 +255,8 @@ public class RegistryClient {
     /**
      * Obtain the URL of the capabilities document (or canned query) for the given resourceID.  Useful when the
      * resource entries do not point to a capabilities document, but rather just a URL.
-     *
-     * If the given resource ID is not in the list of services located at <code>resourceCapsURL</code> then expect an
+     * 
+     * <p>If the given resource ID is not in the list of services located at <code>resourceCapsURL</code> then expect an
      * <code>IllegalArgumentException</code> to be thrown.  If multiples ones are found, then expect a
      * <code>RuntimeException</code> as the system will not select one for you.
      *

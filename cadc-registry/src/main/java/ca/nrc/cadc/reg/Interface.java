@@ -100,7 +100,7 @@ public class Interface {
      * Get the fully-qualified interface type URI. This URI is of the form
      * {namespace uri}#{attribute name}.
      * 
-     * @return 
+     * @return interface type identifier
      */
     public URI getType() {
         return type;
@@ -109,7 +109,7 @@ public class Interface {
     /**
      * Get the access URL for this interface.
      * 
-     * @return 
+     * @return wrapped access URL
      */
     public AccessURL getAccessURL() {
         return accessURL;
@@ -118,7 +118,7 @@ public class Interface {
     /**
      * Get the list of security methods for this interface.
      * 
-     * @return 
+     * @return possibly empty list of SecurityMethod(s) usable with this interface
      */
     public List<URI> getSecurityMethods() {
         return securityMethods;

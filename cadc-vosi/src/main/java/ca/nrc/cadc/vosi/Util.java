@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2009.                            (c) 2009.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,64 +65,65 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi;
 
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 
-
 /**
  * @author zhangsa
  *
  */
-public class Util {
+public abstract class Util {
 
+    private Util() { 
+    }
+    
     /**
-     * find the part of a string that is before the first occurance of a sub-string named searched. 
-     * 
-     * e.g. getStringPartBefore("abcDEfghDE", "DE") returns "abc"
-     * 
-     * @param full: the input full string
-     * @param searched: the string being searched
-     * @return substring before the first occurance of searched.  If searched is not found, return the original full string.
+     * Find the part of a string that is before the first occurrence of a sub-string named searched.
+     * Example: getStringPartBefore("abcDEfghDE", "DE") returns "abc".
+     *
+     * @param full the input full string
+     * @param searched the string being searched
+     * @return substring before the first occurrence of searched. If searched is not found, return the original full string.
      */
     public static String getStringPartBefore(String full, String searched) {
         String rtn = full;
         int idx = full.indexOf(searched);
-        if (idx >= 0)
+        if (idx >= 0) {
             rtn = full.substring(0, idx);
+        }
         return rtn;
     }
 
     /**
-     * find the part of a string that is AFTER the first occurance of a sub-string named searched. 
-     * 
-     * e.g. getStringPartBefore("abcDEfghDE", "DE") returns "fghDE"
-     * 
-     * @param full: the input full string
-     * @param searched: the string being searched
-     * @return substring after the first occurance of searched.  If searched is not found, return NULL.
+     * find the part of a string that is AFTER the first occurance of a sub-string named searched.
+     * Example: getStringPartBefore("abcDEfghDE", "DE") returns "fghDE".
+     *
+     * @param full the input full string
+     * @param searched the string being searched
+     * @return substring after the first occurrence of searched. If searched is not found, return NULL.
      */
     public static String getStringPartAfter(String full, String searched) {
         String rtn = null;
         int idx = full.indexOf(searched);
-        if (idx >= 0)
+        if (idx >= 0) {
             rtn = full.substring(idx + searched.length());
+        }
         return rtn;
     }
 
     /**
      * Add a child XML element
-     * 
-     * @param ele0 the parent element 
+     *
+     * @param ele0 the parent element
      * @param chdName name of the to-be-added element
      * @param chdText text of the to-be-added element
      * @return the added new child element
      */
-    public static Element addChild(Element ele0, String chdName, String chdText)
-    {
+    public static Element addChild(Element ele0, String chdName, String chdText) {
         return addChild(ele0, null, chdName, chdText);
     }
 

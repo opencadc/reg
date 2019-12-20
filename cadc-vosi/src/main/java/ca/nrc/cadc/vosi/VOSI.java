@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2009.                            (c) 2009.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -82,19 +82,17 @@ import org.jdom2.Namespace;
  *
  * @author pdowler
  */
-public class VOSI
-{
+public class VOSI {
+    
     public static final String NS_PREFIX = "vosi";
-	
+
     public static final String AVAILABILITY_NS_URI = "http://www.ivoa.net/xml/VOSIAvailability/v1.0";
     
     public static final String TABLES_NS_URI = "http://www.ivoa.net/xml/VOSITables/v1.0";
 
-
     public static final String AVAILABILITY_SCHEMA = "VOSIAvailability-v1.0.xsd";
 
     public static final String TABLES_SCHEMA = "VOSITables-v1.0.xsd";
-    
     
     public static final Namespace TABLES_NS = Namespace.getNamespace(NS_PREFIX, TABLES_NS_URI);
 

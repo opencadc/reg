@@ -65,7 +65,7 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi.util;
 
@@ -80,32 +80,31 @@ import java.net.URLConnection;
  * @author zhangsa
  *
  */
-public class WebGet
-{
-    private String _urlStr = null;
+public class WebGet {
 
-    public WebGet(String str)
-    {
-        this._urlStr = str;
+    private String urlStr = null;
+
+    public WebGet(String str) {
+        this.urlStr = str;
     }
 
     public String submit()
-        throws IOException, MalformedURLException
-    {
-        URL url = new URL(_urlStr);
+            throws IOException, MalformedURLException {
+        URL url = new URL(urlStr);
         URLConnection urlc = url.openConnection();
 
         // TODO: check HTTP status codes and throw an exception if not OK to help
         // caller figure out what went wrong
-        
         BufferedReader in = new BufferedReader(new InputStreamReader(urlc.getInputStream()));
 
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         String inputLine;
-        if ((inputLine = in.readLine()) != null)
+        if ((inputLine = in.readLine()) != null) {
             result.append(inputLine);
-        while ((inputLine = in.readLine()) != null)
+        }
+        while ((inputLine = in.readLine()) != null) {
             result.append("\r\n" + inputLine);
+        }
         in.close();
         return result.toString();
     }

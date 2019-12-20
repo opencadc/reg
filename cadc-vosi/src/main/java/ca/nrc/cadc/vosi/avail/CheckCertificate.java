@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2009.                            (c) 2009.
+*  (c) 2019.                            (c) 2019.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,10 +65,13 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.vosi.avail;
 
+import ca.nrc.cadc.auth.SSLUtil;
+import ca.nrc.cadc.auth.X509CertificateChain;
+import ca.nrc.cadc.date.DateUtil;
 import java.io.File;
 import java.security.Principal;
 import java.security.cert.CertificateExpiredException;
@@ -77,110 +80,89 @@ import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Set;
-
 import javax.security.auth.Subject;
-
 import org.apache.log4j.Logger;
-
-import ca.nrc.cadc.auth.SSLUtil;
-import ca.nrc.cadc.auth.X509CertificateChain;
-import ca.nrc.cadc.date.DateUtil;
 
 /**
  * @author zhangsa
  *
  */
-public class CheckCertificate implements CheckResource
-{
+public class CheckCertificate implements CheckResource {
+
     private static Logger log = Logger.getLogger(CheckCertificate.class);
-    
+
     private File cert;
     private File key;
 
     /**
      * Check a certificate. This certificate is assumed to hold a cert and key.
-     * @param cert
+     *
+     * @param cert combined certificate + private key file
      */
-    public CheckCertificate(File cert)
-    {
+    public CheckCertificate(File cert) {
         this.cert = cert;
     }
 
     /**
      * Check a certificate. This certificate and key file are separate.
      *
-     * @param cert
-     * @param key
+     * @param cert certificate
+     * @param key private key
      */
-    public CheckCertificate(File cert, File key)
-    {
+    public CheckCertificate(File cert, File key) {
         this.cert = cert;
         this.key = key;
     }
 
     @Override
     public void check()
-        throws CheckException
-    {
+            throws CheckException {
         log.debug("read - cert: " + cert + " key: " + key);
         Subject s = null;
-        try
-        {
-            if (key != null)
+        try {
+            if (key != null) {
                 s = SSLUtil.createSubject(cert, key);
-            else
-                s=  SSLUtil.createSubject(cert);
-        }
-        catch(Throwable t)
-        {
+            } else {
+                s = SSLUtil.createSubject(cert);
+            }
+        } catch (Throwable t) {
             log.warn("test failed: " + cert + " " + key);
             throw new CheckException("internal certificate check failed (not found)");
         }
 
         log.debug("check validity - cert: " + cert + " key: " + key);
-        try
-        {
+        try {
             Set<X509CertificateChain> certs = s.getPublicCredentials(X509CertificateChain.class);
-            if (certs.isEmpty())
-            {
+            if (certs.isEmpty()) {
                 // subject without certs means something went wrong above
                 throw new RuntimeException("failed to load X509 certficate from file(s)");
             }
             X509CertificateChain chain = certs.iterator().next(); // the first one
             checkValidity(chain);
-        }
-        catch(Throwable t)
-        {
+        } catch (Throwable t) {
             log.warn("test failed: " + cert + " " + key);
             throw new CheckException("certificate check failed (invalid)", t);
         }
         log.debug("test succeeded: " + cert + " " + key);
     }
 
-    private void checkValidity(X509CertificateChain chain)
-    {
+    private void checkValidity(X509CertificateChain chain) {
         DateFormat df = DateUtil.getDateFormat(DateUtil.ISO_DATE_FORMAT, DateUtil.LOCAL);
         Date start = null;
         Date end = null;
         Principal principal = null;
-        for (X509Certificate c : chain.getChain())
-        {
-            try
-            {
+        for (X509Certificate c : chain.getChain()) {
+            try {
                 start = c.getNotBefore();
                 end = c.getNotAfter();
                 principal = c.getSubjectX500Principal();
                 c.checkValidity();
-            }
-            catch(CertificateNotYetValidException exp)
-            {
+            } catch (CertificateNotYetValidException exp) {
                 log.error("certificate is not valid yet, DN: "
                         + principal + ", valid from " + df.format(start) + " to " + df.format(end));
                 throw new RuntimeException("certificate is not valid yet, DN: "
                         + principal + ", valid from " + df.format(start) + " to " + df.format(end));
-            }
-            catch (CertificateExpiredException exp)
-            {
+            } catch (CertificateExpiredException exp) {
                 log.error("certificate has expired, DN: "
                         + principal + ", valid from " + df.format(start) + " to " + df.format(end));
                 throw new RuntimeException("certificate has expired, DN: "
