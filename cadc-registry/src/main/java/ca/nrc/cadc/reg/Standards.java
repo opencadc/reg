@@ -195,4 +195,13 @@ public class Standards {
     public static AuthMethod getAuthMethod(URI securityMethod) {
         return SEC_MAP.get(securityMethod);
     }
+    
+    public static URI getSecurityMethod(AuthMethod authMethod) {
+        for (Map.Entry<URI,AuthMethod> e : SEC_MAP.entrySet()) {
+            if (e.getValue().equals(authMethod)) {
+                return e.getKey();
+            }
+        }
+        return null;
+    }
 }
