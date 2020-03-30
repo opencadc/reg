@@ -3,20 +3,6 @@
    xmlns:vs="http://www.ivoa.net/xml/VODataService/v1.1"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-  <capability standardID="ivo://ivoa.net/std/TAP">
-    <interface xsi:type="vs:ParamHTTP" role="std" version="1.1">
-      <accessURL use="base"> http://example.net/srv </accessURL>
-    </interface>
-    <interface xsi:type="vs:ParamHTTP" role="std" version="1.1">
-      <accessURL use="base"> https://example.net/srv </accessURL>
-      <securityMethod standardID="ivo://ivoa.net/sso#tls-with-certificate"/>
-    </interface>
-    <interface xsi:type="vs:ParamHTTP" role="std" version="1.1">
-      <accessURL use="base"> https://example.net/srv/up </accessURL>
-      <securityMethod standardID="ivo://ivoa.net/sso#BasicAA"/>
-    </interface>
-  </capability>
-
   <capability standardID="ivo://ivoa.net/std/VOSI#capabilities">
     <interface xsi:type="vs:ParamHTTP" role="std" version="1.0">
       <accessURL use="full"> http://example.net/srv/capabilities </accessURL>

@@ -74,6 +74,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 /**
  * Minimal implementation of the IVOA Capability model in VOResource 1.1.
@@ -81,12 +84,16 @@ import org.apache.log4j.Logger;
  * @author yeunga
  */
 public class Capability {
-
-    private static Logger log = Logger.getLogger(Capability.class);
+    private static final Logger log = Logger.getLogger(Capability.class);
 
     // Use List to preserve the order.
     private final URI standardID;
     private final List<Interface> interfaces = new ArrayList<Interface>();
+    
+    // support round trip of capability with an extension type and extended metadata
+    private Namespace extensionNamespace;
+    private Attribute extensionType;
+    private List<Element> extensionMetadata = new ArrayList<>();
 
     /**
      * Constructor. 
@@ -169,6 +176,27 @@ public class Capability {
         }
         return null;
     }
+
+    void setExtensionNamespace(Namespace extensionNamespace) {
+        this.extensionNamespace = extensionNamespace;
+    }
+
+    void setExtensionType(Attribute extensionType) {
+        this.extensionType = extensionType;
+    }
+
+    Namespace getExtensionNamespace() {
+        return extensionNamespace;
+    }
+
+    Attribute getExtensionType() {
+        return extensionType;
+    }
+
+    List<Element> getExtensionMetadata() {
+        return extensionMetadata;
+    }
+
     
     private void validateParams(final URI standardID) {
         if (standardID == null) {

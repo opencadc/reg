@@ -71,6 +71,9 @@ import ca.nrc.cadc.util.FileUtil;
 import ca.nrc.cadc.util.Log4jInit;
 import java.io.File;
 import java.io.FileReader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URI;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -97,10 +100,10 @@ public class CapabilitiesReaderTest {
             File f = FileUtil.getFileFromResource("sample-capabilities.xml", CapabilitiesReaderTest.class);
             Assert.assertNotNull("test setup", f);
 
-            CapabilitiesReader r = new CapabilitiesReader();
-            Capabilities caps = r.read(new FileReader(f));
-            Assert.assertNotNull(caps);
-            Assert.assertEquals(4, caps.getCapabilities().size());
+            Capabilities caps = read(f);
+            Capabilities actual = roundtrip(caps);
+
+            Assert.assertEquals(3, caps.getCapabilities().size());
 
             Capability cap;
 
@@ -116,21 +119,6 @@ public class CapabilitiesReaderTest {
             Assert.assertNotNull("anon tables", ti);
             Assert.assertEquals("http://example.net/srv/tables", ti.getAccessURL().getURL().toExternalForm());
 
-            cap = caps.findCapability(Standards.TAP_10);
-            Assert.assertNotNull(cap);
-
-            Interface bi = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
-            Assert.assertNotNull("anon base", bi);
-            Assert.assertEquals("http://example.net/srv", bi.getAccessURL().getURL().toExternalForm());
-
-            bi = cap.findInterface(Standards.SECURITY_METHOD_CERT, Standards.INTERFACE_PARAM_HTTP);
-            Assert.assertNotNull("cert base", bi);
-            Assert.assertEquals("https://example.net/srv", bi.getAccessURL().getURL().toExternalForm());
-
-            bi = cap.findInterface(Standards.SECURITY_METHOD_HTTP_BASIC, Standards.INTERFACE_PARAM_HTTP);
-            Assert.assertNotNull("basic-aa base", bi);
-            Assert.assertEquals("https://example.net/srv/up", bi.getAccessURL().getURL().toExternalForm());
-
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -143,14 +131,10 @@ public class CapabilitiesReaderTest {
             File f = FileUtil.getFileFromResource("multi-sec-capabilities.xml", CapabilitiesReaderTest.class);
             Assert.assertNotNull("test setup", f);
 
-            CapabilitiesReader r = new CapabilitiesReader();
-            Capabilities caps = r.read(new FileReader(f));
-            Assert.assertNotNull(caps);
-            Assert.assertEquals(1, caps.getCapabilities().size());
-
-            Capability cap;
-
-            cap = caps.findCapability(Standards.TAP_10);
+            Capabilities caps = read(f);
+            Capabilities actual = roundtrip(caps);
+            
+            Capability cap = caps.findCapability(Standards.TAP_10);
             Assert.assertNotNull(cap);
             
             String expectedURL = "https://example.net/srv";
@@ -172,4 +156,100 @@ public class CapabilitiesReaderTest {
             Assert.fail("unexpected exception: " + unexpected);
         }
     }
+    
+    @Test
+    public void testReadWriteReadSample() {
+        try {
+            File f = FileUtil.getFileFromResource("sample-capabilities.xml", CapabilitiesReaderTest.class);
+            Assert.assertNotNull("test setup", f);
+            Capabilities caps = read(f);
+            Capabilities actual = roundtrip(caps);
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
+    
+    @Test
+    public void testReadWriteRoundTripExt() {
+        try {
+            File f = FileUtil.getFileFromResource("tap-capabilities.xml", CapabilitiesReaderTest.class);
+            Assert.assertNotNull("test setup", f);
+            Capabilities caps = read(f);
+            Capability tap = caps.findCapability(Standards.TAP_10);
+            Assert.assertNotNull(tap);
+            Assert.assertNotNull("has extension namespace", tap.getExtensionNamespace());
+            Assert.assertNotNull("has extension type", tap.getExtensionType());
+            Assert.assertTrue("has extensions", !tap.getExtensionMetadata().isEmpty());
+                    
+            Capabilities actual = roundtrip(caps);
+            Capability atap = actual.findCapability(Standards.TAP_10);
+            Assert.assertNotNull(atap);
+            Assert.assertNotNull("has extension namespace", atap.getExtensionNamespace());
+            Assert.assertNotNull("has extension type", atap.getExtensionType());
+            Assert.assertTrue("has extensions", !tap.getExtensionMetadata().isEmpty());
+
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
+    
+    private Capabilities read(File src) throws Exception {
+        CapabilitiesReader r = new CapabilitiesReader();
+        Capabilities expected = r.read(new FileReader(src));
+        Assert.assertNotNull(expected);
+        return expected;
+    }
+    
+    private Capabilities roundtrip(Capabilities expected) throws Exception {
+        final CapabilitiesReader r = new CapabilitiesReader();
+        final CapabilitiesWriter w = new CapabilitiesWriter();
+        
+        StringWriter out = new StringWriter();
+        w.write(expected, out);
+        String xml = out.getBuffer().toString();
+        log.info("testReadWriteRoundTrip wrote:\n" + xml);
+
+        Capabilities actual = r.read(new StringReader(xml));
+        Assert.assertNotNull(actual);
+        Assert.assertEquals("number of capabilities", expected.getCapabilities().size(), actual.getCapabilities().size());
+
+        for (int c = 0; c < expected.getCapabilities().size(); c++) {
+            Capability ec = expected.getCapabilities().get(c);
+            Capability ac = actual.getCapabilities().get(c);
+            Assert.assertEquals("standardID", ec.getStandardID(), ac.getStandardID());
+            Assert.assertEquals("number of interfaces", ec.getInterfaces().size(), ac.getInterfaces().size());
+            for (int i = 0; i < ec.getInterfaces().size(); i++) {
+                Interface ei = ec.getInterfaces().get(i);
+                Interface ai = ac.getInterfaces().get(i);
+                Assert.assertEquals(ei.getType(), ai.getType());
+                Assert.assertEquals(ei.role, ai.role);
+                Assert.assertEquals(ei.version, ai.version);
+                Assert.assertEquals(ei.getAccessURL().use, ai.getAccessURL().use);
+                Assert.assertEquals(ei.getAccessURL().getURL(), ai.getAccessURL().getURL());
+                Assert.assertEquals("number of securityMethods", ei.getSecurityMethods().size(), ai.getSecurityMethods().size());
+                for (int s = 0; s < ei.getSecurityMethods().size(); s++) {
+                    URI esm = ei.getSecurityMethods().get(s);
+                    URI asm = ai.getSecurityMethods().get(s);
+                    Assert.assertEquals("securityMethod", esm, asm);
+                }
+            }
+            // extension metadata
+            if (ec.getExtensionNamespace() != null) {
+                Assert.assertEquals(ec.getExtensionNamespace().getURI(), ac.getExtensionNamespace().getURI());
+            } else {
+                Assert.assertNull(ac.getExtensionNamespace());
+            }
+            if (ec.getExtensionType() != null) {
+                Assert.assertEquals(ec.getExtensionType().getValue(), ac.getExtensionType().getValue());
+            } else {
+                Assert.assertNull(ac.getExtensionType());
+            }
+            Assert.assertEquals("extended metadata count", ac.getExtensionMetadata().size(), ac.getExtensionMetadata().size());
+        }
+        return actual;
+    }
+    
+    
 }

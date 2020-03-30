@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2010.                            (c) 2010.
+*  (c) 2020.                            (c) 2020.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -62,72 +62,131 @@
 *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 *                                       <http://www.gnu.org/licenses/>.
 *
-*  $Revision: 5 $
-*
 ************************************************************************
- */
+*/
 
 package ca.nrc.cadc.reg;
 
+import ca.nrc.cadc.xml.W3CConstants;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 /**
- * Minimal implementation of the Interface model in VOResource 1.1.
+ * Write a Capabilities object in XML format.
  * 
- * @author yeunga
+ * @author pdowler
  */
-public class Interface {
+public class CapabilitiesWriter {
+    private static final Logger log = Logger.getLogger(CapabilitiesWriter.class);
 
-    private static Logger log = Logger.getLogger(Interface.class);
-
-    private final URI type;
-    private final AccessURL accessURL;
-    private final List<URI> securityMethods = new ArrayList<URI>();
-
-    public String role;
-    public String version;
-
-    public Interface(final URI type, final AccessURL accessURL) {
-        validateNotNull("type", type);
-        validateNotNull("accessURL", accessURL);
-        this.type = type;
-        this.accessURL = accessURL;
+    Namespace vosi = Namespace.getNamespace("vosi", "http://www.ivoa.net/xml/VOSICapabilities/v1.0");
+    Namespace vs = Namespace.getNamespace("vs", "http://www.ivoa.net/xml/VODataService/v1.1");
+        
+    public CapabilitiesWriter() { 
     }
-
-    /**
-     * Get the fully-qualified interface type URI. This URI is of the form
-     * {namespace uri}#{attribute name}.
-     * 
-     * @return interface type identifier
-     */
-    public URI getType() {
-        return type;
+    
+    public void write(Capabilities caps, OutputStream out) throws IOException {
+        write(caps, new OutputStreamWriter(out, "UTF-8"));
     }
-
-    /**
-     * Get the access URL for this interface.
-     * 
-     * @return wrapped access URL
-     */
-    public AccessURL getAccessURL() {
-        return accessURL;
+    
+    public void write(Capabilities caps, Writer out) throws IOException {
+        Element root = getRootElement(caps);
+        write(root, out);
     }
-
-    /**
-     * Get the list of security methods for this interface.
-     * 
-     * @return possibly empty list of SecurityMethod(s) usable with this interface
-     */
-    public List<URI> getSecurityMethods() {
-        return securityMethods;
+    
+    protected void write(Element root, Writer writer) throws IOException {
+        XMLOutputter outputter = new XMLOutputter();
+        outputter.setFormat(Format.getPrettyFormat());
+        Document document = new Document(root);
+        outputter.output(document, writer);
     }
-
-    private void validateNotNull(String name, Object value) {
-        if (value == null) {
-            throw new IllegalArgumentException(Interface.class.getSimpleName() + ": " + name + " cannot be null");
+    
+    private Element getRootElement(Capabilities caps) {
+        Element root = new Element("capabilities", vosi);
+        root.addNamespaceDeclaration(vs);
+        root.addNamespaceDeclaration(W3CConstants.XSI_NS);
+        
+        for (Capability c : caps.getCapabilities()) {
+            Element ce = getCapabilityElement(c);
+            root.addContent(ce);
         }
+        
+        return root;
+    }
+    
+    private Element getCapabilityElement(Capability c) {
+        Element ret = new Element("capability", Namespace.NO_NAMESPACE);
+        ret.setAttribute("standardID", c.getStandardID().toASCIIString());
+        boolean ext = false;
+        if (c.getExtensionNamespace() != null && c.getExtensionType() != null) {
+            ret.addNamespaceDeclaration(c.getExtensionNamespace());
+            ret.setAttribute(c.getExtensionType());
+            ext = true;
+        }
+        
+        // interfaces
+        for (Interface i : c.getInterfaces()) {
+            Element ie = getInterfaceElement(i, ret.getNamespacesInScope());
+            ret.addContent(ie);
+        }
+        
+        // extensions
+        if (ext) {
+            ret.addContent(c.getExtensionMetadata());
+        }
+        
+        return ret;
+    }
+    
+    private Element getInterfaceElement(Interface i, List<Namespace> nsInScope) {
+        Element ret = new Element("interface", Namespace.NO_NAMESPACE);
+        URI type = i.getType();
+        String stype = "vs:" + type.getFragment();
+        ret.setAttribute("type", stype, W3CConstants.XSI_NS);
+        
+        if (i.role != null) {
+            ret.setAttribute("role", i.role, Namespace.NO_NAMESPACE);
+        }
+        if (i.version != null) {
+            ret.setAttribute("version", i.version, Namespace.NO_NAMESPACE);
+        }
+        
+        // access URLs
+        Element aue = getAccessURLElement(i.getAccessURL());
+        ret.addContent(aue);
+        
+        // security methods
+        for (URI uri : i.getSecurityMethods()) {
+            Element sme = getSecurityMethodElement(uri);
+            ret.addContent(sme);
+        }
+        
+        return  ret;
+    }
+    
+    private Element getAccessURLElement(AccessURL a) {
+        Element ret = new Element("accessURL", Namespace.NO_NAMESPACE);
+        if (a.use != null) {
+            ret.setAttribute("use", a.use);
+        }
+        ret.setText(a.getURL().toExternalForm());
+        return ret;
+    }
+    
+    private Element getSecurityMethodElement(URI s) {
+        Element ret = new Element("securityMethod", Namespace.NO_NAMESPACE);
+        ret.setAttribute("standardID", s.toASCIIString());
+        return ret;
     }
 }
