@@ -178,12 +178,34 @@ public class CapabilitiesReader {
 
     private Capability buildCapability(final Element capElement) {
         Capability cap = new Capability(this.parseStandardID(capElement, true));
-        List<Element> intfElementList = capElement.getChildren("interface");
-        for (Element intfElement : intfElementList) {
-            Interface intf = this.buildInterface(intfElement);
-            cap.getInterfaces().add(intf);
+        Attribute attr = capElement.getAttribute("type", W3CConstants.XSI_NS);
+        if (attr != null) {
+            String type = attr.getValue();
+            Namespace extns = null;
+            Attribute exttype = null;
+            for (Namespace ns : capElement.getNamespacesInScope()) {
+                if (type.startsWith(ns.getPrefix() + ":")) {
+                    cap.setExtensionNamespace(ns);
+                    cap.setExtensionType(attr);
+                    attr.detach();
+                    log.warn("found extension: " + extns + " " + attr.getValue());
+                }
+            }
         }
-
+        
+        List<Element> intfElementList = capElement.getChildren();
+        for (Element e : intfElementList) {
+            if (e.getName().equals("interface")) {
+                Interface intf = this.buildInterface(e);
+                cap.getInterfaces().add(intf);
+            } else {
+                cap.getExtensionMetadata().add(e);
+            }
+        }
+        for (Element e : cap.getExtensionMetadata()) {
+            e.detach();
+        }
+        
         return cap;
     }
 
@@ -202,6 +224,7 @@ public class CapabilitiesReader {
         AccessURL accessURL = this.parseAccessURL(intfElement.getChild("accessURL"));
         Interface intf = new Interface(itype, accessURL);
         intf.role = intfElement.getAttributeValue("role");
+        intf.version = intfElement.getAttributeValue("version");
         
         List<Element> sms = intfElement.getChildren("securityMethod");
         if (sms.isEmpty()) {

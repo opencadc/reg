@@ -97,4 +97,13 @@ public class AccessURL {
     public URL getURL() {
         return this.url;
     }
+
+    public void setURL(URL url) {
+        if (url == null) {
+            throw new IllegalArgumentException("url cannot be null");
+        }
+        this.url = url;
+    }
+    
+    
 }
