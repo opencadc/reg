@@ -26,4 +26,4 @@ jobs:
       run: cd cadc-registry-server && gradle --info clean build javadoc checkstyleMain install
       
     - name: build and test cadc-test-vosi
-      run: cd cadc-test-vosi && gradle --info clean build javadoc checkstyleMain install
+      run: cd cadc-test-vosi && gradle --info clean build javadoc install

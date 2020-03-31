@@ -3,19 +3,17 @@ plugins {
     id 'maven'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.8.4'
+    id 'checkstyle'
 }
 
 repositories {
     jcenter()
     mavenLocal()
-
-    // Only here until cadcUtil is in jcenter.
-    maven {
-        url  "http://dl.bintray.com/opencadc/software"
-    }
 }
 
 sourceCompatibility = 1.7
+
+apply from: '../opencadc.gradle'
 
 group = 'org.opencadc'
 
@@ -28,4 +26,6 @@ dependencies {
     compile 'org.opencadc:cadc-util:[1.0,)'
     compile 'org.opencadc:cadc-vosi:[1.0,)'
     compile 'org.opencadc:cadc-registry:[1.0,)'
+
+    testCompile 'org.opencadc:cadc-quality:[1.0,)'
 }
