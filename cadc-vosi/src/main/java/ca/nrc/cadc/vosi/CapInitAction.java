@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2019.                            (c) 2019.
+*  (c) 2020.                            (c) 2020.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -62,68 +62,72 @@
 *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
 *                                       <http://www.gnu.org/licenses/>.
 *
-*  $Revision: 5 $
-*
 ************************************************************************
- */
+*/
 
 package ca.nrc.cadc.vosi;
 
-import ca.nrc.cadc.reg.XMLConstants;
-import ca.nrc.cadc.xml.XmlUtil;
-import java.io.IOException;
+import ca.nrc.cadc.reg.Capabilities;
+import ca.nrc.cadc.reg.CapabilitiesReader;
+import ca.nrc.cadc.reg.CapabilitiesWriter;
+import ca.nrc.cadc.rest.InitAction;
+import ca.nrc.cadc.util.StringUtil;
+
 import java.io.InputStream;
-import java.io.Reader;
-import java.util.Map;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.apache.log4j.Logger;
-import org.jdom2.Document;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
 /**
- * Parser to setup the schema map for parsing a VOSI-capabilities document.
- *
+ * InitAction implementation for VOSI-capabilities from template xml file.
+ * 
  * @author pdowler
  */
-@Deprecated
-public class CapabilitiesParser {
+public class CapInitAction extends InitAction {
+    private static final Logger log = Logger.getLogger(CapInitAction.class);
 
-    private static final Logger log = Logger.getLogger(CapabilitiesParser.class);
-
-    protected Map<String, String> schemaMap;
-
-    public CapabilitiesParser() {
-        this(true);
+    public CapInitAction() { 
+        super();
     }
 
-    public CapabilitiesParser(boolean enableSchemaValidation) {
-        if (enableSchemaValidation) {
-            this.schemaMap = XMLConstants.SCHEMA_MAP;
+    static Capabilities getTemplate(String componentID) {
+        String jndiKey = componentID + ".cap-template";
+        try {
+            log.debug("retrieving capabilities template via JNDI: " + jndiKey);
+            Context initContext = new InitialContext();
+            String tmpl = (String) initContext.lookup(jndiKey);
+            CapabilitiesReader cr = new CapabilitiesReader(false); // validated in doInit
+            StringReader sr = new StringReader(tmpl);
+            Capabilities caps = cr.read(sr);
+            return caps;
+        } catch (Exception ex) {
+            throw new IllegalStateException("failed to find template via JNDI: init failed", ex);
         }
     }
-
-    /**
-     * Add an additional schema to the parser configuration. This is needed if the VOSI-capabilities
-     * uses an extension schema for xsi:type.
-     *
-     * @param namespace VOSI-capabilities namespace
-     * @param schemaLocation VOSI-capabilities xsd location
-     */
-    public void addSchemaLocation(String namespace, String schemaLocation) {
-        log.debug("addSchemaLocation: " + namespace + " -> " + schemaLocation);
-        schemaMap.put(namespace, schemaLocation);
+    
+    @Override
+    public void doInit() {
+        String jndiKey = componentID + ".cap-template";
+        String str = initParams.get("input");
+        log.debug("doInit: static capabilities: " + str);
+        try {
+            URL resURL = super.getResource(str);
+            String tmpl = StringUtil.readFromInputStream(resURL.openStream(), "UTF-8");
+            
+            // validate
+            CapabilitiesReader cr = new CapabilitiesReader();
+            cr.read(tmpl);
+            
+            Context initContext = new InitialContext();
+            initContext.bind(jndiKey, tmpl);
+            log.debug("doInit: capabilities template stored via JNDI: " + jndiKey);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("CONFIG: failed to read capabilities template: " + str, ex);
+        }
     }
-
-    public Document parse(Reader rdr)
-            throws IOException, JDOMException {
-        SAXBuilder sb = XmlUtil.createBuilder(schemaMap);
-        return sb.build(rdr);
-    }
-
-    public Document parse(InputStream istream)
-            throws IOException, JDOMException {
-        SAXBuilder sb = XmlUtil.createBuilder(schemaMap);
-        return sb.build(istream);
-    }
-
 }

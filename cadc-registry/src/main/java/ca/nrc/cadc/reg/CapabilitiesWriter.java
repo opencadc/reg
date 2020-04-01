@@ -68,6 +68,7 @@
 package ca.nrc.cadc.reg;
 
 import ca.nrc.cadc.xml.W3CConstants;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -75,7 +76,9 @@ import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.log4j.Logger;
+import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -131,7 +134,7 @@ public class CapabilitiesWriter {
         boolean ext = false;
         if (c.getExtensionNamespace() != null && c.getExtensionType() != null) {
             ret.addNamespaceDeclaration(c.getExtensionNamespace());
-            ret.setAttribute(c.getExtensionType());
+            ret.setAttribute(deepCopy(c.getExtensionType(), W3CConstants.XSI_NS));
             ext = true;
         }
         
@@ -143,9 +146,34 @@ public class CapabilitiesWriter {
         
         // extensions
         if (ext) {
-            ret.addContent(c.getExtensionMetadata());
+            for (Element e : c.getExtensionMetadata()) {
+                ret.addContent(deepCopy(e));
+            }
         }
         
+        return ret;
+    }
+    
+    private Attribute deepCopy(Attribute a, Namespace ns) {
+        return new Attribute(a.getName(), a.getValue(), ns);
+    }
+    
+    private Element deepCopy(Element e) {
+        if (!Namespace.NO_NAMESPACE.equals(e.getNamespace())) {
+            throw new UnsupportedOperationException("expected extension metadata to be in " + Namespace.NO_NAMESPACE + ", found: " + e.getNamespace());
+        }
+        
+        Element ret = new Element(e.getName(), Namespace.NO_NAMESPACE);
+        for (Attribute a : e.getAttributes()) {
+            ret.setAttribute(deepCopy(a, Namespace.NO_NAMESPACE));
+        }
+        if (e.getChildren().isEmpty()) {
+            ret.setText(e.getText());
+        } else {
+            for (Element c : e.getChildren()) {
+                ret.addContent(deepCopy(c));
+            }
+        }
         return ret;
     }
     
