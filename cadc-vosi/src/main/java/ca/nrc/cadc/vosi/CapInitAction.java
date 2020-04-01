@@ -95,7 +95,7 @@ public class CapInitAction extends InitAction {
         super();
     }
 
-    static Capabilities getTemplate(String appName, String componentID) {
+    static Capabilities getTemplate(String componentID) {
         String jndiKey = componentID + ".cap-template";
         try {
             log.debug("retrieving capabilities template via JNDI: " + jndiKey);

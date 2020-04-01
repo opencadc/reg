@@ -70,7 +70,6 @@ package ca.nrc.cadc.vosi;
 import ca.nrc.cadc.net.HttpTransfer;
 import ca.nrc.cadc.reg.AccessURL;
 import ca.nrc.cadc.reg.Capabilities;
-import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.CapabilitiesWriter;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
@@ -80,8 +79,6 @@ import ca.nrc.cadc.rest.InlineContentHandler;
 import ca.nrc.cadc.rest.RestAction;
 import ca.nrc.cadc.rest.SyncOutput;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -112,7 +109,8 @@ public class CapGetAction extends RestAction {
     
     /**
      * Enable injection of additional capabilities for external authentication
-     * providers (default: true).
+     * providers (default: false). This is a prototype feature that could change
+     * or disappear without notice.
      */
     protected boolean injectAuthProvider = false;
     
@@ -127,7 +125,7 @@ public class CapGetAction extends RestAction {
 
     @Override
     public void doAction() throws Exception {
-        Capabilities caps = CapInitAction.getTemplate(appName, componentID);
+        Capabilities caps = CapInitAction.getTemplate(componentID);
 
         log.debug("transformAccessURL=" + doTransform + " injectAuthProvider=" + injectAuthProvider);
         
