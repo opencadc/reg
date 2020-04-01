@@ -73,6 +73,7 @@ import ca.nrc.cadc.auth.AuthenticationUtil;
 import ca.nrc.cadc.log.ServletLogInfo;
 import ca.nrc.cadc.log.WebServiceLogInfo;
 import ca.nrc.cadc.reg.CapabilitiesReader;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,12 +82,14 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.security.auth.Subject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -99,8 +102,11 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 /**
- * Servlet implementation class CapabilityServlet
+ * Servlet implementation class CapabilityServlet.
+ * 
+ * @deprecated use CapInitAction and CapGetAction with cadc-rest library
  */
+@Deprecated
 public class CapabilitiesServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(CapabilitiesServlet.class);

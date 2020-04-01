@@ -182,12 +182,15 @@ public class CapabilitiesReaderTest {
             Assert.assertNotNull("has extension type", tap.getExtensionType());
             Assert.assertTrue("has extensions", !tap.getExtensionMetadata().isEmpty());
                     
-            Capabilities actual = roundtrip(caps);
-            Capability atap = actual.findCapability(Standards.TAP_10);
-            Assert.assertNotNull(atap);
-            Assert.assertNotNull("has extension namespace", atap.getExtensionNamespace());
-            Assert.assertNotNull("has extension type", atap.getExtensionType());
-            Assert.assertTrue("has extensions", !tap.getExtensionMetadata().isEmpty());
+            // write multiple times to make sure elements are deep-copied correctly
+            for (int i = 0; i < 3; i++) {
+                Capabilities actual = roundtrip(caps);
+                Capability atap = actual.findCapability(Standards.TAP_10);
+                Assert.assertNotNull(atap);
+                Assert.assertNotNull("has extension namespace", atap.getExtensionNamespace());
+                Assert.assertNotNull("has extension type", atap.getExtensionType());
+                Assert.assertTrue("has extensions", !tap.getExtensionMetadata().isEmpty());
+            }
 
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);

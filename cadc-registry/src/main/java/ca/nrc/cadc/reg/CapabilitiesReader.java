@@ -181,14 +181,12 @@ public class CapabilitiesReader {
         Attribute attr = capElement.getAttribute("type", W3CConstants.XSI_NS);
         if (attr != null) {
             String type = attr.getValue();
-            Namespace extns = null;
-            Attribute exttype = null;
             for (Namespace ns : capElement.getNamespacesInScope()) {
                 if (type.startsWith(ns.getPrefix() + ":")) {
                     cap.setExtensionNamespace(ns);
+                    attr.detach(); // allow document GC
                     cap.setExtensionType(attr);
-                    attr.detach();
-                    log.warn("found extension: " + extns + " " + attr.getValue());
+                    log.debug("found extension: " + ns + " " + attr.getValue());
                 }
             }
         }
@@ -202,13 +200,14 @@ public class CapabilitiesReader {
                 cap.getExtensionMetadata().add(e);
             }
         }
+        
         for (Element e : cap.getExtensionMetadata()) {
-            e.detach();
+            e.detach(); // allow document GC
         }
         
         return cap;
     }
-
+    
     private Interface buildInterface(final Element intfElement) {
         Attribute attr = intfElement.getAttribute("type", W3CConstants.XSI_NS);
         String type = attr.getValue();
