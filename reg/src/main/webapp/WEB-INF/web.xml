@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
+<web-app>
+    <display-name>reg</display-name>
+    
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+    <servlet>
+        <load-on-startup>1</load-on-startup>
+        <servlet-name>logControl</servlet-name>
+        <servlet-class>ca.nrc.cadc.log.LogControlServlet</servlet-class>
+        <init-param>
+            <param-name>logLevel</param-name>
+            <param-value>info</param-value>
+        </init-param>
+        <init-param>
+            <param-name>logLevelPackages</param-name>
+            <param-value>
+                org.opencadc.reg.oai
+                org.opencadc.reg.server
+                ca.nrc.cadc.vosi
+                ca.nrc.cadc.rest
+                ca.nrc.cadc.uws
+            </param-value>
+        </init-param>
+        <init-param>
+            <param-name>logAccessGroup</param-name>
+            <param-value>ivo://cadc.nrc.ca/gms?CADC</param-value>
+        </init-param>
+        <init-param>
+            <param-name>groupAuthorizer</param-name>
+            <param-value>ca.nrc.cadc.ac.client.GroupAuthorizer</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+<!--
+    <servlet>
+        <servlet-name>PubRegServlet</servlet-name>
+        <servlet-class>ca.nrc.cadc.uws.server.JobServlet</servlet-class>
+        <init-param>
+            <param-name>get</param-name>
+            <param-value>ca.nrc.cadc.uws.web.SyncGetAction</param-value>
+        </init-param>
+        <init-param>
+            <param-name>ca.nrc.cadc.uws.server.JobManager</param-name>
+            <param-value>org.opencadc.reg.server.OAIJobManager</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+-->
+    
+    <servlet>
+        <load-on-startup>2</load-on-startup>
+        <servlet-name>resource-caps</servlet-name>
+        <init-param>
+            <param-name>queryFile</param-name>
+            <param-value>reg-resource-caps.properties</param-value>
+        </init-param>
+        <servlet-class>org.opencadc.reg.server.CannedQueryServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <load-on-startup>2</load-on-startup>
+        <servlet-name>applications</servlet-name>
+        <init-param>
+             <param-name>queryFile</param-name>
+             <param-value>reg-applications.properties</param-value>
+        </init-param>
+        <servlet-class>org.opencadc.reg.server.CannedQueryServlet</servlet-class>
+    </servlet>
+    
+    <servlet>
+        <load-on-startup>3</load-on-startup>
+        <servlet-name>availability</servlet-name>
+        <servlet-class>ca.nrc.cadc.vosi.AvailabilityServlet</servlet-class>
+        <init-param>
+            <description>
+            </description>
+            <param-name>ca.nrc.cadc.vosi.AvailabilityPlugin</param-name>
+            <param-value>org.opencadc.reg.server.ServiceAvailability</param-value>
+        </init-param>
+    </servlet>
+    
+    <servlet>
+      <servlet-name>capabilities</servlet-name>
+      <servlet-class>ca.nrc.cadc.vosi.CapabilitiesServlet</servlet-class>
+      <init-param>
+        <param-name>input</param-name>
+        <param-value>/capabilities.xml</param-value>
+      </init-param>
+      <load-on-startup>3</load-on-startup>
+    </servlet>
+    
+    
+    <!-- URL-to-servlet mapping -->
+    
+    <servlet-mapping>
+        <servlet-name>logControl</servlet-name>
+        <url-pattern>/logControl</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>availability</servlet-name>
+        <url-pattern>/availability</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>capabilities</servlet-name>
+        <url-pattern>/capabilities</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>resource-caps</servlet-name>
+        <url-pattern>/resource-caps</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>applications</servlet-name>
+        <url-pattern>/applications</url-pattern>
+    </servlet-mapping>
+
+<!--
+    <servlet-mapping>
+        <servlet-name>PubRegServlet</servlet-name>
+        <url-pattern>/oai/*</url-pattern>
+    </servlet-mapping>
+-->    
+    
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+</web-app>
