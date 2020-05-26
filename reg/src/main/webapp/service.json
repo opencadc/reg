@@ -1,0 +1,146 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "CADC Registry",
+    "description": "TODO\n",
+    "version": "0.1-"
+  },
+  "host": "www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "basePath": "/reg",
+  "paths": {
+    "/oai": {
+      "get": {
+        "summary": "OAI-PMH publishing endpoint",
+        "description": "\n",
+        "produces": [
+          "text/xml"
+        ],
+        "responses": {
+          "200": {
+            "description": "standard OAI-PMH behaviour"
+          }
+        }
+      }
+    },
+    "/capabilities": {
+      "get": {
+        "summary": "VOSI Capabilities",
+        "description": "\n",
+        "produces": [
+          "text/xml"
+        ],
+        "responses": {
+          "200": {
+            "description": "A VOSI-capabilities document describing the this service."
+          }
+        }
+      }
+    },
+    "/resource-caps": {
+      "get": {
+        "tags": [
+          "Canned Queries"
+        ],
+        "summary": "List of CADC resources-with-capabilities",
+        "description": "The output lists resourceID values and the location of the VOSI-capabilities document describing servies for that resource. The output document is in key = value (properties file) format.",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "A key = value list of {resourceID} = {VOSI-capabilities URL}"
+          }
+        }
+      }
+    },
+    "/applications": {
+      "get": {
+        "tags": [
+          "Canned Queries"
+        ],
+        "summary": "List of CADC UI applications",
+        "description": "The output lists resourceID values and the base URL of the identified application (web site location).",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "A key = value list of {resourceID} = {VOSI-capabilities URL}"
+          }
+        }
+      }
+    },
+    "/cadc/capabilities": {
+      "get": {
+        "tags": [
+          "Data Collection Services"
+        ],
+        "summary": "Services for CADC Data Collections",
+        "description": "\n",
+        "produces": [
+          "text/xml"
+        ],
+        "responses": {
+          "200": {
+            "description": "A VOSI-capabilities document describing the available services."
+          }
+        }
+      }
+    },
+    "/maq/capabilities": {
+      "get": {
+        "tags": [
+          "Data Collection Services"
+        ],
+        "summary": "Services for MAQ Data Collections",
+        "description": "\n",
+        "produces": [
+          "text/xml"
+        ],
+        "responses": {
+          "200": {
+            "description": "A VOSI-capabilities document describing the available services."
+          }
+        }
+      }
+    },
+    "/cadc/sandbox/capabilities": {
+      "get": {
+        "tags": [
+          "Data Collection Services"
+        ],
+        "summary": "Services for CADC Data Collections in the CAOM2 sandbox system",
+        "description": "\n",
+        "produces": [
+          "text/xml"
+        ],
+        "responses": {
+          "200": {
+            "description": "A VOSI-capabilities document describing the available services."
+          }
+        }
+      }
+    },
+    "/maq/sandbox/capabilities": {
+      "get": {
+        "tags": [
+          "Data Collection Services"
+        ],
+        "summary": "Services for MAQ Data Collections in the CAOM2 sandbox system",
+        "description": "\n",
+        "produces": [
+          "text/xml"
+        ],
+        "responses": {
+          "200": {
+            "description": "A VOSI-capabilities document describing the available services."
+          }
+        }
+      }
+    }
+  }
+}

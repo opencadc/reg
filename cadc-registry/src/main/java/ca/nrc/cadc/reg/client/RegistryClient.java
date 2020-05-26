@@ -70,6 +70,7 @@
 package ca.nrc.cadc.reg.client;
 
 import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.net.ResourceNotFoundException;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.Capability;
@@ -263,8 +264,9 @@ public class RegistryClient {
      * @param resourceID        URI of the resource to lookup.
      * @return URL              Location of the document.
      * @throws IOException      If the cache file cannot be read.
+     * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry
      */
-    public URL getAccessURL(URI resourceID) throws IOException {
+    public URL getAccessURL(URI resourceID) throws IOException, ResourceNotFoundException {
         File capCacheFile = getCapSourceCacheFile();
         log.debug("Capabilities cache file: " + capCacheFile);
         CachingFile cachedCapSource = new CachingFile(capCacheFile, resourceCapsURL);
@@ -279,7 +281,7 @@ public class RegistryClient {
 
         List<String> values = mvp.getProperty(resourceID.toString());
         if (values == null || values.isEmpty()) {
-            throw new IllegalArgumentException("Unknown service: " + resourceID);
+            throw new ResourceNotFoundException("not found: " + resourceID);
         }
         if (values.size() > 1) {
             throw new RuntimeException("Multiple capability locations for " + resourceID);
@@ -299,8 +301,9 @@ public class RegistryClient {
      * @return The associated capabilities object.
      *
      * @throws IOException If the capabilities could not be determined.
+     * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry
      */
-    public Capabilities getCapabilities(URI resourceID) throws IOException {
+    public Capabilities getCapabilities(URI resourceID) throws IOException, ResourceNotFoundException {
         if (resourceID == null) {
             String msg = "Input parameter (resourceID) should not be null";
             throw new IllegalArgumentException(msg);
@@ -362,6 +365,8 @@ public class RegistryClient {
         Capabilities caps = null;
         try {
             caps = this.getCapabilities(resourceIdentifier);
+        } catch (ResourceNotFoundException ex) {
+            return null;
         } catch (IOException e) {
             throw new RuntimeException("Could not obtain service URL", e);
         }
