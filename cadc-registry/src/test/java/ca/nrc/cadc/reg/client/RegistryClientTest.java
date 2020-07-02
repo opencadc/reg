@@ -70,6 +70,7 @@
 package ca.nrc.cadc.reg.client;
 
 import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.net.ResourceNotFoundException;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Standards;
@@ -98,8 +99,7 @@ public class RegistryClientTest {
     }
 
     static String STANDARD_ID = "ivo://ivoa.net/std/TAP";
-    static String RESOURCE_ID = "ivo://cadc.nrc.ca/tap";
-    static String RESOURCE_ID_NO_VALUE = "ivo://cadc.nrc.ca/novalue";
+    static String RESOURCE_ID = "ivo://cadc.nrc.ca/argus";
     static String RESOURCE_ID_NO_AUTH_METHOD = "ivo://cadc.nrc.ca/noauthmethod";
     static String RESOURCE_ID_NOT_FOUND = "ivo://cadc.nrc.ca/notfound";
 
@@ -118,7 +118,7 @@ public class RegistryClientTest {
                 log.error("unexpected exception", ex);
                 Assert.fail("unexpected exception: " + ex);
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -128,21 +128,17 @@ public class RegistryClientTest {
     }
 
     @Test
-    public void testGetCapabilitiesMissingPropertyValue() {
+    public void testGetCapabilitiesNotFound() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
 
         RegistryClient rc = new RegistryClient();
         try {
-            rc.getCapabilities(new URI(RESOURCE_ID_NO_VALUE));
+            rc.getCapabilities(new URI(RESOURCE_ID_NOT_FOUND));
             Assert.fail("expected RuntimeException");
-        } catch (RuntimeException ex) {
-            // expecting not able to find the cache resource
-            if (!ex.getMessage().toLowerCase().contains("unknown service")) {
-                log.error("unexpected exception", ex);
-                Assert.fail("unexpected exception: " + ex);
-            }
-        } catch (Throwable t) {
+        } catch (ResourceNotFoundException ex) {
+            log.info("caught expected: " + ex);
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -161,7 +157,7 @@ public class RegistryClientTest {
             Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
             List<Capability> capList = caps.getCapabilities();
             Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -187,7 +183,7 @@ public class RegistryClientTest {
                 log.error("unexpected exception", ex);
                 Assert.fail("unexpected exception: " + ex);
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -213,7 +209,7 @@ public class RegistryClientTest {
                 log.error("unexpected exception", ex);
                 Assert.fail("unexpected exception: " + ex);
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -230,7 +226,7 @@ public class RegistryClientTest {
 
         RegistryClient rc = new RegistryClient();
         try {
-            URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap");
+            URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/argus");
             URI resourceID = new URI(RESOURCE_ID);
             URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.ANON);
             Assert.assertNotNull("Service URL should not be null", serviceURL);
@@ -259,7 +255,7 @@ public class RegistryClientTest {
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
             Assert.assertEquals("wrong caps domain", "alt-domains/" + localhost, rc.getCapsDomain());
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -283,7 +279,7 @@ public class RegistryClientTest {
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
             Assert.assertEquals("wrong caps domain", "alt-domains/foo.bar.com", rc.getCapsDomain());
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -308,7 +304,7 @@ public class RegistryClientTest {
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL.toExternalForm());
             Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -334,7 +330,7 @@ public class RegistryClientTest {
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertEquals("got an incorrect URL", expected1, resourceCapsURL.toExternalForm());
             Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
@@ -361,7 +357,7 @@ public class RegistryClientTest {
                                 System.getProperty("java.io.tmpdir") + "/" + System.getProperty("user.name") +
                                         "/" + RegistryClient.CONFIG_CACHE_DIR + "/registry-entries",
                                 capSourceCacheFile.getAbsolutePath());
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             throw t;
         } finally {
@@ -394,7 +390,7 @@ public class RegistryClientTest {
             Assert.assertEquals("Wrong URL.",
                                 "https://mysite.com/services/mygreatservice",
                                 capabilitiesURL.toExternalForm());
-        } catch (Throwable t) {
+        } catch (Exception t) {
             log.error("unexpected exception", t);
             throw t;
         } finally {

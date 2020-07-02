@@ -68,6 +68,7 @@
 package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.net.HttpTransfer;
+import ca.nrc.cadc.net.ResourceNotFoundException;
 import ca.nrc.cadc.reg.AccessURL;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesWriter;
@@ -161,6 +162,7 @@ public class CapGetAction extends RestAction {
         w.write(caps, syncOutput.getOutputStream());
     }
     
+    
     private void injectAuthProviders(Capabilities caps) throws IOException {
         Set<URI> sms = new TreeSet<>();
         for (Capability cap : caps.getCapabilities()) {
@@ -175,26 +177,31 @@ public class CapGetAction extends RestAction {
         if (sms.isEmpty()) {
             return;
         }
-        
+
         LocalAuthority loc = new LocalAuthority();
         RegistryClient reg = new RegistryClient();
         for (URI sm : sms) {
             URI resourceID = loc.getServiceURI(sm.toASCIIString());
-            if (resourceID != null) {
-                Capabilities srv = reg.getCapabilities(resourceID);
-                if (srv != null) {
-                    Capability auth = srv.findCapability(sm);
-                    if (auth != null) {
-                        caps.getCapabilities().add(auth);
+            try {
+                if (resourceID != null) {
+                    Capabilities srv = reg.getCapabilities(resourceID);
+                    if (srv != null) {
+                        Capability auth = srv.findCapability(sm);
+                        if (auth != null) {
+                            caps.getCapabilities().add(auth);
+                        } else {
+                            log.debug("not found: " + sm + " in " + resourceID);
+                        }
                     } else {
-                        log.debug("not found: " + sm + " in " + resourceID);
+                        log.debug("not found: " + resourceID + " capabilities");
                     }
                 } else {
-                    log.debug("not found: " + resourceID + " capabilities");
+                    log.debug("not found: " + sm);
                 }
-            } else {
-                log.debug("not found: " + resourceID);
+            } catch (ResourceNotFoundException ex) {
+                log.warn("failed to find auth service: " + resourceID + "cause: " + ex);
             }
         }
     }
+    
 }
