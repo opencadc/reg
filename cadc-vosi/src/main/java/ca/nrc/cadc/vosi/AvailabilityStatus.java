@@ -73,7 +73,9 @@ import java.util.Date;
 
 /**
  * @author zhangsa
+ * @deprecated use Availability directly
  */
+@Deprecated
 public class AvailabilityStatus {
     private boolean available;
     private Date upSince;

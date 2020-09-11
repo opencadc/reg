@@ -74,6 +74,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import org.jdom2.Comment;
+import org.jdom2.Content;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -83,15 +84,40 @@ import org.jdom2.Namespace;
  */
 public class Availability {
 
-    private AvailabilityStatus status;
-    private String clientIP;
+    //private AvailabilityStatus status;
+    private boolean available;
+    
+    public String note;
+    public Date upSince;
+    public Date downAt;
+    public Date backAt;
+    
+    public String clientIP;
 
+    public Availability(boolean available) {
+        this.available = available;
+    }
+    
+    public Availability(boolean available, String note) {
+        this.available = available;
+        this.note = note;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+    
+    @Deprecated
     public Availability(AvailabilityStatus status) {
         super();
         if (status == null) {
             throw new IllegalArgumentException("Availability Status is null.");
         }
-        this.status = status;
+        this.available = status.isAvailable();
+        this.note = status.getNote();
+        this.upSince = status.getUpSince();
+        this.downAt = status.getDownAt();
+        this.backAt = status.getBackAt();
     }
 
     @Deprecated
@@ -101,12 +127,13 @@ public class Availability {
             throw new IllegalArgumentException("Document is null.");
         }
         try {
-            status = fromXmlDocument(xml);
+            fromXmlDocument(xml);
         } catch (ParseException e) {
             throw new IllegalStateException("Invalid date format in XML", e);
         }
     }
 
+    @Deprecated
     public void setClientIP(final String clientIP) {
         this.clientIP = clientIP;
     }
@@ -118,21 +145,21 @@ public class Availability {
 
         Element eleAvailability = new Element("availability", vosi);
 
-        Util.addChild(eleAvailability, vosi, "available", Boolean.toString(status.isAvailable()));
-        if (status.getUpSince() != null) {
-            Util.addChild(eleAvailability, vosi, "upSince", df.format(status.getUpSince()));
+        Util.addChild(eleAvailability, vosi, "available", Boolean.toString(available));
+        if (upSince != null) {
+            Util.addChild(eleAvailability, vosi, "upSince", df.format(upSince));
         }
-        if (status.getDownAt() != null) {
-            Util.addChild(eleAvailability, vosi, "downAt", df.format(status.getDownAt()));
+        if (downAt != null) {
+            Util.addChild(eleAvailability, vosi, "downAt", df.format(downAt));
         }
-        if (status.getBackAt() != null) {
-            Util.addChild(eleAvailability, vosi, "backAt", df.format(status.getBackAt()));
+        if (backAt != null) {
+            Util.addChild(eleAvailability, vosi, "backAt", df.format(backAt));
         }
-        if (status.getNote() != null) {
-            Util.addChild(eleAvailability, vosi, "note", status.getNote());
+        if (note != null) {
+            Util.addChild(eleAvailability, vosi, "note", note);
         }
-        if (this.clientIP != null) {
-            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", this.clientIP)));
+        if (clientIP != null) {
+            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", clientIP)));
         }
 
         Document document = new Document();
@@ -158,18 +185,28 @@ public class Availability {
         DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
 
         Element elemUpSince = availability.getChild("upSince", vosi);
-        final Date upSince = safeParseDate(elemUpSince, df);
+        this.upSince = safeParseDate(elemUpSince, df);
         
         Element elemDownAt = availability.getChild("downAt", vosi);
-        final Date downAt = safeParseDate(elemDownAt, df);
+        this.downAt = safeParseDate(elemDownAt, df);
         
         Element elemBackAt = availability.getChild("backAt", vosi);
-        final Date backAt = safeParseDate(elemBackAt, df);
+        this.backAt = safeParseDate(elemBackAt, df);
         
         Element elemNote = availability.getChild("note", vosi);
-        String note = elemNote.getText();;
+        this.note = elemNote.getText();
+        
+        for (Content c : availability.getContent()) {
+            if (c instanceof Comment) {
+                Comment com = (Comment) c;
+                String s = com.getText();
+                if (s.startsWith("<clientip>") && s.endsWith("/clientip>")) {
+                    this.clientIP = s.substring(10, s.length() - 11);
+                }
+            }
+        }
 
-        return new AvailabilityStatus(available, upSince, downAt, backAt, note);
+        return getStatus();
     }
     
     private Date safeParseDate(Element e, DateFormat df) throws ParseException {
@@ -179,26 +216,30 @@ public class Availability {
         return df.parse(e.getTextTrim());
     }
 
+    @Deprecated
     public AvailabilityStatus getStatus() {
-        return status;
+        return new AvailabilityStatus(available, upSince, downAt, backAt, note);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Availability[");
-        sb.append("available=").append(status.isAvailable());
-        if (status.getUpSince() != null) {
-            sb.append(",upSince=").append(status.getUpSince());
+        sb.append("available=").append(available);
+        if (upSince != null) {
+            sb.append(",upSince=").append(upSince);
         }
-        if (status.getDownAt() != null) {
-            sb.append(",downAt=").append(status.getDownAt());
+        if (downAt != null) {
+            sb.append(",downAt=").append(downAt);
         }
-        if (status.getBackAt() != null) {
-            sb.append(",backAt=").append(status.getBackAt());
+        if (backAt != null) {
+            sb.append(",backAt=").append(backAt);
         }
-        if (status.getNote() != null) {
-            sb.append(",note=").append(status.getNote());
+        if (note != null) {
+            sb.append(",note=").append(note);
+        }
+        if (clientIP != null) {
+            sb.append(",clientip=").append(clientIP);
         }
         sb.append("]");
         return sb.toString();
