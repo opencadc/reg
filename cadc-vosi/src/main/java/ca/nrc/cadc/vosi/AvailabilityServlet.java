@@ -142,9 +142,8 @@ public class AvailabilityServlet extends HttpServlet {
                 }
             } else {
                 AvailabilityStatus status = ap.getStatus();
-
                 Availability availability = new Availability(status);
-                availability.setClientIP(NetUtil.getClientIP(request));
+                availability.clientIP = NetUtil.getClientIP(request);
 
                 Document document = availability.toXmlDocument();
                 XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());

@@ -65,154 +65,56 @@
 *  $Revision: 4 $
 *
 ************************************************************************
-*/
+ */
+
 package ca.nrc.cadc.vosi;
 
-import ca.nrc.cadc.net.HttpDownload;
+import ca.nrc.cadc.util.Log4jInit;
+import java.net.URI;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.easymock.EasyMock;
-import org.jdom2.JDOMException;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.net.URL;
+public class AvailabilityClientTest {
 
-import static org.junit.Assert.*;
-
-public class AvailabilityClientTest
-{
     private static Logger log = Logger.getLogger(AvailabilityClientTest.class);
+    
+    static {
+        Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
+    }
 
     @Test
-    public void testNullURL() throws Exception
-    {
-        try
-        {
+    public void testNullURL() throws Exception {
+        try {
             AvailabilityClient client = new AvailabilityClient();
             client.getAvailability(null);
-            fail("null URL should throw IllegalArgumentException");
+            Assert.fail("null should throw IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            log.info("caught expected: " + expected);
         }
-        catch (IllegalArgumentException expected) {}
     }
 
     @Test
-    public void testServiceResponding() throws Exception
-    {
-        final String xml =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<vosi:availability xmlns:vosi=\"http://www.ivoa.net/xml/VOSIAvailability/v1.0\">\n" +
-                "  <vosi:available>true</vosi:available>\n" +
-                "  <vosi:note>service is accepting queries</vosi:note>\n" +
-                "</vosi:availability>";
-
-        final HttpDownload mockDownload = EasyMock.createMock(HttpDownload.class);
-        mockDownload.run();
-        EasyMock.expectLastCall();
-        EasyMock.expect(mockDownload.getResponseCode()).andReturn(200).once();
-
-        final ByteArrayOutputStream mockOut = EasyMock.createMock(ByteArrayOutputStream.class);
-        EasyMock.expect(mockOut.toString("UTF-8")).andReturn(xml);
-
-        EasyMock.replay(mockDownload, mockOut);
-
-        AvailabilityClient client = new AvailabilityClient()
-        {
-            @Override
-            protected HttpDownload getHttpDownload(URL url, ByteArrayOutputStream out)
-            {
-                return mockDownload;
-            }
-
-            @Override
-            protected ByteArrayOutputStream getOutputStream()
-            {
-                return mockOut;
-            }
-        };
-
-        Availability availability = client.getAvailability(new URL("http://localhost/foo"));
-
-        assertNotNull(availability);
-        assertTrue(availability.getStatus().isAvailable());
-
-        EasyMock.verify(mockDownload, mockOut);
+    public void testCtor() throws Exception {
+        try {
+            AvailabilityClient client = new AvailabilityClient(null);
+            Assert.fail("null should throw IllegalArgumentException");
+        } catch (IllegalArgumentException expected) {
+            log.info("caught expected: " + expected);
+        }
     }
 
     @Test
-    public void testServiceNotResponding() throws Exception
-    {
-        final HttpDownload mockDownload = EasyMock.createMock(HttpDownload.class);
-        mockDownload.run();
-        EasyMock.expectLastCall().once();
-        EasyMock.expect(mockDownload.getResponseCode()).andReturn(404).once();
-
-        final ByteArrayOutputStream mockOut = EasyMock.createMock(ByteArrayOutputStream.class);
-
-        EasyMock.replay(mockDownload, mockOut);
-
-        AvailabilityClient client = new AvailabilityClient()
-        {
-            @Override
-            protected HttpDownload getHttpDownload(URL url, ByteArrayOutputStream out)
-            {
-                return mockDownload;
-            }
-
-            @Override
-            protected ByteArrayOutputStream getOutputStream()
-            {
-                return mockOut;
-            }
-        };
-
-        Availability availability = client.getAvailability(new URL("http://localhost/foo"));
-
-        assertNotNull(availability);
-        assertFalse(availability.getStatus().isAvailable());
-
-        EasyMock.verify(mockDownload, mockOut);
+    public void testCheck() throws Exception {
+        try {
+            AvailabilityClient client = new AvailabilityClient(URI.create("ivo://cadc.nrc.ca/cred"));
+            Availability a = client.getAvailability();
+            Assert.assertNotNull(a);
+            Assert.assertNotNull(a.getStatus());
+            log.info("got status: " + a);
+        } catch (IllegalArgumentException expected) {
+            log.info("caught expected: " + expected);
+        }
     }
-
-    @Test
-    public void testInvalidXMLReturned() throws Exception
-    {
-        final String xml =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<vosi:availability xmlns:vosi=\"http://www.ivoa.net/xml/VOSIAvailability/v1.0\">\n" +
-                "  <vosi:available>true</vosi:available>\n";
-
-        final HttpDownload mockDownload = EasyMock.createMock(HttpDownload.class);
-        mockDownload.run();
-        EasyMock.expectLastCall().once();
-        EasyMock.expect(mockDownload.getResponseCode()).andReturn(200).once();
-
-        final ByteArrayOutputStream mockOut = EasyMock.createMock(ByteArrayOutputStream.class);
-        EasyMock.expect(mockOut.toString("UTF-8")).andReturn(xml).once();
-
-        EasyMock.replay(mockDownload, mockOut);
-
-        AvailabilityClient client = new AvailabilityClient()
-        {
-            @Override
-            protected HttpDownload getHttpDownload(URL url, ByteArrayOutputStream out)
-            {
-                return mockDownload;
-            }
-
-            @Override
-            protected ByteArrayOutputStream getOutputStream()
-            {
-                return mockOut;
-            }
-        };
-
-        Availability availability = client.getAvailability(new URL("http://localhost/foo"));
-
-        assertNotNull(availability);
-        assertFalse(availability.getStatus().isAvailable());
-
-        EasyMock.verify(mockDownload, mockOut);
-    }
-
 }
