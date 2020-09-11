@@ -176,7 +176,7 @@ public class AvailabilityTest {
         Calendar c3 = new GregorianCalendar();
         c2.add(Calendar.MONTH, 1);
         c3.add(Calendar.MONTH, 2);
-        AvailabilityStatus status1 = new AvailabilityStatus(false, c1.getTime(), c2.getTime(), c3.getTime(), 
+        AvailabilityStatus status1 = new AvailabilityStatus(true, c1.getTime(), c2.getTime(), c3.getTime(), 
                 "status message");
         log.info("before: " + status1);
         
