@@ -180,7 +180,7 @@ public class Availability {
         if (elemAvailable == null) {
             throw new IllegalArgumentException("missing element 'available'");
         }
-        final boolean available = elemAvailable.getText().equalsIgnoreCase("true");
+        this.available = elemAvailable.getText().equalsIgnoreCase("true");
 
         DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
 
