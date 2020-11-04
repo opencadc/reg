@@ -129,7 +129,7 @@ public class AvailabilityTest {
             log.error("test code bug", e);
         }
         Availability availability = new Availability(status);
-        availability.setClientIP("192.168.1.3");
+        availability.clientIP = "192.168.1.3";
         Document doc = availability.toXmlDocument();
         XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
         Writer stringWriter = new StringWriter();
@@ -176,15 +176,16 @@ public class AvailabilityTest {
         Calendar c3 = new GregorianCalendar();
         c2.add(Calendar.MONTH, 1);
         c3.add(Calendar.MONTH, 2);
-        AvailabilityStatus status1 = new AvailabilityStatus(false, c1.getTime(), c2.getTime(), c3.getTime(), 
+        AvailabilityStatus status1 = new AvailabilityStatus(true, c1.getTime(), c2.getTime(), c3.getTime(), 
                 "status message");
         log.info("before: " + status1);
         
         Availability availability = new Availability(status1);
+        availability.clientIP = "192.168.1.66";
         Document doc = availability.toXmlDocument();
 
-        availability = new Availability(doc);
-        AvailabilityStatus status2 = availability.fromXmlDocument(doc);
+        Availability actual = new Availability(doc);
+        AvailabilityStatus status2 = actual.fromXmlDocument(doc);
         log.info(" after: " + status2); 
         
         Assert.assertEquals("is available", status1.isAvailable(), status2.isAvailable());
@@ -192,6 +193,7 @@ public class AvailabilityTest {
         Assert.assertEquals("down at", status1.getDownAt(), status2.getDownAt());
         Assert.assertEquals("back at", status1.getBackAt(), status2.getBackAt());
         Assert.assertEquals("note", status1.getNote(), status2.getNote());
+        Assert.assertEquals("clientip", availability.clientIP, actual.clientIP);
 
     }
 

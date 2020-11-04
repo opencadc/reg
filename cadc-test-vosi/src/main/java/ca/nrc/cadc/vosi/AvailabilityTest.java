@@ -155,16 +155,10 @@ public class AvailabilityTest {
 
     @Test
     public void testClientIP() throws Exception {
-        final URL serviceURL = lookupServiceURL();
-        final AvailabilityClient availabilityClient = new AvailabilityClient();
-        final ByteArrayOutputStream outputStream = availabilityClient.getOutputStream();
-        final HttpDownload download = availabilityClient.getHttpDownload(serviceURL, outputStream);
-        download.run();
-
-        final Document xml =
-            XmlUtil.buildDocument(outputStream.toString("UTF-8"),
-                                  VOSI.AVAILABILITY_NS_URI, VOSI.AVAILABILITY_SCHEMA);
-        Assert.assertTrue("Should have comment.", hasClientIPComment(xml.getRootElement()));
+        final AvailabilityClient availabilityClient = new AvailabilityClient(resourceIdentifier);
+        Availability a = availabilityClient.getAvailability();
+        log.info("response: " + a);
+        Assert.assertNotNull(a.clientIP);
     }
 
     URL lookupServiceURL() {

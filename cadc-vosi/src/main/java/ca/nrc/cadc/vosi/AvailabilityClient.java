@@ -69,12 +69,17 @@
 
 package ca.nrc.cadc.vosi;
 
-import ca.nrc.cadc.net.HttpDownload;
-import ca.nrc.cadc.net.HttpTransfer;
+import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.net.HttpGet;
+import ca.nrc.cadc.reg.Standards;
+import ca.nrc.cadc.reg.XMLConstants;
+import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.xml.XmlUtil;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.util.Map;
+import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
@@ -84,58 +89,76 @@ public class AvailabilityClient {
     private static Logger log = Logger.getLogger(AvailabilityClient.class);
 
     public static final String AVAILABILITY_ENDPOINT = "/availability";
+    public static final Map<String, String> AVAIL_SCHEMA_MAP = new TreeMap<>();
 
-    public AvailabilityClient() {
+    static {
+        AVAIL_SCHEMA_MAP.putAll(XMLConstants.SCHEMA_MAP);
+        
+        String localURL = XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA, XMLConstants.class);
+        AVAIL_SCHEMA_MAP.put(VOSI.AVAILABILITY_NS_URI.toString(), localURL);
     }
 
-    public Availability getAvailability(final URL serviceUrl) {
-        if (serviceUrl == null) {
+    private final URI resourceID;
+    private final RegistryClient reg = new RegistryClient();
+
+    public AvailabilityClient(URI resourceID) {
+        if (resourceID == null) {
+            throw new IllegalArgumentException("resourceID is null");
+        }
+        this.resourceID = resourceID;
+    }
+
+    @Deprecated
+    public AvailabilityClient() {
+        this.resourceID = null;
+    }
+
+    public Availability getAvailability() {
+        if (resourceID == null) {
+            throw new IllegalStateException("caller used deprecated constructor - must use deprecated getAvailability(URL)");
+        }
+        URL avail = reg.getServiceURL(resourceID, Standards.VOSI_AVAILABILITY, AuthMethod.ANON);
+        return doit(avail);
+    }
+
+    @Deprecated
+    public Availability getAvailability(final URL baseURL) {
+        if (baseURL == null) {
             throw new IllegalArgumentException("null URL");
         }
 
-        Availability availability;
         try {
-            URL availabilityURL
-                    = new URL(serviceUrl.getProtocol(), serviceUrl.getHost(),
-                            serviceUrl.getPort(), serviceUrl.getPath() + AVAILABILITY_ENDPOINT);
-
-            ByteArrayOutputStream outputStream = getOutputStream();
-            HttpDownload httpDownload = getHttpDownload(availabilityURL, outputStream);
-            httpDownload.run();
-
-            if (httpDownload.getResponseCode() == 200) {
-                Document xml
-                        = XmlUtil.buildDocument(outputStream.toString("UTF-8"),
-                                VOSI.AVAILABILITY_NS_URI, VOSI.AVAILABILITY_SCHEMA);
-                availability = new Availability(xml);
-            } else {
-                availability = getFalseAvailability();
-            }
-        } catch (IOException e) {
-            final String message = "Error getting availability for "
-                    + serviceUrl + " because " + e.getMessage();
-            log.error(message);
-            availability = getFalseAvailability();
-        } catch (JDOMException e) {
-            final String message = "Error parsing availability for "
-                    + serviceUrl + " because " + e.getMessage();
-            log.error(message);
-            availability = getFalseAvailability();
+            URL availabilityURL = new URL(baseURL.toExternalForm() + AVAILABILITY_ENDPOINT);
+            return doit(availabilityURL);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException("invalid baseURL: cannot append " + AVAILABILITY_ENDPOINT, ex);
         }
-        return availability;
     }
 
-    protected Availability getFalseAvailability() {
-        AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, null);
+    private Availability doit(URL availabilityURL) {
+        Availability ret;
+        try {
+            log.debug("GET " + availabilityURL);
+            HttpGet get = new HttpGet(availabilityURL, true);
+            get.prepare();
+            log.debug("GET " + availabilityURL + " code: " + get.getResponseCode());
+            
+            if (get.getResponseCode() == 200) {
+                Document xml = XmlUtil.buildDocument(get.getInputStream(), AVAIL_SCHEMA_MAP);
+                ret = new Availability(xml);
+            } else {
+                ret = getFalseAvailability("unexpected response code (" + get.getResponseCode() + ") from " + availabilityURL.toExternalForm());
+            }
+        } catch (JDOMException ex) {
+            ret = getFalseAvailability("Error parsing availability from " + availabilityURL + " reason: " + ex.getMessage());
+        } catch (Exception ex) {
+            ret = getFalseAvailability("Error getting availability from " + availabilityURL + " reason: " + ex.getMessage());
+        }
+        return ret;
+    }
+
+    protected Availability getFalseAvailability(String msg) {
+        AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, msg);
         return new Availability(status);
     }
-
-    protected HttpDownload getHttpDownload(final URL url, final ByteArrayOutputStream out) {
-        return new HttpDownload(url, out);
-    }
-
-    protected ByteArrayOutputStream getOutputStream() {
-        return new ByteArrayOutputStream(HttpTransfer.DEFAULT_BUFFER_SIZE);
-    }
-
 }
