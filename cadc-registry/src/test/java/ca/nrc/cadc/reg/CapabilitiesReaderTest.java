@@ -132,6 +132,7 @@ public class CapabilitiesReaderTest {
             Assert.assertNotNull("test setup", f);
 
             Capabilities caps = read(f);
+            Capabilities actual = roundtrip(caps);
             
             Capability cap = caps.findCapability(Standards.TAP_10);
             Assert.assertNotNull(cap);
