@@ -164,7 +164,10 @@ public class Standards {
 
     public static final URI PKG_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg#tar-1.0");
 
+    // batch processing
     public static final URI PROC_JOBS_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#jobs-1.0");
+    // interactive processing 
+    public static final URI PROC_SESSIONS_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#sessions-1.0");
 
     public static final URI UWS_UPDATE_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UWS#update-1.0");
 
@@ -176,6 +179,8 @@ public class Standards {
     public static final URI SECURITY_METHOD_CERT = URI.create("ivo://ivoa.net/sso#tls-with-certificate");
     public static final URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");
     public static final URI SECURITY_METHOD_HTTP_BASIC = URI.create("ivo://ivoa.net/sso#BasicAA");
+    public static final URI SECURITY_METHOD_OAUTH = URI.create("ivo://ivoa.net/sso#OAuth");
+    public static final URI SECURITY_METHOD_OPENID = URI.create("ivo://ivoa.net/sso#OpenID");
     public static final URI SECURITY_METHOD_TOKEN = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0");
 
     // interface type identifiers: <namespace uri>#<type attr name without rpefix>
