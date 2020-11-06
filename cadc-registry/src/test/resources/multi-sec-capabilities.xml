@@ -8,7 +8,7 @@
       <accessURL use="base"> https://example.net/srv </accessURL>
       <securityMethod/>
       <securityMethod standardID="ivo://ivoa.net/sso#tls-with-certificate"/>
-      <securityMethod standardID="ivo://ivoa.net/sso#token"/>
+      <securityMethod standardID="vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0"/>
     </interface>
   </capability>
 
