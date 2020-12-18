@@ -186,6 +186,9 @@ public class Standards {
     public static final URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");
     public static final URI SECURITY_METHOD_HTTP_BASIC = URI.create("ivo://ivoa.net/sso#BasicAA");
     public static final URI SECURITY_METHOD_TOKEN = URI.create("ivo://ivoa.net/sso#token");
+    
+    @Deprecated // Was for prototype delegation token work. Use SECURITY_METHOD_TOKEN now.
+    public static final URI SECURITY_METHOD_DELTOKEN = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0");
 
     // interface type identifiers: <namespace uri>#<type attr name without rpefix>
     public static URI INTERFACE_PARAM_HTTP = URI.create(XMLConstants.VODATASERVICE_11_NS + "#ParamHTTP");
