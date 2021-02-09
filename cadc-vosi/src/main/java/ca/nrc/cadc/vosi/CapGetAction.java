@@ -74,6 +74,7 @@ import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesWriter;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
+import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.LocalAuthority;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.rest.InlineContentHandler;
@@ -131,9 +132,7 @@ public class CapGetAction extends RestAction {
         log.debug("transformAccessURL=" + doTransform + " injectAuthProvider=" + injectAuthProvider);
         
         if (doTransform) {
-            URL reqURL = new URL(super.syncInput.getRequestURI());
-            String hostname = reqURL.getHost();
-            transformAccessURL(caps, hostname);
+            transform(caps);
         }
         
         if (injectAuthProvider) {
@@ -144,13 +143,33 @@ public class CapGetAction extends RestAction {
         logInfo.setSuccess(true);
     }
     
-    private void transformAccessURL(Capabilities caps, String hostname) throws MalformedURLException {
-        for (Capability cap : caps.getCapabilities()) {
-            for (Interface i : cap.getInterfaces()) {
+    // transform all accessURL so the hostname and context path match that used to invoke
+    // the /capabilities endpoint
+    private void transform(Capabilities caps) throws MalformedURLException {
+        log.debug("context: " + syncInput.getContextPath());
+        log.debug("component: " + syncInput.getComponentPath());
+        
+        String hostname = new URL(syncInput.getRequestURI()).getHost();
+        
+        // find context path in the template using capabilities endpoint
+        Capability cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
+        URL capURL = cap.getInterfaces().get(0).getAccessURL().getURL();
+        String capPath = capURL.getPath();
+        String basePath = capURL.getPath().substring(0, capPath.indexOf("/capabilities")); // chop
+        
+        // capabilities in the request
+        String actualPath = syncInput.getContextPath();
+        
+        log.debug("transform: basePath in template: " + basePath + " actualPath: " + actualPath);
+        for (Capability c : caps.getCapabilities()) {
+            for (Interface i : c.getInterfaces()) {
                 AccessURL u = i.getAccessURL();
                 URL url = u.getURL();
-                URL nurl = new URL(url.getProtocol(), hostname, url.getPath());
+                String path = url.getPath();
+                String npath = path.replace(basePath, actualPath);
+                URL nurl = new URL(url.getProtocol(), hostname, npath);
                 u.setURL(nurl);
+                log.debug("transform: " + url + " -> " + nurl);
             }
         }
     }

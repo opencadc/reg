@@ -134,7 +134,11 @@ public class Capability {
      * @return the first matching interface or null
      */
     public Interface findInterface(final URI securityMethod, final URI interfaceType) {
+        boolean anon = securityMethod == null || Standards.SECURITY_METHOD_ANON.equals(securityMethod);
         for (Interface intf : this.interfaces) {
+            if (anon && intf.getSecurityMethods().isEmpty() && intf.getType().equals(interfaceType)) {
+                return intf;
+            }
             for (URI sm : intf.getSecurityMethods()) {
                 if (intf.getType().equals(interfaceType)
                         && sm.equals(securityMethod)) {
@@ -145,7 +149,7 @@ public class Capability {
 
         return null;
     }
-
+    
     /**
      * Find a ParamHTTP interface that uses the specified securityMethod.
      * This method returns the first matching interface.
@@ -166,17 +170,8 @@ public class Capability {
      * @return the first matching interface or null
      */
     public Interface findInterface(final AuthMethod authMethod, final URI interfaceType) {
-        for (Interface intf : this.interfaces) {
-            if (intf.getType().equals(interfaceType)) {
-                for (URI sm : intf.getSecurityMethods()) {
-                    AuthMethod am = Standards.getAuthMethod(sm);
-                    if (authMethod.equals(am)) {
-                        return intf;
-                    }
-                }
-            }
-        }
-        return null;
+        URI secMethod = Standards.getSecurityMethod(authMethod);
+        return findInterface(secMethod, interfaceType);
     }
 
     void setExtensionNamespace(Namespace extensionNamespace) {
