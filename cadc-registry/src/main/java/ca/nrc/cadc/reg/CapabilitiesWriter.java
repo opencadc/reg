@@ -214,7 +214,10 @@ public class CapabilitiesWriter {
     
     private Element getSecurityMethodElement(URI s) {
         Element ret = new Element("securityMethod", Namespace.NO_NAMESPACE);
-        ret.setAttribute("standardID", s.toASCIIString());
+        if (!Standards.SECURITY_METHOD_ANON.equals(s)) {
+            // no attr means anon
+            ret.setAttribute("standardID", s.toASCIIString());
+        }
         return ret;
     }
 }

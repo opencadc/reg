@@ -226,13 +226,9 @@ public class CapabilitiesReader {
         intf.version = intfElement.getAttributeValue("version");
         
         List<Element> sms = intfElement.getChildren("securityMethod");
-        if (sms.isEmpty()) {
-            intf.getSecurityMethods().add(Standards.SECURITY_METHOD_ANON);
-        } else {
-            for (Element sme : sms) {
-                URI sm = parseSecurityMethod(sme);
-                intf.getSecurityMethods().add(sm);
-            }
+        for (Element sme : sms) {
+            URI sm = parseSecurityMethod(sme);
+            intf.getSecurityMethods().add(sm);
         }
         
         return intf;
