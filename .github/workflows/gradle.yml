@@ -17,13 +17,13 @@ jobs:
         java-version: 1.8
         
     - name: build and test cadc-registry
-      run: cd cadc-registry && gradle --info clean build javadoc checkstyleMain install
+      run: cd cadc-registry && ../gradlew --info clean build javadoc checkstyleMain install
 
     - name: build and test cadc-vosi
-      run: cd cadc-vosi && gradle --info clean build javadoc checkstyleMain install
+      run: cd cadc-vosi && ../gradlew --info clean build javadoc checkstyleMain install
       
     - name: build and test cadc-registry-server
-      run: cd cadc-registry-server && gradle --info clean build javadoc checkstyleMain install
+      run: cd cadc-registry-server && ../gradlew --info clean build javadoc checkstyleMain install
       
     - name: build and test cadc-test-vosi
-      run: cd cadc-test-vosi && gradle --info clean build javadoc install
+      run: cd cadc-test-vosi && ../gradlew --info clean build javadoc install
