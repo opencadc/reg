@@ -78,7 +78,7 @@ import ca.nrc.cadc.rest.RestAction;
  * 
  * @author majorb
  * 
- * See ca.nrc.cadc.rest.RestServlet#setAuthenticateHeaders()
+ * @see ca.nrc.cadc.rest.RestServlet#setAuthenticateHeaders
  *
  */
 public class AuthcheckServlet extends RestAction {
