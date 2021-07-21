@@ -69,17 +69,15 @@ package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
-import ca.nrc.cadc.reg.CapabilitiesWriter;
 import ca.nrc.cadc.rest.InitAction;
 import ca.nrc.cadc.util.StringUtil;
 
-import java.io.InputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URL;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 
@@ -124,6 +122,15 @@ public class CapInitAction extends InitAction {
             cr.read(tmpl);
             
             Context initContext = new InitialContext();
+
+            // unbind in case this is a re-deploy
+            try {
+                log.debug("unbinding possible existing document");
+                initContext.unbind(jndiKey);
+            } catch (NamingException e) {
+                log.debug("no previously bound capabilities, continuting");
+            }
+
             initContext.bind(jndiKey, tmpl);
             log.debug("doInit: capabilities template stored via JNDI: " + jndiKey);
         } catch (Exception ex) {
