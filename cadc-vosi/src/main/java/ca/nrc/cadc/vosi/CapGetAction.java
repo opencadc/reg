@@ -158,7 +158,8 @@ public class CapGetAction extends RestAction {
         String basePath = capURL.getPath().substring(0, capPath.indexOf("/capabilities")); // chop
         
         // capabilities in the request
-        String actualPath = syncInput.getContextPath();
+        String actualPath = syncInput.getContextPath() + syncInput.getComponentPath();
+        actualPath = actualPath.substring(0, actualPath.indexOf("/capabilities")); // chop
         
         log.debug("transform: basePath in template: " + basePath + " actualPath: " + actualPath);
         for (Capability c : caps.getCapabilities()) {
