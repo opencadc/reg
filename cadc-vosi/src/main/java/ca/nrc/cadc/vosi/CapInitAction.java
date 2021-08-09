@@ -132,7 +132,7 @@ public class CapInitAction extends InitAction {
             }
 
             initContext.bind(jndiKey, tmpl);
-            log.debug("doInit: capabilities template stored via JNDI: " + jndiKey);
+            log.info("doInit: capabilities template " + str + " stored via JNDI: " + jndiKey);
         } catch (Exception ex) {
             throw new IllegalArgumentException("CONFIG: failed to read capabilities template: " + str, ex);
         }
