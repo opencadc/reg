@@ -90,9 +90,10 @@ public class AvailabilityClient {
 
     public static final String AVAILABILITY_ENDPOINT = "/availability";
     public static final String MIN_DETAIL_PARAMETER = "?detail=min";
-    public static final int DEFAULT_CONNECTION_TIMEOUT = 9000;
-    public static final int DEFAULT_READ_TIMEOUT = 3000;
-    public static final int MIN_DETAIL_MAX_RETRIES = 1;
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 6000;
+    public static final int DEFAULT_READ_TIMEOUT = 12000;
+    public static final int DEFAULT_MAX_RETRIES = 1;
+    public static final int MIN_DETAIL_READ_TIMEOUT = 2000;
     public static final Map<String, String> AVAIL_SCHEMA_MAP = new TreeMap<>();
 
     static {
@@ -167,9 +168,11 @@ public class AvailabilityClient {
             log.debug("GET " + availabilityURL);
             HttpGet get = new HttpGet(availabilityURL, true);
             get.setConnectionTimeout(DEFAULT_CONNECTION_TIMEOUT);
-            get.setReadTimeout(DEFAULT_READ_TIMEOUT);
+            get.setMaxRetries(DEFAULT_MAX_RETRIES);
             if (this.minDetail) {
-                get.setMaxRetries(MIN_DETAIL_MAX_RETRIES);
+                get.setReadTimeout(MIN_DETAIL_READ_TIMEOUT);
+            } else {
+                get.setReadTimeout(DEFAULT_READ_TIMEOUT);
             }
             get.prepare();
             log.debug("GET " + availabilityURL + " code: " + get.getResponseCode());
