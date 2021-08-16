@@ -92,7 +92,7 @@ public class AvailabilityClient {
     public static final String MIN_DETAIL_PARAMETER = "?detail=min";
     public static final int DEFAULT_CONNECTION_TIMEOUT = 6000;
     public static final int DEFAULT_READ_TIMEOUT = 12000;
-    public static final int DEFAULT_MAX_RETRIES = 1;
+    public static final int DEFAULT_MAX_RETRIES = 0;
     public static final int MIN_DETAIL_READ_TIMEOUT = 2000;
     public static final Map<String, String> AVAIL_SCHEMA_MAP = new TreeMap<>();
 
