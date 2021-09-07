@@ -67,74 +67,30 @@
 
 package ca.nrc.cadc.vosi;
 
-import ca.nrc.cadc.reg.Capabilities;
-import ca.nrc.cadc.reg.CapabilitiesReader;
-import ca.nrc.cadc.rest.InitAction;
-import ca.nrc.cadc.util.StringUtil;
-
-import java.io.StringReader;
-import java.net.URL;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import ca.nrc.cadc.rest.InlineContentHandler;
+import ca.nrc.cadc.rest.RestAction;
 
 import org.apache.log4j.Logger;
 
 /**
- * InitAction implementation for VOSI-capabilities from template xml file.
- * 
- * @author pdowler
+ *
+ * @author majorb
  */
-public class CapInitAction extends InitAction {
-    private static final Logger log = Logger.getLogger(CapInitAction.class);
+public class CapHeadAction extends RestAction {
+    private static final Logger log = Logger.getLogger(CapHeadAction.class);
 
-    public CapInitAction() { 
+    public CapHeadAction() {
         super();
     }
 
-    static Capabilities getTemplate(String componentID) {
-        String jndiKey = componentID + ".cap-template";
-        try {
-            log.debug("retrieving capabilities template via JNDI: " + jndiKey);
-            Context initContext = new InitialContext();
-            String tmpl = (String) initContext.lookup(jndiKey);
-            CapabilitiesReader cr = new CapabilitiesReader(false); // validated in doInit
-            StringReader sr = new StringReader(tmpl);
-            Capabilities caps = cr.read(sr);
-            return caps;
-        } catch (Exception ex) {
-            throw new IllegalStateException("failed to find template via JNDI: init failed", ex);
-        }
-    }
-    
     @Override
-    public void doInit() {
-        String jndiKey = componentID + ".cap-template";
-        String str = initParams.get("input");
-        log.debug("doInit: static capabilities: " + str);
-        try {
-            URL resURL = super.getResource(str);
-            String tmpl = StringUtil.readFromInputStream(resURL.openStream(), "UTF-8");
-            
-            // validate
-            CapabilitiesReader cr = new CapabilitiesReader();
-            cr.read(tmpl);
-            
-            Context initContext = new InitialContext();
-
-            // unbind in case this is a re-deploy
-            try {
-                log.debug("unbinding possible existing document");
-                initContext.unbind(jndiKey);
-            } catch (NamingException e) {
-                log.debug("no previously bound capabilities, continuting");
-            }
-
-            initContext.bind(jndiKey, tmpl);
-            log.info("doInit: capabilities template " + str + " stored via JNDI: " + jndiKey);
-        } catch (Exception ex) {
-            throw new IllegalArgumentException("CONFIG: failed to read capabilities template: " + str, ex);
-        }
+    protected InlineContentHandler getInlineContentHandler() {
+        return null;
     }
+
+    @Override
+    public void doAction() throws Exception {
+        logInfo.setSuccess(true);
+    }
+
 }
