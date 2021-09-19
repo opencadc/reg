@@ -340,7 +340,7 @@ public class OAIQueryRunner implements JobRunner {
         log.debug("doListIdentifiers: " + start + " " + end);
         List<OAIHeader> headers = getHeaders(start, end);
         if (headers.isEmpty()) {
-            sendError("ListRecords", 200, "noRecordsMatch");
+            sendError("ListIdentifiers", 200, "noRecordsMatch");
         }
         if (!"ivo_vor".equals(metadataPrefix)) {
             throw new IllegalArgumentException("cannotDisseminateFormat");
@@ -450,7 +450,7 @@ public class OAIQueryRunner implements JobRunner {
             URI id = URI.create(header.getChildText("identifier", Namespace.NO_NAMESPACE));
             String dsVal = header.getChildText("datestamp", Namespace.NO_NAMESPACE);
             if (dsVal.endsWith("Z")) {
-                dsVal = dsVal.substring(0, dsVal.length() - 2);
+                dsVal = dsVal.replace("Z", "");
             }
             Date ds = DateUtil.flexToDate(dsVal, df);
             OAIHeader ret = new OAIHeader(id, ds, "ivo_managed", status, f);
