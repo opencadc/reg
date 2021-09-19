@@ -89,6 +89,11 @@ public class AvailabilityClient {
     private static Logger log = Logger.getLogger(AvailabilityClient.class);
 
     public static final String AVAILABILITY_ENDPOINT = "/availability";
+    public static final String MIN_DETAIL_PARAMETER = "?detail=min";
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 6000;
+    public static final int DEFAULT_READ_TIMEOUT = 12000;
+    public static final int DEFAULT_MAX_RETRIES = 0;
+    public static final int MIN_DETAIL_READ_TIMEOUT = 2000;
     public static final Map<String, String> AVAIL_SCHEMA_MAP = new TreeMap<>();
 
     static {
@@ -99,6 +104,7 @@ public class AvailabilityClient {
     }
 
     private final URI resourceID;
+    private final boolean minDetail;
     private final RegistryClient reg = new RegistryClient();
 
     public AvailabilityClient(URI resourceID) {
@@ -106,11 +112,28 @@ public class AvailabilityClient {
             throw new IllegalArgumentException("resourceID is null");
         }
         this.resourceID = resourceID;
+        this.minDetail = false;
+    }
+
+    /**
+     * Create a client to check the availability of the given resouceID.
+     * 
+     * @param resourceID the service resourceID
+     * @param minDetail if true checks that the service is running, 
+     *                  if false checks that the service is fully functional. 
+     */
+    public AvailabilityClient(URI resourceID, boolean minDetail) {
+        if (resourceID == null) {
+            throw new IllegalArgumentException("resourceID is null");
+        }
+        this.resourceID = resourceID;
+        this.minDetail = minDetail;
     }
 
     @Deprecated
     public AvailabilityClient() {
         this.resourceID = null;
+        this.minDetail = false;
     }
 
     public Availability getAvailability() {
@@ -138,14 +161,29 @@ public class AvailabilityClient {
     private Availability doit(URL availabilityURL) {
         Availability ret;
         try {
+            if (this.minDetail) {
+                availabilityURL = new URL(availabilityURL.toString() + MIN_DETAIL_PARAMETER);
+            }
+
             log.debug("GET " + availabilityURL);
             HttpGet get = new HttpGet(availabilityURL, true);
+            get.setConnectionTimeout(DEFAULT_CONNECTION_TIMEOUT);
+            get.setMaxRetries(DEFAULT_MAX_RETRIES);
+            if (this.minDetail) {
+                get.setReadTimeout(MIN_DETAIL_READ_TIMEOUT);
+            } else {
+                get.setReadTimeout(DEFAULT_READ_TIMEOUT);
+            }
             get.prepare();
             log.debug("GET " + availabilityURL + " code: " + get.getResponseCode());
             
             if (get.getResponseCode() == 200) {
-                Document xml = XmlUtil.buildDocument(get.getInputStream(), AVAIL_SCHEMA_MAP);
-                ret = new Availability(xml);
+                if (this.minDetail) {
+                    return new Availability(true);
+                } else {
+                    Document xml = XmlUtil.buildDocument(get.getInputStream(), AVAIL_SCHEMA_MAP);
+                    ret = new Availability(xml);
+                }
             } else {
                 ret = getFalseAvailability("unexpected response code (" + get.getResponseCode() + ") from " + availabilityURL.toExternalForm());
             }
@@ -158,7 +196,6 @@ public class AvailabilityClient {
     }
 
     protected Availability getFalseAvailability(String msg) {
-        AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, msg);
-        return new Availability(status);
+        return new Availability(false, msg);
     }
 }

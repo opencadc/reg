@@ -226,7 +226,7 @@ public class RegistryClientTest {
 
         RegistryClient rc = new RegistryClient();
         try {
-            URL expected = new URL("https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/argus");
+            URL expected = new URL("https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/argus");
             URI resourceID = new URI(RESOURCE_ID);
             URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.ANON);
             Assert.assertNotNull("Service URL should not be null", serviceURL);

@@ -90,6 +90,7 @@ public class Standards {
 
     public static final URI GMS_GROUPS_01 = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
     public static final URI GMS_SEARCH_01 = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
+    public static final URI GMS_SEARCH_10 = URI.create("ivo://ivoa.net/std/GMS#search-1.0");
 
     public static final URI REGISTRY_10 = URI.create("ivo://ivoa.net/std/Registry");
 
