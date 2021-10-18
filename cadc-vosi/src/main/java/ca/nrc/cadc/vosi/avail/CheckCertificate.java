@@ -140,7 +140,7 @@ public class CheckCertificate implements CheckResource {
             Set<X509CertificateChain> certs = s.getPublicCredentials(X509CertificateChain.class);
             if (certs.isEmpty()) {
                 // subject without certs means something went wrong above
-                throw new RuntimeException("failed to load X509 certficate from file(s): "+ this.certFilename);
+                throw new RuntimeException("failed to load X509 certficate from file(s): " + this.certFilename);
             }
             X509CertificateChain chain = certs.iterator().next(); // the first one
             checkValidity(chain);
