@@ -93,7 +93,6 @@ public class CheckCertificate implements CheckResource {
 
     private File cert;
     private File key;
-    private String certFilename;
 
     /**
      * Check a certificate. This certificate is assumed to hold a cert and key.
@@ -102,7 +101,6 @@ public class CheckCertificate implements CheckResource {
      */
     public CheckCertificate(File cert) {
         this.cert = cert;
-        this.certFilename = this.cert.getName();
     }
 
     /**
@@ -114,7 +112,6 @@ public class CheckCertificate implements CheckResource {
     public CheckCertificate(File cert, File key) {
         this.cert = cert;
         this.key = key;
-        this.certFilename = this.cert.getName();
     }
 
     @Override
@@ -122,7 +119,6 @@ public class CheckCertificate implements CheckResource {
             throws CheckException {
         log.debug("read - cert: " + cert + " key: " + key);
         Subject s = null;
-        StringBuilder mesage = new StringBuilder();
         try {
             if (key != null) {
                 s = SSLUtil.createSubject(cert, key);
@@ -135,12 +131,12 @@ public class CheckCertificate implements CheckResource {
             throw new CheckException("cert check failed (not found): " + t.getMessage());
         }
 
-        log.debug("check validity - cert: " + this.certFilename + " " + cert + " key: " + key);
+        log.debug("check validity - cert: " + cert.getAbsolutePath() + " " + cert + " key: " + key);
         try {
             Set<X509CertificateChain> certs = s.getPublicCredentials(X509CertificateChain.class);
             if (certs.isEmpty()) {
                 // subject without certs means something went wrong above
-                throw new RuntimeException("failed to load X509 certficate from file(s): " + this.certFilename);
+                throw new RuntimeException("failed to load X509 certficate from file(s): " + cert.getAbsolutePath());
             }
             X509CertificateChain chain = certs.iterator().next(); // the first one
             checkValidity(chain);
@@ -149,7 +145,7 @@ public class CheckCertificate implements CheckResource {
             // filename and reason detail are in throwable message
             throw new CheckException("cert check failed (invalid): " + t.getMessage(), t);
         }
-        log.debug("test succeeded: " + this.certFilename + " " + cert + " " + key);
+        log.debug("test succeeded: " + cert.getAbsolutePath() + " " + cert + " " + key);
     }
 
     private void checkValidity(X509CertificateChain chain) {
@@ -164,14 +160,14 @@ public class CheckCertificate implements CheckResource {
                 principal = c.getSubjectX500Principal();
                 c.checkValidity();
             } catch (CertificateNotYetValidException exp) {
-                log.error(this.certFilename + " certificate is not valid yet, DN: "
+                log.error(cert.getAbsolutePath() + " certificate is not valid yet, DN: "
                         + principal + ", valid from " + df.format(start) + " to " + df.format(end));
-                throw new RuntimeException(this.certFilename + "certificate is not valid yet, DN: "
+                throw new RuntimeException(cert.getAbsolutePath() + "certificate is not valid yet, DN: "
                         + principal + ", valid from " + df.format(start) + " to " + df.format(end));
             } catch (CertificateExpiredException exp) {
-                log.error(this.certFilename + "certificate has expired, DN: "
+                log.error(cert.getAbsolutePath() + "certificate has expired, DN: "
                         + principal + ", valid from " + df.format(start) + " to " + df.format(end));
-                throw new RuntimeException(this.certFilename + "certificate has expired, DN: "
+                throw new RuntimeException(cert.getAbsolutePath() + "certificate has expired, DN: "
                         + principal + ", valid from " + df.format(start) + " to " + df.format(end));
             }
         }
