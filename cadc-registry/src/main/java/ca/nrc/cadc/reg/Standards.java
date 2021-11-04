@@ -106,7 +106,6 @@ public class Standards {
     public static final URI UMS_USERS_01 = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
     public static final URI UMS_REQS_01 = URI.create("ivo://ivoa.net/std/UMS#reqs-0.1");
     public static final URI UMS_LOGIN_01 = URI.create("ivo://ivoa.net/std/UMS#login-0.1");
-    public static final URI UMS_MODPASS_01 = URI.create("ivo://ivoa.net/std/UMS#modpass-0.1");
     public static final URI UMS_RESETPASS_01 = URI.create("ivo://ivoa.net/std/UMS#resetpass-0.1");
     public static final URI UMS_WHOAMI_01 = URI.create("ivo://ivoa.net/std/UMS#whoami-0.1");
 
