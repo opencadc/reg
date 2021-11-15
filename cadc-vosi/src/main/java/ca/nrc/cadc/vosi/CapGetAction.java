@@ -67,6 +67,9 @@
 
 package ca.nrc.cadc.vosi;
 
+import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.auth.AuthenticationUtil;
+import ca.nrc.cadc.auth.NotAuthenticatedException;
 import ca.nrc.cadc.net.HttpTransfer;
 import ca.nrc.cadc.net.ResourceNotFoundException;
 import ca.nrc.cadc.reg.AccessURL;
@@ -85,9 +88,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.security.auth.Subject;
 import org.apache.log4j.Logger;
 
 /**
@@ -109,13 +114,6 @@ public class CapGetAction extends RestAction {
      */
     protected boolean doTransform = true;
     
-    /**
-     * Enable injection of additional capabilities for external authentication
-     * providers (default: false). This is a prototype feature that could change
-     * or disappear without notice.
-     */
-    protected boolean injectAuthProvider = false;
-    
     public CapGetAction() {
         super();
     }
@@ -127,16 +125,19 @@ public class CapGetAction extends RestAction {
 
     @Override
     public void doAction() throws Exception {
+        if (CapInitAction.getAuthRequired(componentID)) {
+            AuthMethod am = AuthenticationUtil.getAuthMethod(AuthenticationUtil.getCurrentSubject());
+            if (am != null && am.equals(AuthMethod.ANON)) {
+                throw new NotAuthenticatedException("permission denied");
+            }
+        }
+        
         Capabilities caps = CapInitAction.getTemplate(componentID);
 
-        log.debug("transformAccessURL=" + doTransform + " injectAuthProvider=" + injectAuthProvider);
+        log.debug("transformAccessURL=" + doTransform);
         
         if (doTransform) {
             transform(caps);
-        }
-        
-        if (injectAuthProvider) {
-            injectAuthProviders(caps);
         }
         
         doOutput(caps, syncOutput);
