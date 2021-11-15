@@ -83,16 +83,12 @@ import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.rest.InlineContentHandler;
 import ca.nrc.cadc.rest.RestAction;
 import ca.nrc.cadc.rest.SyncOutput;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.security.AccessControlException;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.security.auth.Subject;
 import org.apache.log4j.Logger;
 
 /**
@@ -127,7 +123,7 @@ public class CapGetAction extends RestAction {
     public void doAction() throws Exception {
         if (CapInitAction.getAuthRequired(componentID)) {
             AuthMethod am = AuthenticationUtil.getAuthMethod(AuthenticationUtil.getCurrentSubject());
-            if (am != null && am.equals(AuthMethod.ANON)) {
+            if (am == null || am.equals(AuthMethod.ANON)) {
                 throw new NotAuthenticatedException("permission denied");
             }
         }
