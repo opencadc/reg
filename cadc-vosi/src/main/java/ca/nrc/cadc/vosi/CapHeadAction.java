@@ -67,9 +67,11 @@
 
 package ca.nrc.cadc.vosi;
 
+import ca.nrc.cadc.auth.AuthMethod;
+import ca.nrc.cadc.auth.AuthenticationUtil;
+import ca.nrc.cadc.auth.NotAuthenticatedException;
 import ca.nrc.cadc.rest.InlineContentHandler;
 import ca.nrc.cadc.rest.RestAction;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -90,6 +92,12 @@ public class CapHeadAction extends RestAction {
 
     @Override
     public void doAction() throws Exception {
+        if (CapInitAction.getAuthRequired(componentID)) {
+            AuthMethod am = AuthenticationUtil.getAuthMethod(AuthenticationUtil.getCurrentSubject());
+            if (am == null || am.equals(AuthMethod.ANON)) {
+                throw new NotAuthenticatedException("permission denied");
+            }
+        }
         logInfo.setSuccess(true);
     }
 

@@ -108,10 +108,34 @@ public class CapInitAction extends InitAction {
         }
     }
     
+    static boolean getAuthRequired(String componentID) {
+        String jndiKey = componentID + ".authRequired";
+        try {
+            log.debug("retrieving capabilities template via JNDI: " + jndiKey);
+            Context initContext = new InitialContext();
+            Boolean authRequired = (Boolean) initContext.lookup(jndiKey);
+            if (authRequired == null) {
+                return false;
+            }
+            return authRequired;
+        } catch (Exception ex) {
+            throw new IllegalStateException("failed to find authRequired via JNDI: init failed", ex);
+        }
+    }
+    
     @Override
     public void doInit() {
+
+        final Context initContext;
+        try {
+            initContext = new InitialContext();
+        } catch (NamingException ex) {
+            throw new IllegalStateException("failed to find JDNI InitialContext", ex);
+        }
+
         String jndiKey = componentID + ".cap-template";
         String str = initParams.get("input");
+        
         log.debug("doInit: static capabilities: " + str);
         try {
             URL resURL = super.getResource(str);
@@ -120,21 +144,36 @@ public class CapInitAction extends InitAction {
             // validate
             CapabilitiesReader cr = new CapabilitiesReader();
             cr.read(tmpl);
-            
-            Context initContext = new InitialContext();
-
-            // unbind in case this is a re-deploy
             try {
-                log.debug("unbinding possible existing document");
+                log.debug("unbinding possible existing template");
                 initContext.unbind(jndiKey);
             } catch (NamingException e) {
-                log.debug("no previously bound capabilities, continuting");
+                log.debug("no previously bound template, continuting");
             }
-
             initContext.bind(jndiKey, tmpl);
-            log.info("doInit: capabilities template " + str + " stored via JNDI: " + jndiKey);
+            log.info("doInit: capabilities template=" + str + " stored via JNDI: " + jndiKey);
         } catch (Exception ex) {
             throw new IllegalArgumentException("CONFIG: failed to read capabilities template: " + str, ex);
+        }
+        
+        try {
+            String authRequired = initParams.get("authRequired");
+            jndiKey = componentID + ".authRequired";
+            try {
+                log.debug("unbinding possible authRequired value");
+                initContext.unbind(jndiKey);
+            } catch (NamingException e) {
+                log.debug("no previously bound value, continuting");
+            }
+            if ("true".equals(authRequired)) {
+                initContext.bind(jndiKey, Boolean.TRUE);
+                log.info("doInit: authRequired=true stored via JNDI: " + jndiKey);
+            } else {
+                initContext.bind(jndiKey, Boolean.FALSE);
+                log.info("doInit: authRequired=false stored via JNDI: " + jndiKey);
+            }
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("CONFIG: failed to set authRequired flag", ex);
         }
     }
 }
