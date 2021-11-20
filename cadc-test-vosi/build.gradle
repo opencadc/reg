@@ -16,7 +16,7 @@ apply from: '../opencadc.gradle'
 
 group = 'org.opencadc'
 
-version = '1.0.9'
+version = '1.0.10'
 
 description = 'OpenCADC VOSI test library'
 def git_url = 'https://github.com/opencadc/reg'
