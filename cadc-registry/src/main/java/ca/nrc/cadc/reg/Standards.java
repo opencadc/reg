@@ -163,7 +163,7 @@ public class Standards {
     public static final URI LOGGING_CONTROL_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Logging#control-1.0");
 
     // Standard for package requests (ie zip or tar)
-    public static final URI PKG_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg-1.0");
+    public static final URI PKG_10 = URI.create("vos://cadc.nrc.ca~vault/CADC/std/Pkg-1.0");
 
     // batch processing
     public static final URI PROC_JOBS_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#jobs-1.0");
