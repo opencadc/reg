@@ -6,7 +6,7 @@ The LocalAuthority.properties file specifies which local service is authoritativ
 
 Example:
 ```
-ivo://ivoa.net/std/GMS#search-0.1 = ivo://cadc.nrc.ca/gms           
+ivo://ivoa.net/std/GMS#search-1.0 = ivo://cadc.nrc.ca/gms           
 ivo://ivoa.net/std/UMS#users-0.1 = ivo://cadc.nrc.ca/gms    
 ivo://ivoa.net/std/UMS#login-0.1 = ivo://cadc.nrc.ca/gms           
 
