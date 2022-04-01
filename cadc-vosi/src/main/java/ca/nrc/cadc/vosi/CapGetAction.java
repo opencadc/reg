@@ -91,6 +91,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.apache.log4j.Logger;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  *
  * @author pdowler
@@ -135,7 +137,9 @@ public class CapGetAction extends RestAction {
         if (doTransform) {
             transform(caps);
         }
-        
+
+        syncOutput.setHeader("Server", getServerInfo());
+
         doOutput(caps, syncOutput);
         logInfo.setSuccess(true);
     }
