@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2009.                            (c) 2009.
+ *  (c) 2022.                            (c) 2022.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,6 +69,9 @@
 
 package ca.nrc.cadc.vosi;
 
+import ca.nrc.cadc.date.DateUtil;
+import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.xml.XmlUtil;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -79,21 +82,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Assert;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import ca.nrc.cadc.date.DateUtil;
-import ca.nrc.cadc.util.Log4jInit;
-import ca.nrc.cadc.xml.XmlUtil;
-
 
 /**
  * @author zhangsa
@@ -130,7 +126,7 @@ public class AvailabilityTest {
         }
         Availability availability = new Availability(status);
         availability.clientIP = "192.168.1.3";
-        Document doc = availability.toXmlDocument();
+        Document doc = Availability.toXmlDocument(availability);
         XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
         Writer stringWriter = new StringWriter();
         xop.output(doc, stringWriter);
@@ -152,7 +148,7 @@ public class AvailabilityTest {
     public void testAvailabilityEmptyStatus() throws Exception {
         AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, null);
         Availability availability = new Availability(status);
-        Document doc = availability.toXmlDocument();
+        Document doc = Availability.toXmlDocument(availability);
         XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
         Writer stringWriter = new StringWriter();
         xop.output(doc, stringWriter);
@@ -182,10 +178,10 @@ public class AvailabilityTest {
         
         Availability availability = new Availability(status1);
         availability.clientIP = "192.168.1.66";
-        Document doc = availability.toXmlDocument();
+        Document doc = Availability.toXmlDocument(availability);
 
-        Availability actual = new Availability(doc);
-        AvailabilityStatus status2 = actual.fromXmlDocument(doc);
+        Availability actual = Availability.fromXmlDocument(doc);
+        AvailabilityStatus status2 = actual.getStatus();
         log.info(" after: " + status2); 
         
         Assert.assertEquals("is available", status1.isAvailable(), status2.isAvailable());

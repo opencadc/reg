@@ -69,12 +69,16 @@
 
 package ca.nrc.cadc.vosi.avail;
 
+import ca.nrc.cadc.net.HttpGet;
+import ca.nrc.cadc.vosi.Availability;
 import ca.nrc.cadc.vosi.VOSI;
-import ca.nrc.cadc.vosi.util.WebGet;
 import ca.nrc.cadc.xml.XmlUtil;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
@@ -97,84 +101,108 @@ public class CheckWebService implements CheckResource {
 
     private static Logger log = Logger.getLogger(CheckWebService.class);
 
-    private Map<String, String> schemaMap = new HashMap<String, String>();
-    private String wsURL;
+    private final URL availabilityURL;
+    private final boolean fullCheck;
 
     /**
-     * @param url the URL of availability checking, e.g. http://www.sample.com/myservice/availability
+     * Constructor.
+     * @param availabilityURL the URL of availability endpoint of a service
+     * @throws IllegalArgumentException wrapping MalformedURLException
      */
-    public CheckWebService(String url) {
-        wsURL = url;
-        this.schemaMap.put(VOSI.AVAILABILITY_NS_URI, XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA, CheckWebService.class));
+    @Deprecated
+    public CheckWebService(String availabilityURL) throws IllegalArgumentException {
+        this.fullCheck = true; // default to full check as before
+        try {
+            this.availabilityURL = new URL(availabilityURL);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException("invalid URL: " + availabilityURL, ex);
+        }
+    }
+    
+    /**
+     * Perform default check. Default is currently a full check.
+     * 
+     * @param availabilityURL the URL of availability endpoint of a service
+     */
+    public CheckWebService(URL availabilityURL) {
+        this(availabilityURL, false); // default to connectivity check
+        //this(availabilityURL, true); // default to full check
+    }
+    
+    /**
+     * Perform the specified check. A full check calls the remote availability and checks the
+     * the status in the response XML, so this causes a full check of the remote service.
+     * Otherwise, this only performs a minimal check (detail=min) which normally only checks
+     * connectivity to the remote service.
+     * 
+     * @param availabilityURL the URL of availability endpoint of a service
+     * @param fullCheck true for normal check, false for detail=min connectivity check
+     */
+    public CheckWebService(URL availabilityURL, boolean fullCheck) {
+        this.fullCheck = fullCheck;
+        if (fullCheck) {
+            this.availabilityURL = availabilityURL;
+        } else {
+            try {
+                this.availabilityURL = new URL(availabilityURL.toExternalForm() + "?detail=min");
+            } catch (MalformedURLException ex) {
+                throw new RuntimeException("BUG: failed to append params to " + availabilityURL, ex);
+            }
+        }
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
     @Override
-    public void check()
-            throws CheckException {
-        String wgReturn = null;
+    public void check() throws CheckException {
+        if (fullCheck) {
+            log.debug("fullcheck==true " + availabilityURL);
+            doFullCheck();
+        } else {
+            log.debug("fullcheck==false " + availabilityURL);
+            HttpGet get = new HttpGet(availabilityURL, true);
+            get.setConnectionTimeout(9);
+            get.setReadTimeout(9);
+            get.run();
+            if (get.getResponseCode() != 200 || get.getThrowable() != null) {
+                throw new CheckException("availability check failed: " + availabilityURL 
+                        + " code: " + get.getResponseCode()
+                        + " cause: " + get.getThrowable());
+            }
+        }
+        
+    }
+    
+    private void doFullCheck() throws CheckException {
+   
         try {
-            WebGet webGet = new WebGet(wsURL);
-            wgReturn = webGet.submit();
-            checkReturnedXml(wgReturn);
-            log.debug("test succeeded: " + wsURL);
-        } catch (MalformedURLException e) {
-            log.warn("test failed: " + wsURL);
-            throw new RuntimeException("test URL is malformed: " + wsURL, e);
-        } catch (IOException e) {
-            log.warn("test failed: " + wsURL);
-            throw new CheckException("service not responding: " + wsURL, e);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            HttpGet get = new HttpGet(availabilityURL, bos);
+            get.setConnectionTimeout(20);
+            get.setReadTimeout(60);
+            get.run();
+            if (get.getThrowable() != null) {
+                throw new CheckException("availability check failed: " + availabilityURL 
+                        + " code: " + get.getResponseCode() 
+                        + " cause: " + get.getThrowable().getMessage());
+            }
+            Map<String, String> schemaMap = new HashMap<>();
+            schemaMap.put(VOSI.AVAILABILITY_NS_URI, XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA, CheckWebService.class));
+
+            StringReader reader = new StringReader(bos.toString());
+            Document doc = XmlUtil.buildDocument(reader, schemaMap);
+
+            Availability wsa = Availability.fromXmlDocument(doc);
+            if (wsa.isAvailable()) {
+                log.debug("test succeeded: " + availabilityURL);
+                return;
+            }
+
+            throw new CheckException("service " + availabilityURL + " is not available, reported reason: " + wsa.note);
+            
+        } catch (JDOMException | ParseException ex) {
+            throw new CheckException("invalid output from " + availabilityURL, ex);
+        } catch (Exception ex) {
+            log.error("unexpected test fail: " + availabilityURL, ex);
+            throw new CheckException("unexpected test fail: " + availabilityURL, ex);
         }
     }
-
-    void checkReturnedXml(String strXml)
-            throws CheckException {
-        Document doc;
-        String xpathStr;
-
-        try {
-            StringReader reader = new StringReader(strXml);
-            doc = XmlUtil.buildDocument(reader, schemaMap);
-
-            //get namespace and/or prefix from Document, then create xpath based on the prefix
-            String nsp = doc.getRootElement().getNamespacePrefix(); //Namespace Prefix
-            if (nsp != null && nsp.length() > 0) {
-                nsp = nsp + ":";
-            } else {
-                nsp = "";
-            }
-            xpathStr = "/" + nsp + "availability/" + nsp + "available";
-            XPathBuilder<Element> builder = new XPathBuilder<Element>(xpathStr, Filters.element());
-            Namespace ns = Namespace.getNamespace(VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-            builder.setNamespace(ns);
-            XPathExpression<Element> xpath = builder.compileWith(XPathFactory.instance());
-            Element eleAvail = xpath.evaluateFirst(doc);
-            log.debug(eleAvail);
-            String textAvail = eleAvail.getText();
-
-            // TODO: is this is actually valid? is the content not constrained by the schema?
-            if (textAvail == null) {
-                throw new CheckException(wsURL + " output is invalid: no content in <available> element", null);
-            }
-
-            if (!textAvail.equalsIgnoreCase("true")) {
-                xpathStr = "/" + nsp + "availability/" + nsp + "note";
-                builder = new XPathBuilder<Element>(xpathStr, Filters.element());
-                builder.setNamespace(ns);
-                xpath = builder.compileWith(XPathFactory.instance());
-                Element eleNotes = xpath.evaluateFirst(doc);
-
-                String textNotes = eleNotes.getText();
-                throw new CheckException("service " + wsURL + " is not available, reported reason: " + textNotes, null);
-            }
-        } catch (IOException e) {
-            // probably an incorrect setup or bug in the checks
-            throw new RuntimeException("failed to test " + wsURL, e);
-        } catch (JDOMException e) {
-            throw new CheckException(wsURL + " output is invalid", e);
-        }
-    }
-
 }

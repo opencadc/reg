@@ -84,8 +84,7 @@ import org.jdom2.Namespace;
  */
 public class Availability {
 
-    //private AvailabilityStatus status;
-    private boolean available;
+    private final boolean available;
     
     public String note;
     public Date upSince;
@@ -121,45 +120,39 @@ public class Availability {
     }
 
     @Deprecated
-    public Availability(Document xml) {
-        super();
-        if (xml == null) {
-            throw new IllegalArgumentException("Document is null.");
-        }
-        try {
-            fromXmlDocument(xml);
-        } catch (ParseException e) {
-            throw new IllegalStateException("Invalid date format in XML", e);
-        }
-    }
-
-    @Deprecated
     public void setClientIP(final String clientIP) {
         this.clientIP = clientIP;
     }
 
+    /**
+     * partial output support. TODO: implement AvailabilityWriter.
+     * 
+     * @param avail
+     * @return JDOM Document
+     * @deprecated
+     */
     @Deprecated
-    public Document toXmlDocument() {
+    public static Document toXmlDocument(Availability avail) {
         DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
         Namespace vosi = Namespace.getNamespace("vosi", VOSI.AVAILABILITY_NS_URI);
 
         Element eleAvailability = new Element("availability", vosi);
 
-        Util.addChild(eleAvailability, vosi, "available", Boolean.toString(available));
-        if (upSince != null) {
-            Util.addChild(eleAvailability, vosi, "upSince", df.format(upSince));
+        Util.addChild(eleAvailability, vosi, "available", Boolean.toString(avail.isAvailable()));
+        if (avail.upSince != null) {
+            Util.addChild(eleAvailability, vosi, "upSince", df.format(avail.upSince));
         }
-        if (downAt != null) {
-            Util.addChild(eleAvailability, vosi, "downAt", df.format(downAt));
+        if (avail.downAt != null) {
+            Util.addChild(eleAvailability, vosi, "downAt", df.format(avail.downAt));
         }
-        if (backAt != null) {
-            Util.addChild(eleAvailability, vosi, "backAt", df.format(backAt));
+        if (avail.backAt != null) {
+            Util.addChild(eleAvailability, vosi, "backAt", df.format(avail.backAt));
         }
-        if (note != null) {
-            Util.addChild(eleAvailability, vosi, "note", note);
+        if (avail.note != null) {
+            Util.addChild(eleAvailability, vosi, "note", avail.note);
         }
-        if (clientIP != null) {
-            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", clientIP)));
+        if (avail.clientIP != null) {
+            eleAvailability.addContent(new Comment(String.format("<clientip>%s</clientip>", avail.clientIP)));
         }
 
         Document document = new Document();
@@ -168,8 +161,16 @@ public class Availability {
         return document;
     }
 
+    /**
+     * Partial input support. TODO: implement AvailabilityReader.
+     * 
+     * @param doc JDOM Document
+     * @return availability object
+     * @throws ParseException
+     * @deprecated
+     */
     @Deprecated
-    public AvailabilityStatus fromXmlDocument(Document doc) throws ParseException {
+    public static Availability fromXmlDocument(Document doc) throws ParseException {
         Namespace vosi = Namespace.getNamespace("vosi", VOSI.AVAILABILITY_NS_URI);
         Element availability = doc.getRootElement();
         if (!availability.getName().equals("availability")) {
@@ -180,36 +181,37 @@ public class Availability {
         if (elemAvailable == null) {
             throw new IllegalArgumentException("missing element 'available'");
         }
-        this.available = elemAvailable.getText().equalsIgnoreCase("true");
-
+        boolean available = elemAvailable.getText().equalsIgnoreCase("true");
+        Availability ret = new Availability(available);
+        
         DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
 
         Element elemUpSince = availability.getChild("upSince", vosi);
-        this.upSince = safeParseDate(elemUpSince, df);
+        ret.upSince = safeParseDate(elemUpSince, df);
         
         Element elemDownAt = availability.getChild("downAt", vosi);
-        this.downAt = safeParseDate(elemDownAt, df);
+        ret.downAt = safeParseDate(elemDownAt, df);
         
         Element elemBackAt = availability.getChild("backAt", vosi);
-        this.backAt = safeParseDate(elemBackAt, df);
+        ret.backAt = safeParseDate(elemBackAt, df);
         
         Element elemNote = availability.getChild("note", vosi);
-        this.note = elemNote.getText();
+        ret.note = elemNote.getText();
         
         for (Content c : availability.getContent()) {
             if (c instanceof Comment) {
                 Comment com = (Comment) c;
                 String s = com.getText();
                 if (s.startsWith("<clientip>") && s.endsWith("/clientip>")) {
-                    this.clientIP = s.substring(10, s.length() - 11);
+                    ret.clientIP = s.substring(10, s.length() - 11);
                 }
             }
         }
 
-        return getStatus();
+        return ret;
     }
     
-    private Date safeParseDate(Element e, DateFormat df) throws ParseException {
+    private static Date safeParseDate(Element e, DateFormat df) throws ParseException {
         if (e == null || e.getTextTrim().isEmpty()) {
             return null;
         }
