@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2019.                            (c) 2019.
+ *  (c) 2022.                            (c) 2022.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -67,9 +67,8 @@
 
 package org.opencadc.reg.server;
 
+import ca.nrc.cadc.vosi.Availability;
 import ca.nrc.cadc.vosi.AvailabilityPlugin;
-import ca.nrc.cadc.vosi.AvailabilityStatus;
-
 
 /**
  * @author pdowler
@@ -90,12 +89,12 @@ public class ServiceAvailability implements AvailabilityPlugin {
     }
 
     @Override
-    public AvailabilityStatus getStatus() {
+    public Availability getStatus() {
         try {
             CannedQueryServlet.checkSystemConfig();
-            return new AvailabilityStatus(true, null, null, null, "accepting requests");
+            return new Availability(true, "accepting requests");
         } catch (IllegalStateException ex) {
-            return new AvailabilityStatus(false, null, null, null, ex.getMessage());
+            return new Availability(false, ex.getMessage());
         }
     }
 

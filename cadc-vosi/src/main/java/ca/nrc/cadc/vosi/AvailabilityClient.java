@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2019.                            (c) 2019.
+*  (c) 2022.                            (c) 2022.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -100,7 +100,7 @@ public class AvailabilityClient {
         AVAIL_SCHEMA_MAP.putAll(XMLConstants.SCHEMA_MAP);
         
         String localURL = XmlUtil.getResourceUrlString(VOSI.AVAILABILITY_SCHEMA, XMLConstants.class);
-        AVAIL_SCHEMA_MAP.put(VOSI.AVAILABILITY_NS_URI.toString(), localURL);
+        AVAIL_SCHEMA_MAP.put(VOSI.AVAILABILITY_NS_URI, localURL);
     }
 
     private final URI resourceID;
@@ -182,7 +182,7 @@ public class AvailabilityClient {
                     return new Availability(true);
                 } else {
                     Document xml = XmlUtil.buildDocument(get.getInputStream(), AVAIL_SCHEMA_MAP);
-                    ret = new Availability(xml);
+                    ret = Availability.fromXmlDocument(xml);
                 }
             } else {
                 ret = getFalseAvailability("unexpected response code (" + get.getResponseCode() + ") from " + availabilityURL.toExternalForm());

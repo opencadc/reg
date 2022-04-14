@@ -111,7 +111,6 @@ public class AvailabilityClientTest {
             AvailabilityClient client = new AvailabilityClient(URI.create("ivo://cadc.nrc.ca/cred"));
             Availability a = client.getAvailability();
             Assert.assertNotNull(a);
-            Assert.assertNotNull(a.getStatus());
             log.info("got status: " + a);
         } catch (IllegalArgumentException expected) {
             log.info("caught expected: " + expected);

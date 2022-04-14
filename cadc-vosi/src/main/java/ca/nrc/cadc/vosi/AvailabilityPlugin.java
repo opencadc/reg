@@ -87,7 +87,7 @@ public interface AvailabilityPlugin {
      *
      * @return current status
      */
-    public AvailabilityStatus getStatus();
+    public Availability getStatus();
 
     /**
      * The AvailabilitySerlet supports a POST with state=??? that it will pass

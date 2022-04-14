@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2009.                            (c) 2009.
+ *  (c) 2022.                            (c) 2022.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,6 +69,9 @@
 
 package ca.nrc.cadc.vosi;
 
+import ca.nrc.cadc.date.DateUtil;
+import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.xml.XmlUtil;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -79,21 +82,14 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Assert;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import ca.nrc.cadc.date.DateUtil;
-import ca.nrc.cadc.util.Log4jInit;
-import ca.nrc.cadc.xml.XmlUtil;
-
 
 /**
  * @author zhangsa
@@ -118,83 +114,54 @@ public class AvailabilityTest {
     }
 
     @Test
-    public void testAvailability() throws Exception {
-        AvailabilityStatus status = null;
+    public void testFullRoundTripAvailability() throws Exception {
+        Availability expected = null;
         try {
-            Date d1 = df.parse("2009-04-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
-            Date d2 = df.parse("2009-05-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
-            Date d3 = df.parse("2009-06-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
-            status = new AvailabilityStatus(true, d1, d2, d3, "noteA");
+            expected = new Availability(true, "noteA");
+            expected.downAt = df.parse("2009-04-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
+            expected.backAt = df.parse("2009-05-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
+            expected.upSince = df.parse("2009-06-12T11:22:33.444"); //yyyy-MM-dd'T'HH:mm:ss.SSS
+            
         } catch (ParseException e) {
             log.error("test code bug", e);
         }
-        Availability availability = new Availability(status);
-        availability.clientIP = "192.168.1.3";
-        Document doc = availability.toXmlDocument();
+        expected.clientIP = "192.168.1.3";
+        
+        Document doc = Availability.toXmlDocument(expected);
         XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
         Writer stringWriter = new StringWriter();
         xop.output(doc, stringWriter);
         String xmlString = stringWriter.toString();
         StringReader reader = new StringReader(xmlString);
-        XmlUtil.buildDocument(reader, schemaMap);
-
-        TestUtil.assertXmlNode(doc, "/vosi:availability", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:available", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:upSince", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:downAt", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:backAt", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:note", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        Assert.assertTrue("IP Address comment missing.",
-                          TestUtil.hasCommentContaining(doc.getRootElement(), "<clientip>192.168.1.3</clientip>"));
+        Document doc2 = XmlUtil.buildDocument(reader, schemaMap);
+        
+        Availability actual = Availability.fromXmlDocument(doc2);
+        Assert.assertEquals(expected.isAvailable(), actual.isAvailable());
+        Assert.assertEquals(expected.note, actual.note);
+        Assert.assertEquals(expected.downAt, actual.downAt);
+        Assert.assertEquals(expected.upSince, actual.upSince);
+        Assert.assertEquals(expected.backAt, actual.backAt);
+        Assert.assertEquals(expected.clientIP, actual.clientIP);
     }
 
     @Test
-    public void testAvailabilityEmptyStatus() throws Exception {
-        AvailabilityStatus status = new AvailabilityStatus(false, null, null, null, null);
-        Availability availability = new Availability(status);
-        Document doc = availability.toXmlDocument();
+    public void testMinimalRoundTripAvailability() throws Exception {
+        Availability expected = new Availability(true);
+        Document doc = Availability.toXmlDocument(expected);
         XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
         Writer stringWriter = new StringWriter();
         xop.output(doc, stringWriter);
         String xmlString = stringWriter.toString();
         StringReader reader = new StringReader(xmlString);
-        XmlUtil.buildDocument(reader, schemaMap);
-
-        TestUtil.assertXmlNode(doc, "/vosi:availability", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertXmlNode(doc, "/vosi:availability/vosi:available[.='false']", VOSI.NS_PREFIX, VOSI
-            .AVAILABILITY_NS_URI);
-        TestUtil.assertNoXmlNode(doc, "/vosi:availability/vosi:upSince", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertNoXmlNode(doc, "/vosi:availability/vosi:downAt", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertNoXmlNode(doc, "/vosi:availability/vosi:backAt", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-        TestUtil.assertNoXmlNode(doc, "/vosi:availability/vosi:note", VOSI.NS_PREFIX, VOSI.AVAILABILITY_NS_URI);
-    }
-
-    @Test
-    public void testAvailabilityRoundTrip() throws Exception {
-        Calendar c1 = new GregorianCalendar();
-        Calendar c2 = new GregorianCalendar();
-        Calendar c3 = new GregorianCalendar();
-        c2.add(Calendar.MONTH, 1);
-        c3.add(Calendar.MONTH, 2);
-        AvailabilityStatus status1 = new AvailabilityStatus(true, c1.getTime(), c2.getTime(), c3.getTime(), 
-                "status message");
-        log.info("before: " + status1);
+        Document doc2 = XmlUtil.buildDocument(reader, schemaMap);
         
-        Availability availability = new Availability(status1);
-        availability.clientIP = "192.168.1.66";
-        Document doc = availability.toXmlDocument();
-
-        Availability actual = new Availability(doc);
-        AvailabilityStatus status2 = actual.fromXmlDocument(doc);
-        log.info(" after: " + status2); 
+        Availability actual = Availability.fromXmlDocument(doc2);
+        Assert.assertEquals(expected.isAvailable(), actual.isAvailable());
+        Assert.assertEquals(expected.note, actual.note);
+        Assert.assertEquals(expected.downAt, actual.downAt);
+        Assert.assertEquals(expected.upSince, actual.upSince);
+        Assert.assertEquals(expected.backAt, actual.backAt);
+        Assert.assertEquals(expected.clientIP, actual.clientIP);
         
-        Assert.assertEquals("is available", status1.isAvailable(), status2.isAvailable());
-        Assert.assertEquals("up since", status1.getUpSince(), status2.getUpSince());
-        Assert.assertEquals("down at", status1.getDownAt(), status2.getDownAt());
-        Assert.assertEquals("back at", status1.getBackAt(), status2.getBackAt());
-        Assert.assertEquals("note", status1.getNote(), status2.getNote());
-        Assert.assertEquals("clientip", availability.clientIP, actual.clientIP);
-
     }
-
 }

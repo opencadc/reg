@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2019.                            (c) 2019.
+ *  (c) 2022.                            (c) 2022.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -73,6 +73,7 @@ import ca.nrc.cadc.auth.AuthenticationUtil;
 import ca.nrc.cadc.log.ServletLogInfo;
 import ca.nrc.cadc.log.WebServiceLogInfo;
 import ca.nrc.cadc.net.NetUtil;
+import ca.nrc.cadc.util.MultiValuedProperties;
 import ca.nrc.cadc.util.PropertiesReader;
 import ca.nrc.cadc.util.StringUtil;
 import java.io.IOException;
@@ -93,7 +94,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 /**
- * Servlet implementation class CapabilityServlet
+ * Servlet implementation of VOSI-availabilities.
  */
 public class AvailabilityServlet extends HttpServlet {
 
@@ -141,11 +142,10 @@ public class AvailabilityServlet extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 }
             } else {
-                AvailabilityStatus status = ap.getStatus();
-                Availability availability = new Availability(status);
-                availability.clientIP = NetUtil.getClientIP(request);
+                Availability avail = ap.getStatus();
+                avail.clientIP = NetUtil.getClientIP(request);
 
-                Document document = availability.toXmlDocument();
+                Document document = Availability.toXmlDocument(avail);
                 XMLOutputter xop = new XMLOutputter(Format.getPrettyFormat());
                 started = true;
                 response.setContentType("text/xml");
@@ -153,13 +153,13 @@ public class AvailabilityServlet extends HttpServlet {
             }
 
             logInfo.setSuccess(true);
-        } catch (Throwable t) {
-            log.error("BUG", t);
+        } catch (Exception ex) {
+            log.error("BUG", ex);
             if (!started) {
-                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, t.getMessage());
+                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, ex.getMessage());
             }
             logInfo.setSuccess(false);
-            logInfo.setMessage(t.toString());
+            logInfo.setMessage(ex.toString());
         } finally {
             logInfo.setElapsedTime(System.currentTimeMillis() - start);
             log.info(logInfo.end());
@@ -234,7 +234,8 @@ public class AvailabilityServlet extends HttpServlet {
         PropertiesReader propertiesReader = getAvailabilityProperties();
         if (propertiesReader != null) {
             try {
-                List<String> authorizedUsers = propertiesReader.getPropertyValues(USERS_PROPERTY);
+                MultiValuedProperties mvp = propertiesReader.getAllProperties();
+                List<String> authorizedUsers = mvp.getProperty(USERS_PROPERTY);
                 for (String authorizedUser : authorizedUsers) {
                     if (StringUtil.hasLength(authorizedUser)) {
                         authorizedPrincipals.add(new X500Principal(authorizedUser));
