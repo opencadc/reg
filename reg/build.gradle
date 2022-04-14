@@ -32,7 +32,7 @@ dependencies {
     compile 'org.opencadc:cadc-dali:[1.1,)'
     compile 'org.opencadc:cadc-uws-server:[1.2.4,)'
     compile 'org.opencadc:cadc-registry:[1.5.8,)'
-    compile 'org.opencadc:cadc-registry-server:[1.0.9,)'
+    compile 'org.opencadc:cadc-registry-server:[1.0.10,)'
     
     runtime 'org.opencadc:cadc-access-control:[1.0,2.0)'
 
