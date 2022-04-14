@@ -67,9 +67,8 @@
 
 package org.opencadc.reg.server;
 
-import ca.nrc.cadc.vosi.AvailabilityPlugin;
 import ca.nrc.cadc.vosi.Availability;
-
+import ca.nrc.cadc.vosi.AvailabilityPlugin;
 
 /**
  * @author pdowler
