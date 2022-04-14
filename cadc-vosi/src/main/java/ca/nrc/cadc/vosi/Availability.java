@@ -90,7 +90,6 @@ public class Availability {
     public Date upSince;
     public Date downAt;
     public Date backAt;
-    
     public String clientIP;
 
     public Availability(boolean available) {
@@ -106,24 +105,6 @@ public class Availability {
         return available;
     }
     
-    @Deprecated
-    public Availability(AvailabilityStatus status) {
-        super();
-        if (status == null) {
-            throw new IllegalArgumentException("Availability Status is null.");
-        }
-        this.available = status.isAvailable();
-        this.note = status.getNote();
-        this.upSince = status.getUpSince();
-        this.downAt = status.getDownAt();
-        this.backAt = status.getBackAt();
-    }
-
-    @Deprecated
-    public void setClientIP(final String clientIP) {
-        this.clientIP = clientIP;
-    }
-
     /**
      * partial output support. TODO: implement AvailabilityWriter.
      * 
@@ -196,7 +177,9 @@ public class Availability {
         ret.backAt = safeParseDate(elemBackAt, df);
         
         Element elemNote = availability.getChild("note", vosi);
-        ret.note = elemNote.getText();
+        if (elemNote != null) {
+            ret.note = elemNote.getText();
+        }
         
         for (Content c : availability.getContent()) {
             if (c instanceof Comment) {
@@ -216,11 +199,6 @@ public class Availability {
             return null;
         }
         return df.parse(e.getTextTrim());
-    }
-
-    @Deprecated
-    public AvailabilityStatus getStatus() {
-        return new AvailabilityStatus(available, upSince, downAt, backAt, note);
     }
 
     @Override
