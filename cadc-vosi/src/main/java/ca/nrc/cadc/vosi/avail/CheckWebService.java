@@ -159,14 +159,17 @@ public class CheckWebService implements CheckResource {
         } else {
             log.debug("fullcheck==false " + availabilityURL);
             HttpGet get = new HttpGet(availabilityURL, true);
-            get.setConnectionTimeout(9);
-            get.setReadTimeout(9);
+            get.setConnectionTimeout(9000);
+            get.setReadTimeout(9000);
+            long t = System.currentTimeMillis();
             get.run();
             if (get.getResponseCode() != 200 || get.getThrowable() != null) {
                 throw new CheckException("availability check failed: " + availabilityURL 
                         + " code: " + get.getResponseCode()
                         + " cause: " + get.getThrowable());
             }
+            long dt = System.currentTimeMillis() - t;
+            log.debug("fullcheck==false dt=" + dt);
         }
         
     }
