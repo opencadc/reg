@@ -126,30 +126,22 @@ public class AvailabilityTest {
     @Test
     public void testAvailability() {
         try {
-            CheckWebService checkWebService = new CheckWebService(lookupServiceURL().toString());
+            CheckWebService checkWebService = new CheckWebService(lookupServiceURL(), true);
             checkWebService.check();
-        } catch (Throwable t) {
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
+        } catch (Exception ex) {
+            log.error("unexpected exception", ex);
+            Assert.fail("unexpected exception: " + ex);
         }
     }
 
     @Test
     public void testHeartBeat() {
         try {
-            String heartbeatURLString = lookupServiceURL().toString() + "?detail=min";
-            URL url = new URL(heartbeatURLString);
-            URLConnection conn = url.openConnection();
-            int code = ((HttpURLConnection) conn).getResponseCode();
-            if (code == HttpServletResponse.SC_OK) {
-                log.debug("test succeeded: " + heartbeatURLString);
-            } else {
-                log.debug("test failed: " + heartbeatURLString);
-                throw new RuntimeException("heart beat test failed with status code " + code);
-            }
-        } catch (Throwable t) {
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
+            CheckWebService checkWebService = new CheckWebService(lookupServiceURL(), false);
+            checkWebService.check();
+        } catch (Exception ex) {
+            log.error("unexpected exception", ex);
+            Assert.fail("unexpected exception: " + ex);
         }
     }
 

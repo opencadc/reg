@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2009.                            (c) 2009.
+*  (c) 2022.                            (c) 2022.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -100,7 +100,7 @@ import org.jdom2.xpath.XPathFactory;
 public class CheckWebService implements CheckResource {
 
     private static Logger log = Logger.getLogger(CheckWebService.class);
-
+    
     private final URL availabilityURL;
     private final boolean fullCheck;
 
@@ -179,8 +179,8 @@ public class CheckWebService implements CheckResource {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             HttpGet get = new HttpGet(availabilityURL, bos);
-            get.setConnectionTimeout(20);
-            get.setReadTimeout(60);
+            get.setConnectionTimeout(20000);
+            get.setReadTimeout(60000);
             get.run();
             if (get.getThrowable() != null) {
                 throw new CheckException("availability check failed: " + availabilityURL 
