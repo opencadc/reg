@@ -127,7 +127,7 @@ public class OAIQueryRunner implements JobRunner {
 
     public OAIQueryRunner() {
         RegistryClient rc = new RegistryClient();
-        this.oaiEndpoint = rc.getServiceURL(RESOURCE_ID, Standards.REGISTRY_10, AuthMethod.ANON,
+        this.oaiEndpoint = rc.getServiceURL(getResourceID(), Standards.REGISTRY_10, AuthMethod.ANON,
                                             Standards.INTERFACE_REG_OAI);
         if (oaiEndpoint == null) {
             throw new RuntimeException("CONFIG: unable to lookup OAI endpoint");
@@ -182,6 +182,23 @@ public class OAIQueryRunner implements JobRunner {
             logInfo.setElapsedTime(dt);
             log.info(logInfo.end());
         }
+    }
+
+    /**
+     * Obtain the URI's Authority.  Implementors can override this method to obtain their own authority.
+     * @return  The authority domain to look for in the classpath.  Never null.
+     */
+    public String getAuthority() {
+        return OAIQueryRunner.AUTHORITY;
+    }
+
+    /**
+     * Obtain the Resource ID of the registry service to query.  Implementors can override this method to obtain their
+     * own resource ID.
+     * @return  URI resource ID.  Never null.
+     */
+    public URI getResourceID() {
+        return OAIQueryRunner.RESOURCE_ID;
     }
 
     private Date toDate(String s) {
@@ -370,13 +387,14 @@ public class OAIQueryRunner implements JobRunner {
 
     private void doGetRecord(String identifier, String metadataPrefix) throws IOException, ResourceNotFoundException, URISyntaxException {
         URI uri = new URI(identifier);
-        if (!AUTHORITY.equals(uri.getAuthority())) {
+        String authority = getAuthority();
+        if (!authority.equals(uri.getAuthority())) {
             throw new IllegalArgumentException("idDoesNotExist");
         }
         if (!"ivo_vor".equals(metadataPrefix)) {
             throw new IllegalArgumentException("cannotDisseminateFormat");
         }
-        InputStream istream = getInputStream(AUTHORITY, uri.getPath().toLowerCase());
+        InputStream istream = getInputStream(authority, uri.getPath().toLowerCase());
         if (istream == null) {
             throw new ResourceNotFoundException("idDoesNotExist");
         }
@@ -389,11 +407,12 @@ public class OAIQueryRunner implements JobRunner {
     // implementation details below
 
     private List<OAIHeader> getHeaders(Date start, Date end) throws IOException {
+        String uriAuthority = getAuthority();
         // currently supports one authority directory
-        URL url = OAIQueryRunner.class.getClassLoader().getResource(AUTHORITY);
+        URL url = OAIQueryRunner.class.getClassLoader().getResource(uriAuthority);
         if (url == null) {
             throw new IOException(String.format("Unable to find configured authority directory (%s) in classpath.",
-                                                AUTHORITY));
+                                                uriAuthority));
         } else {
             File content = new File(url.getPath());
             List<OAIHeader> headers = new ArrayList<>();
