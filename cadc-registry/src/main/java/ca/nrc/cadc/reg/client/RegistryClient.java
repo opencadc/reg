@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2019.                            (c) 2019.
+*  (c) 2022.                            (c) 2022.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -77,7 +77,6 @@ import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.MultiValuedProperties;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -91,13 +90,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.apache.log4j.Logger;
 
 
 /**
- * A very simple caching IVOA Registry client. All the lookups done by this client use a properties
- * file named RegistryClient.properties found via the classpath.
+ * A very simple caching IVOA Registry client. All the lookups done by this client use properties
+ * files served from a well-known URL. 
  * <p>
  * Note for developers: You can set a system property to force this class to replace the hostname
  * in the resulting URL with the canonical hostname of the local host. This is useful for testing:
@@ -138,9 +136,24 @@ public class RegistryClient {
     private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
     private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
+    public enum Query {
+        APPLICATIONS("applications"),
+        CAPABILITIES("resource-caps");
+        
+        private String value;
+        
+        private Query(String s) {
+            this.value = s;
+        }
+        
+        public String getValue() {
+            return value;
+        }
+    }
+    
     // version the cache dir so we can increment when we have incompatible cache structure
     static final String CONFIG_CACHE_DIR = "cadc-registry-1.4";
-    private static final URL RESOURCE_CAPS_URL;
+    private static final URL DEFAULT_REG_BASE_URL;
     private static String FILE_SEP;
 
     // fully qualified type value (see CapabilitiesReader)
@@ -149,13 +162,12 @@ public class RegistryClient {
     private String hostname;
     private String shortHostname;
     private List<String> domainMatch = new ArrayList<>();
-    private URL resourceCapsURL;
-    private final String resourceCapsName;
+    private URL regBaseURL;
     private String capsDomain;
 
     static {
         try {
-            RESOURCE_CAPS_URL = new URL("https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/resource-caps");
+            DEFAULT_REG_BASE_URL = new URL("https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg");
         } catch (MalformedURLException e) {
             log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
             throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());
@@ -165,28 +177,28 @@ public class RegistryClient {
     }
 
     /**
-     * Constructor. Uses a properties file called RegistryClient.properties found in the classpath.
+     * Constructor. This defaults to QUERY_CAPABILITIES.
      */
     public RegistryClient() {
-        this(RESOURCE_CAPS_URL);
+        //this(DEFAULT_REG_BASE_URL);
+        init(DEFAULT_REG_BASE_URL);
     }
 
-    public RegistryClient(URL resourceCapsURL) {
-        if (resourceCapsURL == null) {
-            throw new IllegalArgumentException("resourceCapsURL cannot be null");
-        }
-
-        resourceCapsName = extractFileName(resourceCapsURL);
-        init(resourceCapsURL);
-    }
+    //public RegistryClient(URL registryBaseURL) {
+    //    if (registryBaseURL == null) {
+    //        throw new IllegalArgumentException("registryBaseURL cannot be null");
+    //    }
+    //    queryName = extractFileName(registryBaseURL);
+    //    init(registryBaseURL);
+    //}
 
     /**
      * Handle the case where the URL ends with a slash, and ensure only the end file name is used.
-     * @param resourceCapsURL   The URL to extract from.
+     * @param url   The URL to extract from.
      * @return  String      The file name.  Never null.
      */
-    private String extractFileName(final URL resourceCapsURL) {
-        StringBuilder urlFile = new StringBuilder(resourceCapsURL.getFile());
+    private String extractFileName(final URL url) {
+        StringBuilder urlFile = new StringBuilder(url.getFile());
         while (urlFile.lastIndexOf("/") == (urlFile.length() - 1)) {
             urlFile.deleteCharAt((urlFile.length() - 1));
         }
@@ -201,7 +213,7 @@ public class RegistryClient {
      * @return true if lookup is modified, false if default (production)
      */
     public boolean isRegistryLookupOverride() {
-        return !RESOURCE_CAPS_URL.equals(resourceCapsURL);
+        return !DEFAULT_REG_BASE_URL.equals(regBaseURL);
     }
 
     private void init(URL resourceCapsURL) {
@@ -239,10 +251,10 @@ public class RegistryClient {
             }
 
             log.debug("Original resourceCapURL: " + resourceCapsURL);
-            this.resourceCapsURL = mangleHostname(resourceCapsURL);
-            log.debug("Mangled resourceCapURL: " + this.resourceCapsURL);
-            if (!resourceCapsURL.equals(this.resourceCapsURL)) {
-                capsDomain = "alt-domains/" + this.resourceCapsURL.getHost();
+            this.regBaseURL = mangleHostname(resourceCapsURL);
+            log.debug("Mangled resourceCapURL: " + this.regBaseURL);
+            if (!resourceCapsURL.equals(this.regBaseURL)) {
+                capsDomain = "alt-domains/" + this.regBaseURL.getHost();
             }
         } catch (UnknownHostException ex) {
             log.warn("failed to find localhost name via name resolution (" + ex.toString() + "): using localhost");
@@ -254,42 +266,51 @@ public class RegistryClient {
     }
 
     /**
-     * Obtain the URL of the capabilities document (or canned query) for the given resourceID.  Useful when the
-     * resource entries do not point to a capabilities document, but rather just a URL.
+     * Backwards compatibility/convenience: get the capabiltiies URL for the specified service.
      * 
-     * <p>If the given resource ID is not in the list of services located at <code>resourceCapsURL</code> then expect an
-     * <code>IllegalArgumentException</code> to be thrown.  If multiples ones are found, then expect a
-     * <code>RuntimeException</code> as the system will not select one for you.
-     *
-     * @param resourceID        URI of the resource to lookup.
-     * @return URL              Location of the document.
-     * @throws IOException      If the cache file cannot be read.
-     * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry
+     * @param resourceID of a service that implements VOSI-capabilities
+     * @return capoabilities URL
+     * @throws IOException      local cache file(s) cannot be read or written
+     * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry 
      */
     public URL getAccessURL(URI resourceID) throws IOException, ResourceNotFoundException {
-        File capCacheFile = getCapSourceCacheFile();
-        log.debug("Capabilities cache file: " + capCacheFile);
-        CachingFile cachedCapSource = new CachingFile(capCacheFile, resourceCapsURL);
+        return getAccessURL(Query.CAPABILITIES, resourceID);
+    }
+    
+    /**
+     * Get the accessURL for the resourceID or standardID from the specified query.
+     *
+     * @param queryName  name of the canned query: QUERY_CAPABILITIES or QUERY_APPLICATIONS
+     * @param uri        a resourceID (for QUERY_CAPABILITIES) or a standardID (for QUERY_APPLICATIONS)
+     * @return URL              Location of the resource
+     * @throws IOException      If the cache file cannot be read
+     * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry
+     */
+    public URL getAccessURL(Query queryName, URI uri) throws IOException, ResourceNotFoundException {
+        File queryCacheFile = getQueryCacheFile(queryName);
+        log.debug("Capabilities cache file: " + queryCacheFile);
+        URL queryURL = new URL(regBaseURL + "/" + queryName.getValue());
+        CachingFile cachedCapSource = new CachingFile(queryCacheFile, queryURL);
         String map = cachedCapSource.getContent();
         InputStream mapStream = new ByteArrayInputStream(map.getBytes(StandardCharsets.UTF_8));
         MultiValuedProperties mvp = new MultiValuedProperties();
         try {
             mvp.load(mapStream);
         } catch (Exception e) {
-            throw new RuntimeException("failed to load capabilities source map from " + resourceCapsURL, e);
+            throw new RuntimeException("failed to load capabilities source map from " + regBaseURL, e);
         }
 
-        List<String> values = mvp.getProperty(resourceID.toString());
+        List<String> values = mvp.getProperty(uri.toString());
         if (values == null || values.isEmpty()) {
-            throw new ResourceNotFoundException("not found: " + resourceID);
+            throw new ResourceNotFoundException("not found: " + uri);
         }
         if (values.size() > 1) {
-            throw new RuntimeException("Multiple capability locations for " + resourceID);
+            throw new RuntimeException("Multiple capability locations for " + uri);
         }
         try {
             return new URL(values.get(0));
         } catch (MalformedURLException e) {
-            throw new RuntimeException("URL for " + resourceID + " at " + resourceCapsURL + " is malformed", e);
+            throw new RuntimeException("URL for " + uri + " at " + regBaseURL + " is malformed", e);
         }
     }
 
@@ -309,7 +330,7 @@ public class RegistryClient {
             throw new IllegalArgumentException(msg);
         }
 
-        final URL serviceCapsURL = getAccessURL(resourceID);
+        final URL serviceCapsURL = getAccessURL(Query.CAPABILITIES, resourceID);
 
         log.debug("Service capabilities URL: " + serviceCapsURL);
 
@@ -342,7 +363,7 @@ public class RegistryClient {
      * IVOA identifier (e.g. with URI scheme "ivo"). This method returns the first matching
      * interface.
      *
-     * @param resourceIdentifier        ID of the resource to lookup.
+     * @param resourceID        ID of the resource to lookup.
      * @param standardID                The standard ID of the resource to look up.  Indicates the specific purpose of
      *                                  the resource to get a URL for.
      * @param authMethod                What Authentication method to use (certificate, cookie, etc.)
@@ -350,21 +371,21 @@ public class RegistryClient {
      *                                  resource identifiers
      * @return service URL or null if a matching interface was not found
      */
-    public URL getServiceURL(final URI resourceIdentifier, final URI standardID, final AuthMethod authMethod,
+    public URL getServiceURL(final URI resourceID, final URI standardID, final AuthMethod authMethod,
                              URI interfaceType) {
-        if (resourceIdentifier == null || standardID == null || authMethod == null || interfaceType == null) {
+        if (resourceID == null || standardID == null || authMethod == null || interfaceType == null) {
             String msg = "No input parameters should be null";
             throw new IllegalArgumentException(msg);
         }
 
         URL url = null;
-        log.debug("resourceIdentifier=" + resourceIdentifier
+        log.debug("resourceIdentifier=" + resourceID
                           + ", standardID=" + standardID
                           + ", authMethod=" + authMethod
                           + ", interfaceType=" + interfaceType);
         Capabilities caps = null;
         try {
-            caps = this.getCapabilities(resourceIdentifier);
+            caps = this.getCapabilities(resourceID);
         } catch (ResourceNotFoundException ex) {
             return null;
         } catch (IOException e) {
@@ -388,12 +409,12 @@ public class RegistryClient {
         return url;
     }
 
-    File getCapSourceCacheFile() {
+    File getQueryCacheFile(Query queryName) {
         String baseCacheDir = getBaseCacheDirectory();
         if (this.capsDomain != null) {
             baseCacheDir += FILE_SEP + this.capsDomain;
         }
-        String path = FILE_SEP + resourceCapsName;
+        String path = FILE_SEP + queryName.getValue();
         log.debug("Caching file [" + path + "] in dir [" + baseCacheDir + "]");
         File file = new File(baseCacheDir + path);
         return file;
@@ -478,11 +499,12 @@ public class RegistryClient {
         return hostname.substring(dotIndex + 1);
     }
 
-    protected URL getResourceCapsURL() {
-        return resourceCapsURL;
+    // for test access
+    URL getRegistryBaseURL() {
+        return regBaseURL;
     }
 
-    protected String getCapsDomain() {
+    String getCapsDomain() {
         return capsDomain;
     }
 }
