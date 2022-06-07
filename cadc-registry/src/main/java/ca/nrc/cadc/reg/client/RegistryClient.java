@@ -147,8 +147,8 @@ public class RegistryClient {
         try {
             DEFAULT_REG_BASE_URL = new URL("https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg");
         } catch (MalformedURLException e) {
-            log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
-            throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());
+            log.fatal("BUG: hard-coded default URL is malformed", e);
+            throw new ExceptionInInitializerError("BUG: hard-coded default URL is malformed: " + e.getMessage());
         }
     }
 
@@ -221,20 +221,20 @@ public class RegistryClient {
         try {
             mvp.load(mapStream);
         } catch (Exception e) {
-            throw new RuntimeException("failed to load capabilities source map from " + regBaseURL, e);
+            throw new RuntimeException("failed to load properties from cache, src=" + queryURL, e);
         }
 
         List<String> values = mvp.getProperty(uri.toString());
         if (values == null || values.isEmpty()) {
-            throw new ResourceNotFoundException("not found: " + uri);
+            throw new ResourceNotFoundException("not found: " + uri + " src=" + queryURL);
         }
         if (values.size() > 1) {
-            throw new RuntimeException("Multiple capability locations for " + uri);
+            throw new RuntimeException("multiple values for " + uri + " src=" + queryURL);
         }
         try {
             return new URL(values.get(0));
         } catch (MalformedURLException e) {
-            throw new RuntimeException("URL for " + uri + " at " + regBaseURL + " is malformed", e);
+            throw new RuntimeException("malformed URL for " + uri + " src=" + queryURL, e);
         }
     }
 

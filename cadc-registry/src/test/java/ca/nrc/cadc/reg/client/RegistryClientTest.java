@@ -77,7 +77,7 @@ import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.Log4jInit;
 import java.io.File;
 import java.io.FileWriter;
-import java.net.InetAddress;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -285,64 +285,50 @@ public class RegistryClientTest {
     }
 
     @Test
-    public void testGetServiceURLMatchDomain() {
-        String currentTmpDir = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", "build/tmp");
-
-        try {
-            System.setProperty(RegistryClient.class.getName() + ".host", "foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca");
-            System.setProperty(RegistryClient.class.getName() + ".domainMatch", "cadc-ccda.hia-iha.nrc-cnrc.gc.ca,other.com");
-            RegistryClient rc = new RegistryClient();
-            String expected1 = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg";
-
-            URL resourceCapsURL = rc.getRegistryBaseURL();
-            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
-            Assert.assertEquals("got an incorrect URL", expected1, resourceCapsURL.toExternalForm());
-            Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
-        } catch (Exception t) {
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
-        } finally {
-            // reset
-            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
-            System.setProperty(RegistryClient.class.getName() + ".domainMatch", "");
-            System.setProperty("java.io.tmpdir", currentTmpDir);
-        }
-    }
-
-    @Test
     public void testGetAccessURL() throws Exception {
         final String currentTmpDir = System.getProperty("java.io.tmpdir");
-        final String fileSeparator = System.getProperty("file.separator");
         System.setProperty("java.io.tmpdir", "build/tmp");
 
+        
         try {
-            RegistryClient registryClient = new RegistryClient();
-            String cache = RegistryClient.Query.CAPABILITIES.getValue();
-            File cacheDir = new File(System.getProperty("java.io.tmpdir") + fileSeparator
-                                              + System.getProperty("user.name") + fileSeparator + "cadc-registry-1.4");
-            cacheDir.mkdirs();
-            File cacheFile = new File(cacheDir, cache);
+            final RegistryClient registryClient = new RegistryClient();
+            final URI notFoundID = URI.create("ivo://cadc.nrc.ca/not/found");
             
-            FileWriter fileWriter = new FileWriter(cacheFile);
-            fileWriter.write("ivo://cadc.nrc.ca/myservice/entry = https://mysite.com/services/mygreatservice");
-            fileWriter.close();
-
-            URI resourceID = URI.create("ivo://cadc.nrc.ca/myservice/entry");
-            URL capabilitiesURL = registryClient.getAccessURL(resourceID);
-
-            Assert.assertEquals("default lookup",
-                                "https://mysite.com/services/mygreatservice",
-                                capabilitiesURL.toExternalForm());
+            String srvKey = "ivo://cadc.nrc.ca/myservice/entry";
+            String srvVal = "https://mysite.com/services/mygreatservice";
+            createCache(RegistryClient.Query.CAPABILITIES, srvKey + " = " + srvVal);
             
-            URL explicitCapURL = registryClient.getAccessURL(RegistryClient.Query.CAPABILITIES, resourceID);
+            String appKey = "ivo://cadc.nrc.ca/app/entry";
+            String appVal = "https://mysite.com/application/page";
+            createCache(RegistryClient.Query.APPLICATIONS, appKey + " = " + appVal);
+            
+            // query caps
+            URI srvID = URI.create(srvKey);
+            URL capabilitiesURL = registryClient.getAccessURL(srvID);
+            Assert.assertEquals("default lookup", srvVal, capabilitiesURL.toExternalForm());
+            
+            URL explicitCapURL = registryClient.getAccessURL(RegistryClient.Query.CAPABILITIES, srvID);
             Assert.assertEquals("explicit lookup", capabilitiesURL, explicitCapURL);
             
             try {
-                registryClient.getAccessURL(RegistryClient.Query.APPLICATIONS, resourceID);
+                URL u = registryClient.getAccessURL(RegistryClient.Query.CAPABILITIES, notFoundID);
+                Assert.fail("wrong query, expected ResourceNotFoundException, found: " + u);
             } catch (ResourceNotFoundException expected) {
                 log.info("expected: " + expected);
             }
+            
+            // query apps
+            URI appID = URI.create(appKey);
+            URL appURL = registryClient.getAccessURL(RegistryClient.Query.APPLICATIONS, appID);
+            Assert.assertEquals("explicit app lookup", appVal, appURL.toExternalForm());
+            
+            try {
+                URL u = registryClient.getAccessURL(RegistryClient.Query.APPLICATIONS, notFoundID);
+                Assert.fail("wrong query, expected ResourceNotFoundException, found: " + u);
+            } catch (ResourceNotFoundException expected) {
+                log.info("expected: " + expected);
+            }
+
         } catch (Exception t) {
             log.error("unexpected exception", t);
             throw t;
@@ -350,5 +336,18 @@ public class RegistryClientTest {
             // reset
             System.setProperty("java.io.tmpdir", currentTmpDir);
         }
+    }
+    
+    private void createCache(RegistryClient.Query query, String line) throws IOException {
+        final String fileSeparator = System.getProperty("file.separator");
+        String cache = query.getValue();
+        File cacheDir = new File(System.getProperty("java.io.tmpdir") + fileSeparator
+                + System.getProperty("user.name") + fileSeparator + RegistryClient.CONFIG_CACHE_DIR);
+        cacheDir.mkdirs();
+        File cacheFile = new File(cacheDir, cache);
+
+        FileWriter fileWriter = new FileWriter(cacheFile);
+        fileWriter.write(line);
+        fileWriter.close();
     }
 }
