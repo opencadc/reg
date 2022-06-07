@@ -261,30 +261,6 @@ public class RegistryClientTest {
     }
 
     @Test
-    public void testGetServiceURLModifyLocal() {
-        String currentTmpDir = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", "build/tmp");
-
-        try {
-            System.setProperty(RegistryClient.class.getName() + ".local", "true");
-            RegistryClient rc = new RegistryClient();
-            String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-            URL expected = new URL("https://" + localhost + "/reg");
-            URL resourceCapsURL = rc.getRegistryBaseURL();
-            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
-            Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
-            Assert.assertEquals("wrong caps domain", "alt-domains/" + localhost, rc.getCapsDomain());
-        } catch (Exception t) {
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
-        } finally {
-            // reset
-            System.setProperty(RegistryClient.class.getName() + ".local", "false");
-            System.setProperty("java.io.tmpdir", currentTmpDir);
-        }
-    }
-
-    @Test
     public void testGetServiceURLModifyHost() {
         String currentUserHome = System.getProperty("user.home");
         System.setProperty("java.io.tmpdir", "build/tmp");
@@ -309,36 +285,12 @@ public class RegistryClientTest {
     }
 
     @Test
-    public void testGetServiceURLModifyShortHostname() {
-        String currentTmpDir = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", "build/tmp");
-
-        try {
-            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
-            RegistryClient rc = new RegistryClient();
-            String expected = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg";
-
-            URL resourceCapsURL = rc.getRegistryBaseURL();
-            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
-            Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL.toExternalForm());
-            Assert.assertEquals("wrong caps domain", "alt-domains/foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain());
-        } catch (Exception t) {
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
-        } finally {
-            // reset
-            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "");
-            System.setProperty("java.io.tmpdir", currentTmpDir);
-        }
-    }
-
-    @Test
     public void testGetServiceURLMatchDomain() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
 
         try {
-            System.setProperty(RegistryClient.class.getName() + ".shortHostname", "foo");
+            System.setProperty(RegistryClient.class.getName() + ".host", "foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca");
             System.setProperty(RegistryClient.class.getName() + ".domainMatch", "cadc-ccda.hia-iha.nrc-cnrc.gc.ca,other.com");
             RegistryClient rc = new RegistryClient();
             String expected1 = "https://foo.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg";

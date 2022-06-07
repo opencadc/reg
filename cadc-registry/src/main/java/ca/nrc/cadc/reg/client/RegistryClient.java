@@ -97,32 +97,15 @@ import org.apache.log4j.Logger;
  * A very simple caching IVOA Registry client. All the lookups done by this client use properties
  * files served from a well-known URL. 
  * <p>
- * Note for developers: You can set a system property to force this class to replace the hostname
- * in the resulting URL with the canonical hostname of the local host. This is useful for testing:
- * </p>
- * <pre>
- * ca.nrc.cadc.reg.client.RegistryClient.local=true
- * </pre>
- * <p>
- * Note for developers: You can set a system property to force this class to replace the hostname
+ * Deployers can set a java system property to force this class to replace the hostname
  * in the resulting URL with an arbitrary hostname. This is useful for testing a specific remote server:
  * </p>
  * <pre>
  * ca.nrc.cadc.reg.client.RegistryClient.host=www.example.com
  * </pre>
  * <p>
- * or for testing in a special environment:
- * </p>
- * <pre>
- * ca.nrc.cadc.reg.client.RegistryClient.shortHostname=test
- * </pre>
- * <p>
  * The <code>ca.nrc.cadc.reg.client.RegistryClient.host</code> property replaces the entire fully-qualified host name
- * with the specified value. The <code>ca.nrc.cadc.reg.client.RegistryClient.shortHostname</code> property
- * replaces only the hostname and leaves the domain intact; this is useful if you run in multiple domains and have a
- * set of test machines that span domains. The The <code>ca.nrc.cadc.reg.client.RegistryClient.domainMatch</code>
- * property (comma-separated list of domains) can be used to limit hostname modifications to the specified domains; if
- * it is not set, all URLs will be modified.
+ * with the specified value.
  * </p>
  *
  * @author pdowler
@@ -131,9 +114,7 @@ public class RegistryClient {
 
     private static Logger log = Logger.getLogger(RegistryClient.class);
 
-    private static final String LOCAL_PROPERTY = RegistryClient.class.getName() + ".local";
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
-    private static final String SHORT_HOST_PROPERTY = RegistryClient.class.getName() + ".shortHostname";
     private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
     public enum Query {
@@ -160,7 +141,6 @@ public class RegistryClient {
     private static final URI DEFAULT_ITYPE = Standards.INTERFACE_PARAM_HTTP;
 
     private String hostname;
-    private String shortHostname;
     private List<String> domainMatch = new ArrayList<>();
     private URL regBaseURL;
     private String capsDomain;
@@ -216,27 +196,12 @@ public class RegistryClient {
         return !DEFAULT_REG_BASE_URL.equals(regBaseURL);
     }
 
-    private void init(URL resourceCapsURL) {
+    private void init(URL origURL) {
         try {
-            String localP = System.getProperty(LOCAL_PROPERTY);
             String hostP = System.getProperty(HOST_PROPERTY);
-            String shortHostP = System.getProperty(SHORT_HOST_PROPERTY);
             final String domainMatchP = System.getProperty(DOMAIN_MATCH_PROPERTY);
 
-            log.debug("    local: " + localP);
             log.debug("     host: " + hostP);
-            log.debug("shortHost: " + shortHostP);
-            if ("true".equals(localP)) {
-                log.debug(LOCAL_PROPERTY + " is set, assuming localhost runs the service");
-                this.hostname = InetAddress.getLocalHost().getCanonicalHostName();
-            }
-
-            if (shortHostP != null) {
-                shortHostP = shortHostP.trim();
-                if (shortHostP.length() > 0) {
-                    this.shortHostname = shortHostP;
-                }
-            }
 
             if (hostP != null && this.hostname == null) {
                 hostP = hostP.trim();
@@ -250,15 +215,12 @@ public class RegistryClient {
                 this.domainMatch.addAll(Arrays.asList(doms));
             }
 
-            log.debug("Original resourceCapURL: " + resourceCapsURL);
-            this.regBaseURL = mangleHostname(resourceCapsURL);
+            log.debug("Original resourceCapURL: " + origURL);
+            this.regBaseURL = mangleHostname(origURL);
             log.debug("Mangled resourceCapURL: " + this.regBaseURL);
-            if (!resourceCapsURL.equals(this.regBaseURL)) {
+            if (!origURL.equals(this.regBaseURL)) {
                 capsDomain = "alt-domains/" + this.regBaseURL.getHost();
             }
-        } catch (UnknownHostException ex) {
-            log.warn("failed to find localhost name via name resolution (" + ex.toString() + "): using localhost");
-            this.hostname = "localhost";
         } catch (MalformedURLException e) {
             log.error("Error transforming resource-caps URL", e);
             throw new RuntimeException(e);
@@ -266,10 +228,10 @@ public class RegistryClient {
     }
 
     /**
-     * Backwards compatibility/convenience: get the capabiltiies URL for the specified service.
+     * Backwards compatibility/convenience: get the capabilities URL for the specified service.
      * 
      * @param resourceID of a service that implements VOSI-capabilities
-     * @return capoabilities URL
+     * @return capabilities URL
      * @throws IOException      local cache file(s) cannot be read or written
      * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry 
      */
@@ -423,8 +385,8 @@ public class RegistryClient {
     private File getCapabilitiesCacheFile(URI resourceID) {
         String baseCacheDir = getBaseCacheDirectory();
         String resourceCacheDir = baseCacheDir + resourceID.getAuthority();
-        if (this.capsDomain != null) {
-            resourceCacheDir = baseCacheDir + this.getCapsDomain() + FILE_SEP + resourceID.getAuthority();
+        if (capsDomain != null) {
+            resourceCacheDir = baseCacheDir + capsDomain + FILE_SEP + resourceID.getAuthority();
         }
         String path = resourceID.getPath() + FILE_SEP + "capabilities.xml";
         log.debug("Caching file [" + path + "] in dir [" + resourceCacheDir + "]");
@@ -452,25 +414,17 @@ public class RegistryClient {
         URL retURL = url;
 
         log.debug("mangling URL: " + url);
-        if (this.hostname != null || this.shortHostname != null) {
-            String domain = getDomain(url.getHost());
+        if (this.hostname != null) {
+            //String domain = getDomain(url.getHost());
 
-            if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain)) {
+            //if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain)) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(url.getProtocol());
                 sb.append("://");
 
-                if (this.shortHostname != null) {
-                    sb.append(this.shortHostname);
-                    if (domain != null) {
-                        sb.append(".").append(domain);
-                    }
-                } else {
-                    sb.append(this.hostname);
-                }
+                sb.append(this.hostname);
 
                 int p = url.getPort();
-
                 if (p > 0 && p != url.getDefaultPort()) {
                     sb.append(":");
                     sb.append(p);
@@ -478,7 +432,7 @@ public class RegistryClient {
 
                 sb.append(url.getPath());
                 retURL = new URL(sb.toString());
-            }
+            //}
         }
 
         log.debug("mangled URL: " + retURL);
