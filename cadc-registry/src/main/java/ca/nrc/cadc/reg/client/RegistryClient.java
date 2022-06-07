@@ -415,24 +415,20 @@ public class RegistryClient {
 
         log.debug("mangling URL: " + url);
         if (this.hostname != null) {
-            //String domain = getDomain(url.getHost());
+            StringBuilder sb = new StringBuilder();
+            sb.append(url.getProtocol());
+            sb.append("://");
 
-            //if (this.domainMatch.isEmpty() || this.domainMatch.contains(domain)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(url.getProtocol());
-                sb.append("://");
+            sb.append(this.hostname);
 
-                sb.append(this.hostname);
+            int p = url.getPort();
+            if (p > 0 && p != url.getDefaultPort()) {
+                sb.append(":");
+                sb.append(p);
+            }
 
-                int p = url.getPort();
-                if (p > 0 && p != url.getDefaultPort()) {
-                    sb.append(":");
-                    sb.append(p);
-                }
-
-                sb.append(url.getPath());
-                retURL = new URL(sb.toString());
-            //}
+            sb.append(url.getPath());
+            retURL = new URL(sb.toString());
         }
 
         log.debug("mangled URL: " + retURL);
