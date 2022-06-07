@@ -115,7 +115,6 @@ public class RegistryClient {
     private static Logger log = Logger.getLogger(RegistryClient.class);
 
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
-    private static final String DOMAIN_MATCH_PROPERTY = RegistryClient.class.getName() + ".domainMatch";
 
     public enum Query {
         APPLICATIONS("applications"),
@@ -135,13 +134,12 @@ public class RegistryClient {
     // version the cache dir so we can increment when we have incompatible cache structure
     static final String CONFIG_CACHE_DIR = "cadc-registry-1.4";
     private static final URL DEFAULT_REG_BASE_URL;
-    private static String FILE_SEP;
+    private static final String FILE_SEP = System.getProperty("file.separator");
 
     // fully qualified type value (see CapabilitiesReader)
     private static final URI DEFAULT_ITYPE = Standards.INTERFACE_PARAM_HTTP;
 
     private String hostname;
-    private List<String> domainMatch = new ArrayList<>();
     private URL regBaseURL;
     private String capsDomain;
 
@@ -152,38 +150,10 @@ public class RegistryClient {
             log.fatal("BUG: RESOURCE_CAPS_URL is malformed", e);
             throw new ExceptionInInitializerError("BUG: RESOURCE_CAPS_URL is malformed: " + e.getMessage());
         }
-
-        FILE_SEP = System.getProperty("file.separator");
     }
 
-    /**
-     * Constructor. This defaults to QUERY_CAPABILITIES.
-     */
     public RegistryClient() {
-        //this(DEFAULT_REG_BASE_URL);
         init(DEFAULT_REG_BASE_URL);
-    }
-
-    //public RegistryClient(URL registryBaseURL) {
-    //    if (registryBaseURL == null) {
-    //        throw new IllegalArgumentException("registryBaseURL cannot be null");
-    //    }
-    //    queryName = extractFileName(registryBaseURL);
-    //    init(registryBaseURL);
-    //}
-
-    /**
-     * Handle the case where the URL ends with a slash, and ensure only the end file name is used.
-     * @param url   The URL to extract from.
-     * @return  String      The file name.  Never null.
-     */
-    private String extractFileName(final URL url) {
-        StringBuilder urlFile = new StringBuilder(url.getFile());
-        while (urlFile.lastIndexOf("/") == (urlFile.length() - 1)) {
-            urlFile.deleteCharAt((urlFile.length() - 1));
-        }
-
-        return urlFile.substring(urlFile.lastIndexOf("/") + 1);
     }
 
     /**
@@ -199,20 +169,12 @@ public class RegistryClient {
     private void init(URL origURL) {
         try {
             String hostP = System.getProperty(HOST_PROPERTY);
-            final String domainMatchP = System.getProperty(DOMAIN_MATCH_PROPERTY);
-
             log.debug("     host: " + hostP);
-
             if (hostP != null && this.hostname == null) {
                 hostP = hostP.trim();
                 if (hostP.length() > 0) {
                     this.hostname = hostP;
                 }
-            }
-
-            if (domainMatchP != null) {
-                String[] doms = domainMatchP.split(",");
-                this.domainMatch.addAll(Arrays.asList(doms));
             }
 
             log.debug("Original resourceCapURL: " + origURL);
