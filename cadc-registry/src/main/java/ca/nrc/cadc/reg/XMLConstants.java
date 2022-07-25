@@ -92,6 +92,7 @@ public class XMLConstants {
     public static final URI UWSREGEXT_10_NS = URI.create("http://www.ivoa.net/xml/UWSRegExt/v0.1");
     public static final URI REGISTRY_10_NS = URI.create("http://www.ivoa.net/xml/VORegistry/v1.0");
     public static final URI REG_IFACE_10_NS = URI.create("http://www.ivoa.net/xml/RegistryInterface/v1.0");
+    public static final URI SCS_11_NS = URI.create("http://www.ivoa.net/xml/ConeSearch/v1.0");
 
     public static final URI XLINK_NS = URI.create("http://www.w3.org/1999/xlink");
 
@@ -104,6 +105,7 @@ public class XMLConstants {
     private static final String UWSREGEXT_10_SCHEMA = "UWSRegExt-v0.1.xsd";
     private static final String REGISTRY_10_SCHEMA = "VORegistry-v1.0.xsd";
     private static final String REG_IFACE_10_SCHEMA = "RegistryInterface-v1.0.xsd";
+    private static final String SCS_11_SCHEMA = "SCS-v1.1.xsd";
 
     private static final String XLINK_SCHEMA = "XLINK.xsd";
 
@@ -140,6 +142,9 @@ public class XMLConstants {
 
         String xlinkSchemaURL = XmlUtil.getResourceUrlString(XLINK_SCHEMA, XMLConstants.class);
         SCHEMA_MAP.put(XLINK_NS.toString(), xlinkSchemaURL);
+
+        String coneSearchURL = XmlUtil.getResourceUrlString(SCS_11_SCHEMA, XMLConstants.class);
+        SCHEMA_MAP.put(SCS_11_NS.toString(), coneSearchURL);
     }
 
     public static final Namespace CAPABILITIES_NS = Namespace.getNamespace("vosi", VOSICAPABILITIES_10_NS.toString());
