@@ -98,6 +98,9 @@ public class Standards {
     public static final URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
     //public static final URI SIA_META_2x = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
 
+    // Simple Cone Search 1.1
+    public static final URI SCS_11 = URI.create("ivo://ivoa.net/std/conesearch#query-1.1");
+
     public static final URI SODA_SYNC_10 = URI.create("ivo://ivoa.net/std/SODA#sync-1.0");
     public static final URI SODA_ASYNC_10 = URI.create("ivo://ivoa.net/std/SODA#async-1.0");
 
