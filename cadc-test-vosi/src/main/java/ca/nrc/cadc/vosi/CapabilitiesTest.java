@@ -95,6 +95,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -307,6 +308,17 @@ public class CapabilitiesTest {
         
         URL loginURL = null;
         List<String> authHeaders = head.getResponseHeaderValues("www-authenticate");
+        // temp work-around for cadc-rest: it always injects an ivoa_x509 challenge
+        List<String> modifiable = new ArrayList<>();
+        modifiable.addAll(authHeaders);
+        modifiable.remove("ivoa_x509");
+        authHeaders = modifiable;
+        
+        if (authHeaders.isEmpty()) {
+            log.warn("no www-authenticate challenges, assuming intentional");
+            return;
+        }
+        
         for (String s : authHeaders) {
             log.info(s);
             AuthChallenge c = new AuthChallenge(s);
