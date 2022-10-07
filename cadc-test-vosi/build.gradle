@@ -16,7 +16,7 @@ apply from: '../opencadc.gradle'
 
 group = 'org.opencadc'
 
-version = '1.0.12'
+version = '1.0.13'
 
 description = 'OpenCADC VOSI test library'
 def git_url = 'https://github.com/opencadc/reg'
@@ -24,7 +24,7 @@ def git_url = 'https://github.com/opencadc/reg'
 dependencies {
     compile 'junit:junit:[4.0,)'
 
-    compile 'org.opencadc:cadc-util:[1.6,)'
+    compile 'org.opencadc:cadc-util:[1.7.3,)'
     compile 'org.opencadc:cadc-vosi:[1.0,)'
     compile 'org.opencadc:cadc-registry:[1.0,)'
 

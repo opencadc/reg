@@ -4,7 +4,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2016.                            (c) 2016.
+*  (c) 2022.                            (c) 2022.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -73,8 +73,10 @@ package ca.nrc.cadc.vosi;
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.auth.AuthenticationUtil;
 import ca.nrc.cadc.auth.RunnableAction;
-import ca.nrc.cadc.net.HttpDownload;
+import ca.nrc.cadc.net.AuthChallenge;
 import ca.nrc.cadc.net.HttpGet;
+import ca.nrc.cadc.net.HttpPost;
+import ca.nrc.cadc.net.NetrcFile;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.Capability;
@@ -82,19 +84,24 @@ import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.xml.XmlUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
-
-import ca.nrc.cadc.xml.XmlUtil;
-import java.io.ByteArrayInputStream;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import javax.security.auth.Subject;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
@@ -291,4 +298,62 @@ public class CapabilitiesTest {
         }
     }
 
+    @Test
+    public void testTokenAuth() throws Exception {
+        RegistryClient reg = new RegistryClient();
+        URL capURL = reg.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
+        HttpGet head = new HttpGet(capURL, false);
+        head.setHeadOnly(true);
+        head.prepare();
+        
+        URL loginURL = null;
+        List<String> authHeaders = head.getResponseHeaderValues("www-authenticate");
+        // temp work-around for cadc-rest: it always injects an ivoa_x509 challenge
+        List<String> modifiable = new ArrayList<>();
+        modifiable.addAll(authHeaders);
+        modifiable.remove("ivoa_x509");
+        authHeaders = modifiable;
+        
+        if (authHeaders.isEmpty()) {
+            log.warn("no www-authenticate challenges, assuming intentional");
+            return;
+        }
+        
+        for (String s : authHeaders) {
+            log.info(s);
+            AuthChallenge c = new AuthChallenge(s);
+            log.info(c);
+            if ("ivoa_bearer".equals(c.getName()) && Standards.SECURITY_METHOD_PASSWORD.toASCIIString().equals(c.getParamValue("standard_id"))) {
+                loginURL = new URL(c.getParamValue("access_url"));
+                break;
+            }
+        }
+        
+        if (loginURL == null) {
+            throw new RuntimeException("no www-authenticate ivoa_bearer " + Standards.SECURITY_METHOD_PASSWORD.toASCIIString() + " challenge");
+        }
+        
+        log.info("loginURL: " + loginURL);
+        NetrcFile netrc = new NetrcFile();
+        PasswordAuthentication up = netrc.getCredentials(loginURL.getHost(), true);
+        if (up == null) {
+            throw new RuntimeException("no credentials in .netrc file for host " + loginURL.getHost());
+        } 
+        
+        Map<String,Object> params = new TreeMap<>();
+        params.put("username", up.getUserName());
+        params.put("password", up.getPassword());
+        HttpPost login = new HttpPost(loginURL, params, true);
+        login.prepare();
+        String token = login.getResponseHeader("x-vo-bearer");
+        Assert.assertNotNull("successful login", token);
+        
+        HttpGet headAuth = new HttpGet(capURL, false);
+        head.setHeadOnly(true);
+        head.setRequestProperty("authorization", "bearer " + token);
+        head.prepare();
+        String ident = head.getResponseHeader("x-vo-authenticated");
+        log.info("authenticated as: " + ident);
+        Assert.assertNotNull("successful authenticated call", ident);
+    }
 }
