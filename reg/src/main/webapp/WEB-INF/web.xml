@@ -9,7 +9,7 @@
 
     <servlet>
         <load-on-startup>1</load-on-startup>
-        <servlet-name>logControl</servlet-name>
+        <servlet-name>LogControlServlet</servlet-name>
         <servlet-class>ca.nrc.cadc.log.LogControlServlet</servlet-class>
         <init-param>
             <param-name>logLevel</param-name>
@@ -72,43 +72,59 @@
         <servlet-class>org.opencadc.reg.server.CannedQueryServlet</servlet-class>
     </servlet>
     
+    <!-- VOSI capabilities -->
     <servlet>
-        <load-on-startup>3</load-on-startup>
-        <servlet-name>availability</servlet-name>
-        <servlet-class>ca.nrc.cadc.vosi.AvailabilityServlet</servlet-class>
+        <servlet-name>CapabilitiesServlet</servlet-name>
+        <servlet-class>ca.nrc.cadc.rest.RestServlet</servlet-class>
         <init-param>
-            <description>
-            </description>
-            <param-name>ca.nrc.cadc.vosi.AvailabilityPlugin</param-name>
-            <param-value>org.opencadc.reg.server.ServiceAvailability</param-value>
+            <param-name>init</param-name>
+            <param-value>ca.nrc.cadc.vosi.CapInitAction</param-value>
         </init-param>
+        <init-param>
+            <param-name>head</param-name>
+            <param-value>ca.nrc.cadc.vosi.CapHeadAction</param-value>
+        </init-param>
+        <init-param>
+            <param-name>get</param-name>
+            <param-value>ca.nrc.cadc.vosi.CapGetAction</param-value>
+        </init-param>
+        <init-param>
+            <param-name>input</param-name>
+            <param-value>/capabilities.xml</param-value>
+        </init-param>
+        <load-on-startup>3</load-on-startup>
     </servlet>
     
+    <!-- VOSI availability -->
     <servlet>
-      <servlet-name>capabilities</servlet-name>
-      <servlet-class>ca.nrc.cadc.vosi.CapabilitiesServlet</servlet-class>
-      <init-param>
-        <param-name>input</param-name>
-        <param-value>/capabilities.xml</param-value>
-      </init-param>
-      <load-on-startup>3</load-on-startup>
+        <servlet-name>AvailabilityServlet</servlet-name>
+        <servlet-class>ca.nrc.cadc.vosi.AvailabilityServlet</servlet-class>
+        <init-param>
+            <param-name>ca.nrc.cadc.vosi.AvailabilityPlugin</param-name>
+            <param-value>org.opencadc.minoc.ServiceAvailability</param-value>
+        </init-param>
+        <init-param>
+            <param-name>availabilityProperties</param-name>
+            <param-value>minoc-availability.properties</param-value>
+        </init-param>
+        <load-on-startup>4</load-on-startup>
     </servlet>
     
     
     <!-- URL-to-servlet mapping -->
     
     <servlet-mapping>
-        <servlet-name>logControl</servlet-name>
+        <servlet-name>LogControlServlet</servlet-name>
         <url-pattern>/logControl</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>availability</servlet-name>
+        <servlet-name>AvailabilityServlet</servlet-name>
         <url-pattern>/availability</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
-        <servlet-name>capabilities</servlet-name>
+        <servlet-name>CapabilitiesServlet</servlet-name>
         <url-pattern>/capabilities</url-pattern>
     </servlet-mapping>
     
