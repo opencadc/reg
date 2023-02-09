@@ -87,8 +87,11 @@ public class Standards {
     public static final URI CRED_PROXY_10 = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
 
     public static final URI DATALINK_LINKS_10 = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
+    public static final URI DATALINK_LINKS_11 = URI.create("ivo://ivoa.net/std/DataLink#links-1.1");
 
     public static final URI GMS_GROUPS_01 = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
+    
+    @Deprecated
     public static final URI GMS_SEARCH_01 = URI.create("ivo://ivoa.net/std/GMS#search-0.1");
     public static final URI GMS_SEARCH_10 = URI.create("ivo://ivoa.net/std/GMS#search-1.0");
 
@@ -106,11 +109,22 @@ public class Standards {
 
     public static final URI TAP_10 = URI.create("ivo://ivoa.net/std/TAP");
 
+    @Deprecated
     public static final URI UMS_USERS_01 = URI.create("ivo://ivoa.net/std/UMS#users-0.1");
+    @Deprecated
     public static final URI UMS_REQS_01 = URI.create("ivo://ivoa.net/std/UMS#reqs-0.1");
+    @Deprecated
     public static final URI UMS_LOGIN_01 = URI.create("ivo://ivoa.net/std/UMS#login-0.1");
+    @Deprecated
     public static final URI UMS_RESETPASS_01 = URI.create("ivo://ivoa.net/std/UMS#resetpass-0.1");
+    @Deprecated
     public static final URI UMS_WHOAMI_01 = URI.create("ivo://ivoa.net/std/UMS#whoami-0.1");
+    
+    public static final URI UMS_USERS_10 = URI.create("ivo://opencadc.org/std/UMS#users-1.0");
+    public static final URI UMS_REQS_10 = URI.create("ivo://opencadc.org/std/UMS#reqs-1.0");
+    public static final URI UMS_LOGIN_10 = URI.create("ivo://opencadc.org/std/UMS#login-1.0");
+    public static final URI UMS_RESETPASS_10 = URI.create("ivo://opencadc.org/std/UMS#resetpass-1.0");
+    public static final URI UMS_WHOAMI_10 = URI.create("ivo://opencadc.org/std/UMS#whoami-1.0");
 
     public static final URI VOSI_CAPABILITIES = URI.create("ivo://ivoa.net/std/VOSI#capabilities");
     public static final URI VOSI_AVAILABILITY = URI.create("ivo://ivoa.net/std/VOSI#availability");
@@ -141,11 +155,14 @@ public class Standards {
     public static final URI CAOM2REPO_OBS_23 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.1");
     public static final URI CAOM2REPO_OBS_24 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#obs-1.2");
     public static final URI CAOM2REPO_DEL_23 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#del-1.0");
+    
+    @Deprecated
     public static final URI CAOM2REPO_PERMS = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2Repository#perms-1.0");
 
     @Deprecated
     public static final URI CUTOUT_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOX#cutout-2.0");
 
+    @Deprecated
     public static final URI DATA_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/archive#file-1.0");
     
     /**
