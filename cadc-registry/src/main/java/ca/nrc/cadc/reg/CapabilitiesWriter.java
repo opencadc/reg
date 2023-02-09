@@ -93,10 +93,7 @@ import org.jdom2.output.XMLOutputter;
 public class CapabilitiesWriter {
     private static final Logger log = Logger.getLogger(CapabilitiesWriter.class);
 
-    Namespace vosi = Namespace.getNamespace("vosi", "http://www.ivoa.net/xml/VOSICapabilities/v1.0");
-    Namespace vs = Namespace.getNamespace("vs", "http://www.ivoa.net/xml/VODataService/v1.1");
-    Namespace vr = Namespace.getNamespace("vr", "http://www.ivoa.net/xml/VOResource/v1.0");
-        
+
     public CapabilitiesWriter() { 
     }
     
@@ -117,9 +114,10 @@ public class CapabilitiesWriter {
     }
     
     private Element getRootElement(Capabilities caps) {
-        Element root = new Element("capabilities", vosi);
-        root.addNamespaceDeclaration(vs);
-        root.addNamespaceDeclaration(vr);
+        Element root = new Element("capabilities", XMLConstants.CAPABILITIES_NS);
+        for (Namespace namespace : XMLConstants.NAMESPACE_LIST) {
+            root.addNamespaceDeclaration(namespace);
+        }
         root.addNamespaceDeclaration(W3CConstants.XSI_NS);
 
         List<Namespace> namespacesInScope = root.getNamespacesInScope();

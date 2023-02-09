@@ -86,6 +86,9 @@ public class Standards {
     public static final URI CRED_DELEGATE_10 = URI.create("ivo://ivoa.net/std/CDP#delegate-1.0");
     public static final URI CRED_PROXY_10 = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
 
+    // DALI 1.1 Examples
+    public static final URI DALI_EXAMPLES_11 = URI.create("ivo://ivoa.net/std/DALI#examples");
+
     public static final URI DATALINK_LINKS_10 = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
     public static final URI DATALINK_LINKS_11 = URI.create("ivo://ivoa.net/std/DataLink#links-1.1");
 
@@ -211,9 +214,11 @@ public class Standards {
     @Deprecated // Was for prototype delegation token work. Use SECURITY_METHOD_TOKEN now.
     public static final URI SECURITY_METHOD_DELTOKEN = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Auth#token-1.0");
 
-    // interface type identifiers: <namespace uri>#<type attr name without rpefix>
+    // interface type identifiers: <namespace uri>#<type attr name without prefix>
     public static URI INTERFACE_PARAM_HTTP = URI.create(XMLConstants.VODATASERVICE_11_NS + "#ParamHTTP");
     public static URI INTERFACE_REG_OAI = URI.create(XMLConstants.REGISTRY_10_NS.toASCIIString() + "#OAIHTTP");
+
+    public static URI INTERFACE_WEB_BROWSER = URI.create(XMLConstants.VORESOURCE_10_NS + "#WebBrowser");
 
     private static final Map<URI, AuthMethod> SEC_MAP = new HashMap<URI, AuthMethod>();
 

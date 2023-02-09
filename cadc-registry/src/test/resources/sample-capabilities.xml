@@ -1,11 +1,18 @@
 <vosi:capabilities
    xmlns:vosi="http://www.ivoa.net/xml/VOSICapabilities/v1.0"
+   xmlns:vr="http://www.ivoa.net/xml/VOResource/v1.0"
    xmlns:vs="http://www.ivoa.net/xml/VODataService/v1.1"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
   <capability standardID="ivo://ivoa.net/std/VOSI#capabilities">
     <interface xsi:type="vs:ParamHTTP" role="std" version="1.0">
       <accessURL use="full"> http://example.net/srv/capabilities </accessURL>
+    </interface>
+  </capability>
+
+  <capability standardID="ivo://ivoa.net/std/DALI#examples">
+    <interface xsi:type="vr:WebBrowser">
+      <accessURL use="full"> http://example.net/srv/examples</accessURL>
     </interface>
   </capability>
 

@@ -69,10 +69,12 @@
 
 package ca.nrc.cadc.reg;
 
-import ca.nrc.cadc.xml.W3CConstants;
 import ca.nrc.cadc.xml.XmlUtil;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jdom2.Namespace;
 
@@ -149,5 +151,10 @@ public class XMLConstants {
 
     public static final Namespace CAPABILITIES_NS = Namespace.getNamespace("vosi", VOSICAPABILITIES_10_NS.toString());
     public static final Namespace VODATASERVICE_NS = Namespace.getNamespace("vod", VODATASERVICE_11_NS.toString());
+    public static final Namespace VODATASERVICE_VS_NS = Namespace.getNamespace("vs", VODATASERVICE_11_NS.toString());
+    public static final Namespace VORESOURCE_NS = Namespace.getNamespace("vr", VORESOURCE_10_NS.toString());
 
+    public static final List<Namespace> NAMESPACE_LIST =
+            Collections.unmodifiableList(Arrays.asList(CAPABILITIES_NS, VODATASERVICE_NS, VODATASERVICE_VS_NS,
+                                                       VORESOURCE_NS));
 }
