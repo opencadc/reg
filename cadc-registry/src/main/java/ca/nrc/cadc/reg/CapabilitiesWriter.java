@@ -75,6 +75,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -92,6 +94,10 @@ import org.jdom2.output.XMLOutputter;
  */
 public class CapabilitiesWriter {
     private static final Logger log = Logger.getLogger(CapabilitiesWriter.class);
+
+    private static final List<Namespace> NAMESPACE_LIST =
+            Collections.unmodifiableList(Arrays.asList(XMLConstants.CAPABILITIES_NS, XMLConstants.VODATASERVICE_NS,
+                                                       XMLConstants.VODATASERVICE_VS_NS, XMLConstants.VORESOURCE_NS));
 
 
     public CapabilitiesWriter() { 
@@ -115,7 +121,7 @@ public class CapabilitiesWriter {
     
     private Element getRootElement(Capabilities caps) {
         Element root = new Element("capabilities", XMLConstants.CAPABILITIES_NS);
-        for (Namespace namespace : XMLConstants.NAMESPACE_LIST) {
+        for (Namespace namespace : CapabilitiesWriter.NAMESPACE_LIST) {
             root.addNamespaceDeclaration(namespace);
         }
         root.addNamespaceDeclaration(W3CConstants.XSI_NS);
