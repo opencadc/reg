@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2019.                            (c) 2019.
+*  (c) 2023.                            (c) 2023.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -79,7 +79,9 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Uses the library configuration file (cadc-registry.properties) to find the
+ * local service that provides the specified API (via standardID).
+ * 
  * @author pdowler
  */
 public class LocalAuthority {
@@ -91,8 +93,14 @@ public class LocalAuthority {
     private Map<String, String> authorityMap = new TreeMap<String, String>();
 
     public LocalAuthority() {
-        PropertiesReader propReader = new PropertiesReader(LOCAL_AUTH_PROP_FILE);
+        PropertiesReader propReader = new PropertiesReader(RegistryClient.CONFIG_FILE);
         MultiValuedProperties mvp = propReader.getAllProperties();
+        
+        // backwards compat: try the old config file name
+        if (mvp.isEmpty()) {
+            propReader = new PropertiesReader(LOCAL_AUTH_PROP_FILE);
+            mvp = propReader.getAllProperties();
+        }
 
         for (String std : mvp.keySet()) {
             List<String> values = mvp.getProperty(std);
