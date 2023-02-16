@@ -75,6 +75,7 @@ import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.util.PropertiesReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -99,6 +100,8 @@ public class RegistryClientTest {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
     }
 
+    private static String TEST_CONFIG_DIR = PropertiesReader.class.getName() + ".dir";
+    
     static String STANDARD_ID = "ivo://ivoa.net/std/TAP";
     static String RESOURCE_ID = "ivo://cadc.nrc.ca/argus";
     static String RESOURCE_ID_NO_AUTH_METHOD = "ivo://cadc.nrc.ca/noauthmethod";
@@ -123,10 +126,11 @@ public class RegistryClientTest {
     
     
     @Test
-    public void testGetCapabilitiesWithNullResourceidentifier() {
+    public void testGetCapabilitiesWithNullResourceID() {
         String currentUserHome = System.getProperty("user.home");
         System.setProperty("user.home", System.getProperty("user.dir") + "/build/tmp");
-
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+        
         RegistryClient rc = new RegistryClient();
         try {
             rc.getCapabilities(null);
@@ -143,6 +147,7 @@ public class RegistryClientTest {
         } finally {
             // restore user.home environment
             System.setProperty("user.home", currentUserHome);
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 
@@ -150,7 +155,8 @@ public class RegistryClientTest {
     public void testGetCapabilitiesNotFound() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir") + "/build/tmp");
-
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+        
         RegistryClient rc = new RegistryClient();
         try {
             rc.getCapabilities(new URI(RESOURCE_ID_NOT_FOUND));
@@ -163,6 +169,7 @@ public class RegistryClientTest {
         } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 
@@ -170,6 +177,7 @@ public class RegistryClientTest {
     public void testGetCapabilitiesHappyPath() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
         RegistryClient rc = new RegistryClient();
         try {
@@ -182,6 +190,7 @@ public class RegistryClientTest {
         } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 
@@ -189,6 +198,7 @@ public class RegistryClientTest {
     public void testGetServiceURLWithNullAuthMethod() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
         RegistryClient rc = new RegistryClient();
         try {
@@ -208,6 +218,7 @@ public class RegistryClientTest {
         } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 
@@ -215,6 +226,7 @@ public class RegistryClientTest {
     public void testGetServiceURLWithNullStandardID() {
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
         RegistryClient rc = new RegistryClient();
         try {
@@ -234,6 +246,7 @@ public class RegistryClientTest {
         } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 
@@ -242,6 +255,7 @@ public class RegistryClientTest {
         // save java.io.tmpdir environment
         String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
         RegistryClient rc = new RegistryClient();
         try {
@@ -257,6 +271,7 @@ public class RegistryClientTest {
         } finally {
             // restore java.io.tmpdir environment
             System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 
@@ -264,7 +279,8 @@ public class RegistryClientTest {
     public void testGetServiceURLModifyHost() {
         String currentUserHome = System.getProperty("user.home");
         System.setProperty("java.io.tmpdir", "build/tmp");
-
+        // must not have cadc-registry.properties in config dir for the old system prop behaviour to apply
+        
         try {
             System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
@@ -279,7 +295,34 @@ public class RegistryClientTest {
             Assert.fail("unexpected exception: " + t);
         } finally {
             // reset
-            System.setProperty(RegistryClient.class.getName() + ".host", "");
+            System.clearProperty(RegistryClient.class.getName() + ".host");
+            System.setProperty("user.home", currentUserHome);
+        }
+    }
+    
+    @Test
+    public void testGetServiceURLModifyHostDeprecated() {
+        String currentUserHome = System.getProperty("user.home");
+        System.setProperty("java.io.tmpdir", "build/tmp");
+        
+        // with cadc-registry.properties in config dir: system prop does nothing
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+        
+        try {
+            System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
+            RegistryClient rc = new RegistryClient();
+
+            URL expected = new URL("https://foo.bar.com/reg");
+            URL resourceCapsURL = rc.getRegistryBaseURL();
+            Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
+            Assert.assertNotEquals(expected, resourceCapsURL);
+            //Assert.assertEquals("wrong caps domain", "alt-domains/foo.bar.com", rc.getCapsDomain());
+        } catch (Exception t) {
+            log.error("unexpected exception", t);
+            Assert.fail("unexpected exception: " + t);
+        } finally {
+            // reset
+            System.clearProperty(RegistryClient.class.getName() + ".host");
             System.setProperty("user.home", currentUserHome);
         }
     }
@@ -288,6 +331,7 @@ public class RegistryClientTest {
     public void testGetAccessURL() throws Exception {
         final String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
+        System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
         
         try {
@@ -335,6 +379,7 @@ public class RegistryClientTest {
         } finally {
             // reset
             System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.clearProperty(TEST_CONFIG_DIR);
         }
     }
     

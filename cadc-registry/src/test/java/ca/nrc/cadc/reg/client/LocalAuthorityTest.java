@@ -65,10 +65,9 @@
 *  $Revision: 5 $
 *
 ************************************************************************
-*/
+ */
 
 package ca.nrc.cadc.reg.client;
-
 
 import java.net.URI;
 import java.util.NoSuchElementException;
@@ -86,72 +85,117 @@ import ca.nrc.cadc.util.PropertiesReader;
  *
  * @author pdowler
  */
-public class LocalAuthorityTest
-{
+public class LocalAuthorityTest {
+
     private static final Logger log = Logger.getLogger(LocalAuthorityTest.class);
 
-    private String NOT_FOUND_ID = "foo";
-    private String BASE_ID = Standards.CRED_DELEGATE_10.toString();
+    // values from cadc-registry.properties
+    private String SERVICE = Standards.CRED_DELEGATE_10.toASCIIString();
     private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
+    
+    private String OPENID = Standards.SECURITY_METHOD_OPENID.toASCIIString();
+    private String OPENID_URL = "https://oidc.example.net/";
+    
+    // values from backwards compat LocalAuthority.properties
+    private String SERVICE_URI_COMPAT = "ivo://cadc.nrc.ca/cred/compat";
+    
+    private String OPENID_URL_COMPAT = "https://oidc.example.net/compat";
 
-    static
-    {
+    static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
-    public LocalAuthorityTest() { }
+
+    public LocalAuthorityTest() {
+    }
 
     private static String TEST_CONFIG_DIR = PropertiesReader.class.getName() + ".dir";
 
     @Test
-    public void testNotFound()
-    {
-        try
-        {
+    public void testNotFound() {
+        try {
             System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
             LocalAuthority loc = new LocalAuthority();
 
-            try
-            {
-                URI uri = loc.getServiceURI(NOT_FOUND_ID);
+            try {
+                URI uri = loc.getServiceURI("foo:bar");
                 Assert.fail("expected NoSuchElementException, found: " + uri);
-            }
-            catch(NoSuchElementException expected)
-            {
+            } catch (NoSuchElementException expected) {
                 log.debug("caught expected exception: " + expected);
             }
 
-        }
-        catch(Exception unexpected)
-        {
+        } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
-        }
-        finally
-        {
+        } finally {
             System.clearProperty(TEST_CONFIG_DIR);
         }
     }
 
     @Test
-    public void testFound()
-    {
-        try
-        {
+    public void testFoundIVO() {
+        try {
             System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
             LocalAuthority loc = new LocalAuthority();
-            URI uri = loc.getServiceURI(BASE_ID);
+            URI uri = loc.getServiceURI(SERVICE);
             Assert.assertNotNull(uri);
             Assert.assertEquals(SERVICE_URI, uri.toASCIIString());
-        }
-        catch(Exception unexpected)
-        {
+        } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
+        } finally {
+            System.clearProperty(TEST_CONFIG_DIR);
         }
-        finally
-        {
+    }
+    
+    @Test
+    public void testFoundURL() {
+        try {
+            System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+
+            LocalAuthority loc = new LocalAuthority();
+            URI uri = loc.getServiceURI(OPENID);
+            Assert.assertNotNull(uri);
+            Assert.assertEquals(OPENID_URL, uri.toASCIIString());
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        } finally {
+            System.clearProperty(TEST_CONFIG_DIR);
+        }
+    }
+    
+    @Test
+    public void testCompatFoundIVO() {
+        try {
+            System.setProperty(TEST_CONFIG_DIR, "src/test/resources/compat");
+
+            LocalAuthority loc = new LocalAuthority();
+            URI uri = loc.getServiceURI(SERVICE);
+            Assert.assertNotNull(uri);
+            Assert.assertEquals(SERVICE_URI_COMPAT, uri.toASCIIString());
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        } finally {
+            System.clearProperty(TEST_CONFIG_DIR);
+        }
+    }
+    
+    @Test
+    public void testCompatFoundURL() {
+        try {
+            System.setProperty(TEST_CONFIG_DIR, "src/test/resources/compat");
+
+            LocalAuthority loc = new LocalAuthority();
+            URI uri = loc.getServiceURI(OPENID);
+            Assert.assertNotNull(uri);
+            Assert.assertEquals(OPENID_URL_COMPAT, uri.toASCIIString());
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        } finally {
             System.clearProperty(TEST_CONFIG_DIR);
         }
     }

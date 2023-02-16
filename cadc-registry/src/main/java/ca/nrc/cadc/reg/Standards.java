@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2011.                            (c) 2011.
+*  (c) 2023.                            (c) 2023.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -96,6 +96,7 @@ public class Standards {
     public static final URI GMS_SEARCH_10 = URI.create("ivo://ivoa.net/std/GMS#search-1.0");
 
     public static final URI REGISTRY_10 = URI.create("ivo://ivoa.net/std/Registry");
+    public static final URI REG_RESOURCE_CAPS = URI.create("ivo://opencadc.org/std/Registry");
 
     public static final URI SIA_10 = URI.create("ivo://ivoa.net/std/SIA");
     public static final URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");

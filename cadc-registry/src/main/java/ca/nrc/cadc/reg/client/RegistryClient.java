@@ -76,7 +76,9 @@ import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.reg.Standards;
+import ca.nrc.cadc.util.InvalidConfigException;
 import ca.nrc.cadc.util.MultiValuedProperties;
+import ca.nrc.cadc.util.PropertiesReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -114,6 +116,7 @@ public class RegistryClient {
 
     private static Logger log = Logger.getLogger(RegistryClient.class);
 
+    @Deprecated
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
 
     public enum Query {
@@ -130,6 +133,8 @@ public class RegistryClient {
             return value;
         }
     }
+    
+    static final String CONFIG_FILE = "cadc-registry.properties";
     
     // version the cache dir so we can increment when we have incompatible cache structure
     static final String CONFIG_CACHE_DIR = "cadc-registry-1.4";
@@ -153,20 +158,22 @@ public class RegistryClient {
     }
 
     public RegistryClient() {
-        init(DEFAULT_REG_BASE_URL);
-    }
-
-    /**
-     * Find out if registry lookup URL was modified by a system property. This
-     * typically indicates that the code is running in a development/test environment.
-     *
-     * @return true if lookup is modified, false if default (production)
-     */
-    public boolean isRegistryLookupOverride() {
-        return !DEFAULT_REG_BASE_URL.equals(regBaseURL);
-    }
-
-    private void init(URL origURL) {
+        // standard behaviour: get regBaseURL from config file
+        PropertiesReader propReader = new PropertiesReader(CONFIG_FILE);
+        MultiValuedProperties mvp = propReader.getAllProperties();
+        String str = mvp.getFirstPropertyValue(Standards.REG_RESOURCE_CAPS.toASCIIString());
+        if (str != null) {
+            try {
+                this.regBaseURL = new URL(str);
+                return;
+            } catch (MalformedURLException ex) {
+                throw new InvalidConfigException(CONFIG_FILE + ": " + Standards.REG_RESOURCE_CAPS.toASCIIString()
+                        + " = " + str + " is not a valid URL", ex);
+            }
+        }
+        
+        // temporary backwards compatible behaviour
+        URL origURL = DEFAULT_REG_BASE_URL;
         try {
             String hostP = System.getProperty(HOST_PROPERTY);
             log.debug("     host: " + hostP);
@@ -187,6 +194,16 @@ public class RegistryClient {
             log.error("Error transforming resource-caps URL", e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Find out if registry lookup URL was modified by a system property. This
+     * typically indicates that the code is running in a development/test environment.
+     *
+     * @return true if lookup is modified, false if default (production)
+     */
+    public boolean isRegistryLookupOverride() {
+        return !DEFAULT_REG_BASE_URL.equals(regBaseURL);
     }
 
     /**
