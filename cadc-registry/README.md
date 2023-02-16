@@ -8,7 +8,7 @@ using a single configuration file: `cadc-registry.properties`.  The old `LocalAu
 is still recognized and read if `cadc-registry.properties` is not found.
 
 ### cadc-registry.properties
-The cadc-registry.properties file specifies which local service is authoritative for various site-wide functions. The keys are standardID values for the functions and the values are resourceID values (`ivo` scheme) for the service that implements that standard feature or a direct `https` 
+The cadc-registry.properties file specifies which local service is authoritative for various site-wide functions. The keys are IVOA standardID values representing the functions and the values are resourceID values (`ivo` scheme) for the service that implements that standard feature or a direct `https` 
 base URL to the service. The latter is intended for specifying the registry service to use or for
 services like an OpenID issuer that does not implement VOSI-capabilities.
 
