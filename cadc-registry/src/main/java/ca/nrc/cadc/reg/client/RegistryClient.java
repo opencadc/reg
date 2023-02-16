@@ -118,6 +118,8 @@ public class RegistryClient {
 
     @Deprecated
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
+    
+    private static final String CONFIG_BASE_URL = RegistryClient.class.getName() + ".baseURL";
 
     public enum Query {
         APPLICATIONS("applications"),
@@ -138,6 +140,8 @@ public class RegistryClient {
     
     // version the cache dir so we can increment when we have incompatible cache structure
     static final String CONFIG_CACHE_DIR = "cadc-registry-1.4";
+    
+    @Deprecated
     private static final URL DEFAULT_REG_BASE_URL;
     private static final String FILE_SEP = System.getProperty("file.separator");
 
@@ -161,13 +165,17 @@ public class RegistryClient {
         // standard behaviour: get regBaseURL from config file
         PropertiesReader propReader = new PropertiesReader(CONFIG_FILE);
         MultiValuedProperties mvp = propReader.getAllProperties();
-        String str = mvp.getFirstPropertyValue(Standards.REG_RESOURCE_CAPS.toASCIIString());
+        String str = mvp.getFirstPropertyValue(CONFIG_BASE_URL);
         if (str != null) {
             try {
+                if (str.endsWith("/")) {
+                    str = str.substring(0, str.length() - 1);
+                }
                 this.regBaseURL = new URL(str);
+                log.debug("regbaseURL: " + regBaseURL);
                 return;
             } catch (MalformedURLException ex) {
-                throw new InvalidConfigException(CONFIG_FILE + ": " + Standards.REG_RESOURCE_CAPS.toASCIIString()
+                throw new InvalidConfigException(CONFIG_FILE + ": " + CONFIG_BASE_URL
                         + " = " + str + " is not a valid URL", ex);
             }
         }

@@ -14,19 +14,19 @@ services like an OpenID issuer that does not implement VOSI-capabilities.
 
 Example:
 ```
-# reg service (required)
-ivo://opencadc.org/std/Registry = https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg
+# configure RegistryClient (required)
+ca.nrc.cadc.reg.client.RegistryClient.baseURL =  https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg
 
-# locval IVOA GMS service
+# local IVOA CDP service
+ivo://ivoa.net/std/CDP#delegate-1.0 = ivo://cadc.nrc.ca/cred
+ivo://ivoa.net/std/CDP#proxy-1.0 = ivo://cadc.nrc.ca/cred
+
+# local IVOA GMS service
 ivo://ivoa.net/std/GMS#search-1.0 = ivo://cadc.nrc.ca/gms
 
 # local CADC/CANFAR users service
 ivo://ivoa.net/std/UMS#users-0.1 = ivo://cadc.nrc.ca/gms    
 ivo://ivoa.net/std/UMS#login-0.1 = ivo://cadc.nrc.ca/gms           
-
-# local IVOA CDP service
-ivo://ivoa.net/std/CDP#delegate-1.0 = ivo://cadc.nrc.ca/cred
-ivo://ivoa.net/std/CDP#proxy-1.0 = ivo://cadc.nrc.ca/cred
 
 ## OIDC issuer
 ivo://ivoa.net/sso#OpenID = https://oidc.example.net/

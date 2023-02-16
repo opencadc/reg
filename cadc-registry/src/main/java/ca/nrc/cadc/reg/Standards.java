@@ -96,7 +96,6 @@ public class Standards {
     public static final URI GMS_SEARCH_10 = URI.create("ivo://ivoa.net/std/GMS#search-1.0");
 
     public static final URI REGISTRY_10 = URI.create("ivo://ivoa.net/std/Registry");
-    public static final URI REG_RESOURCE_CAPS = URI.create("ivo://opencadc.org/std/Registry");
 
     public static final URI SIA_10 = URI.create("ivo://ivoa.net/std/SIA");
     public static final URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
