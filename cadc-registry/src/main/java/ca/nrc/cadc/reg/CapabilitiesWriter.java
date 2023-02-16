@@ -75,6 +75,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -93,9 +95,11 @@ import org.jdom2.output.XMLOutputter;
 public class CapabilitiesWriter {
     private static final Logger log = Logger.getLogger(CapabilitiesWriter.class);
 
-    Namespace vosi = Namespace.getNamespace("vosi", "http://www.ivoa.net/xml/VOSICapabilities/v1.0");
-    Namespace vs = Namespace.getNamespace("vs", "http://www.ivoa.net/xml/VODataService/v1.1");
-        
+    private static final List<Namespace> NAMESPACE_LIST =
+            Collections.unmodifiableList(Arrays.asList(XMLConstants.CAPABILITIES_NS, XMLConstants.VODATASERVICE_NS,
+                                                       XMLConstants.VODATASERVICE_VS_NS, XMLConstants.VORESOURCE_NS));
+
+
     public CapabilitiesWriter() { 
     }
     
@@ -116,19 +120,23 @@ public class CapabilitiesWriter {
     }
     
     private Element getRootElement(Capabilities caps) {
-        Element root = new Element("capabilities", vosi);
-        root.addNamespaceDeclaration(vs);
+        Element root = new Element("capabilities", XMLConstants.CAPABILITIES_NS);
+        for (Namespace namespace : CapabilitiesWriter.NAMESPACE_LIST) {
+            root.addNamespaceDeclaration(namespace);
+        }
         root.addNamespaceDeclaration(W3CConstants.XSI_NS);
+
+        List<Namespace> namespacesInScope = root.getNamespacesInScope();
         
         for (Capability c : caps.getCapabilities()) {
-            Element ce = getCapabilityElement(c);
+            Element ce = getCapabilityElement(c, namespacesInScope);
             root.addContent(ce);
         }
         
         return root;
     }
     
-    private Element getCapabilityElement(Capability c) {
+    private Element getCapabilityElement(Capability c, List<Namespace> namespacesInScope) {
         Element ret = new Element("capability", Namespace.NO_NAMESPACE);
         ret.setAttribute("standardID", c.getStandardID().toASCIIString());
         boolean ext = false;
@@ -137,10 +145,15 @@ public class CapabilitiesWriter {
             ret.setAttribute(deepCopy(c.getExtensionType(), W3CConstants.XSI_NS));
             ext = true;
         }
-        
+
+        // Duplicates should be safe...
+        List<Namespace> allNamespacesInScope = new ArrayList<>();
+        allNamespacesInScope.addAll(ret.getNamespacesInScope());
+        allNamespacesInScope.addAll(namespacesInScope);
+
         // interfaces
         for (Interface i : c.getInterfaces()) {
-            Element ie = getInterfaceElement(i, ret.getNamespacesInScope());
+            Element ie = getInterfaceElement(i, allNamespacesInScope);
             ret.addContent(ie);
         }
         
@@ -180,7 +193,18 @@ public class CapabilitiesWriter {
     private Element getInterfaceElement(Interface i, List<Namespace> nsInScope) {
         Element ret = new Element("interface", Namespace.NO_NAMESPACE);
         URI type = i.getType();
-        String stype = "vs:" + type.getFragment();
+        String fullURL = type.toString();
+        String fragmentStart = "#";
+        String genericURL = fullURL.contains(fragmentStart)
+                            ? fullURL.substring(0, fullURL.indexOf(fragmentStart)) : fullURL;
+        String prefix = "vs:";  // Default
+        for (Namespace namespace : nsInScope) {
+            if (namespace.getURI().equals(genericURL)) {
+                prefix = namespace.getPrefix() + ":";
+                break;
+            }
+        }
+        String stype = prefix + type.getFragment();
         ret.setAttribute("type", stype, W3CConstants.XSI_NS);
         
         if (i.role != null) {

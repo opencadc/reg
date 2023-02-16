@@ -67,6 +67,7 @@
 
 package ca.nrc.cadc.reg;
 
+import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.util.FileUtil;
 import ca.nrc.cadc.util.Log4jInit;
 import java.io.File;
@@ -103,7 +104,7 @@ public class CapabilitiesReaderTest {
             Capabilities caps = read(f);
             Capabilities actual = roundtrip(caps);
 
-            Assert.assertEquals(3, caps.getCapabilities().size());
+            Assert.assertEquals(4, caps.getCapabilities().size());
 
             Capability cap;
 
@@ -113,8 +114,17 @@ public class CapabilitiesReaderTest {
             cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
             Assert.assertNotNull(cap);
 
+            cap = caps.findCapability(Standards.DALI_EXAMPLES_11);
+            Assert.assertNotNull(cap);
+
+            Interface browserInterface = cap.findInterface(Standards.SECURITY_METHOD_ANON,
+                                                           Standards.INTERFACE_WEB_BROWSER);
+            Assert.assertEquals("Wrong access URL", "http://example.net/srv/examples",
+                                browserInterface.getAccessURL().getURL().toExternalForm());
+
             cap = caps.findCapability(Standards.VOSI_TABLES_11);
             Assert.assertNotNull(cap);
+
             Interface ti = cap.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_PARAM_HTTP);
             Assert.assertNotNull("anon tables", ti);
             Assert.assertEquals("http://example.net/srv/tables", ti.getAccessURL().getURL().toExternalForm());
