@@ -4,7 +4,7 @@ client implementation of IVOA Registry specifications
 ## configuration
 
 The RegistryClient and LocalAuthority classes in this library are configured
-using a single configursation file. The old `LocalAuthority.properties` file
+using a single configuration file: `cadc-registry.properties`.  The old `LocalAuthority.properties` file
 is still recognized and read if `cadc-registry.properties` is not found.
 
 ### cadc-registry.properties
