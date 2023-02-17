@@ -33,8 +33,6 @@ dependencies {
     compile 'org.opencadc:cadc-registry:[1.5.8,)'
     compile 'org.opencadc:cadc-registry-server:[1.0.10,)'
     
-    runtime 'org.opencadc:cadc-access-control:[1.0,2.0)'
-
     testCompile 'org.opencadc:cadc-quality:[1.0,)'
     testCompile 'junit:junit:[4.0,5.0)'
     

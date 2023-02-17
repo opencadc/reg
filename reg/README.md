@@ -1,10 +1,22 @@
 # simple service registry (reg)
 
 ## configuration
-See the <a href="https://github.com/opencadc/docker-base/tree/master/cadc-tomcat">cadc-tomcat</a> image docs 
-for expected deployment and general config requirements.
 
 The following configuration files must be available in the /config directory.
+
+### catalina.properties
+
+This file contains java system properties to configure the tomcat server and some
+of the java libraries used in the service.
+
+See <a href="https://github.com/opencadc/docker-base/tree/master/cadc-tomcat">cadc-tomcat</a>
+for system properties related to the deployment environment.
+
+See <a href="https://github.com/opencadc/core/tree/master/cadc-util">cadc-util</a>
+for common system properties. 
+
+`reg` does not include any IdentityManager implementations because it allows anonymous
+access.
 
 ### reg-resource-caps.properties
 This configuration file provides a list of service identifiers (resourceID)  and the URL to the VOSI-capabilities endpoint for that service. 
