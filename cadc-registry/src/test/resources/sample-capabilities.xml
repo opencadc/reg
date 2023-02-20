@@ -1,11 +1,12 @@
 <vosi:capabilities
    xmlns:vosi="http://www.ivoa.net/xml/VOSICapabilities/v1.0"
    xmlns:vr="http://www.ivoa.net/xml/VOResource/v1.0"
-   xmlns:vs="http://www.ivoa.net/xml/VODataService/v1.1"
+   xmlns:strange="http://www.ivoa.net/xml/VODataService/v1.1"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<!-- intentionally using a strange prefix for VODataService above for roundtrip testing -->
 
   <capability standardID="ivo://ivoa.net/std/VOSI#capabilities">
-    <interface xsi:type="vs:ParamHTTP" role="std" version="1.0">
+    <interface xsi:type="strange:ParamHTTP" role="std" version="1.0">
       <accessURL use="full"> http://example.net/srv/capabilities </accessURL>
     </interface>
   </capability>
@@ -17,13 +18,13 @@
   </capability>
 
   <capability standardID="ivo://ivoa.net/std/VOSI#availability">
-    <interface xsi:type="vs:ParamHTTP" role="std" version="1.0">
+    <interface xsi:type="strange:ParamHTTP" role="std" version="1.0">
       <accessURL use="full"> http://example.net/srv/availability </accessURL>
     </interface>
   </capability>
 
   <capability standardID="ivo://ivoa.net/std/VOSI#tables-1.1">
-    <interface xsi:type="vs:ParamHTTP" role="std" version="1.1">
+    <interface xsi:type="strange:ParamHTTP" role="std" version="1.1">
       <accessURL use="base"> http://example.net/srv/tables </accessURL>
     </interface>
   </capability>

@@ -150,7 +150,6 @@ public class XMLConstants {
     }
 
     public static final Namespace CAPABILITIES_NS = Namespace.getNamespace("vosi", VOSICAPABILITIES_10_NS.toString());
-    public static final Namespace VODATASERVICE_NS = Namespace.getNamespace("vod", VODATASERVICE_11_NS.toString());
-    public static final Namespace VODATASERVICE_VS_NS = Namespace.getNamespace("vs", VODATASERVICE_11_NS.toString());
+    public static final Namespace VODATASERVICE_NS = Namespace.getNamespace("vs", VODATASERVICE_11_NS.toString());
     public static final Namespace VORESOURCE_NS = Namespace.getNamespace("vr", VORESOURCE_10_NS.toString());
 }

@@ -236,6 +236,7 @@ public class CapabilitiesReaderTest {
             for (int i = 0; i < ec.getInterfaces().size(); i++) {
                 Interface ei = ec.getInterfaces().get(i);
                 Interface ai = ac.getInterfaces().get(i);
+                log.warn("interface types: " + ei.getType() + " == " + ai.getType());
                 Assert.assertEquals(ei.getType(), ai.getType());
                 Assert.assertEquals(ei.role, ai.role);
                 Assert.assertEquals(ei.version, ai.version);
