@@ -97,7 +97,7 @@ public class CapabilitiesWriter {
 
     private static final List<Namespace> NAMESPACE_LIST =
             Collections.unmodifiableList(Arrays.asList(XMLConstants.CAPABILITIES_NS, XMLConstants.VODATASERVICE_NS,
-                                                       XMLConstants.VODATASERVICE_VS_NS, XMLConstants.VORESOURCE_NS));
+                                                       XMLConstants.VORESOURCE_NS));
 
 
     public CapabilitiesWriter() { 

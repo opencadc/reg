@@ -87,9 +87,9 @@ public class CapabilityTest {
     private static final Logger log = Logger.getLogger(CapabilityTest.class);
 
     private URI ITYPE = Standards.INTERFACE_PARAM_HTTP;
-    private String ACCESS_URL = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/availability";
-    private String ACCESS_URL_2 = "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/capabilities";
-    private String ACCESS_URL_3 = "http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap/sync";
+    private String ACCESS_URL = "http://example.net/tap/availability";
+    private String ACCESS_URL_2 = "https://example.net/tap/capabilities";
+    private String ACCESS_URL_3 = "http://example.net/tap/sync";
     private String SECURITY_METHOD = "ivo://ivoa.net/sso#tls-with-certficate";
     private String SECURITY_METHOD_1 = "http://ivoa.net/sso#BasicAA";
     private String SECURITY_METHOD_2 = "ivo://ivoa.net/sso#tls-with-certficate";
