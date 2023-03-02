@@ -101,7 +101,11 @@ public class XMLConstants {
     private static final String SIA_11_SCHEMA = "SIA-v1.1.xsd";
     private static final String STC_13_SCHEMA = "STC-v1.3.xsd";
     private static final String TAPREGEXT_10_SCHEMA = "TAPRegExt-v1.0-with-erratum1.xsd";
+    
+    @Deprecated
     private static final String VODATASERVICE_11_SCHEMA = "VODataService-v1.1.xsd";
+    private static final String VODATASERVICE_12_SCHEMA = "VODataService-v1.2.xsd";
+    
     private static final String VORESOURCE_10_SCHEMA = "VOResource-v1.1-with-erratum1.xsd"; // minor update w/ same namespace
     private static final String VOSICAPABILITIES_10_SCHEMA = "VOSICapabilities-v1.0.xsd";
     private static final String UWSREGEXT_10_SCHEMA = "UWSRegExt-v0.1.xsd";
@@ -124,7 +128,8 @@ public class XMLConstants {
         String tapRegEx10URL = XmlUtil.getResourceUrlString(TAPREGEXT_10_SCHEMA, XMLConstants.class);
         SCHEMA_MAP.put(TAPREGEXT_10_NS.toString(), tapRegEx10URL);
 
-        String voDataSvc11URL = XmlUtil.getResourceUrlString(VODATASERVICE_11_SCHEMA, XMLConstants.class);
+        // yes, VODataService-1.1 namespace with 1.2 xsd
+        String voDataSvc11URL = XmlUtil.getResourceUrlString(VODATASERVICE_12_SCHEMA, XMLConstants.class);
         SCHEMA_MAP.put(VODATASERVICE_11_NS.toString(), voDataSvc11URL);
 
         String voResource10URL = XmlUtil.getResourceUrlString(VORESOURCE_10_SCHEMA, XMLConstants.class);
