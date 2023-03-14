@@ -101,11 +101,7 @@
         <servlet-class>ca.nrc.cadc.vosi.AvailabilityServlet</servlet-class>
         <init-param>
             <param-name>ca.nrc.cadc.vosi.AvailabilityPlugin</param-name>
-            <param-value>org.opencadc.minoc.ServiceAvailability</param-value>
-        </init-param>
-        <init-param>
-            <param-name>availabilityProperties</param-name>
-            <param-value>minoc-availability.properties</param-value>
+            <param-value>org.opencadc.reg.server.ServiceAvailability</param-value>
         </init-param>
         <load-on-startup>4</load-on-startup>
     </servlet>
