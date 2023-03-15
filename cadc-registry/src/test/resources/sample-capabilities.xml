@@ -1,6 +1,7 @@
 <vosi:capabilities
    xmlns:vosi="http://www.ivoa.net/xml/VOSICapabilities/v1.0"
    xmlns:vr="http://www.ivoa.net/xml/VOResource/v1.0"
+   xmlns:vg="http://www.ivoa.net/xml/VORegistry/v1.0"
    xmlns:strange="http://www.ivoa.net/xml/VODataService/v1.1"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <!-- intentionally using a strange prefix for VODataService above for roundtrip testing -->
@@ -27,6 +28,13 @@
     <interface xsi:type="strange:ParamHTTP" role="std" version="1.1">
       <accessURL use="base"> http://example.net/srv/tables </accessURL>
     </interface>
+  </capability>
+  
+  <capability standardID="ivo://ivoa.net/std/Registry" xsi:type="vg:Harvest">
+    <interface role="std" xsi:type="vg:OAIHTTP">
+      <accessURL>https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg/oai</accessURL>
+    </interface>
+    <maxRecords>100</maxRecords>
   </capability>
 
 </vosi:capabilities>

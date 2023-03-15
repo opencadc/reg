@@ -2,6 +2,7 @@
 <vosi:capabilities
     xmlns:vosi="http://www.ivoa.net/xml/VOSICapabilities/v1.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:vg="http://www.ivoa.net/xml/VORegistry/v1.0"
     xmlns:vs="http://www.ivoa.net/xml/VODataService/v1.1">
 
   <capability standardID="ivo://ivoa.net/std/VOSI#capabilities">
@@ -19,10 +20,11 @@
   <capability standardID="vos://cadc.nrc.ca~vospace/CADC/std/Logging#control-1.0">
     <interface xsi:type="vs:ParamHTTP" role="std" version="1.0">
       <accessURL use="full">https://replace.me.com/reg/logControl</accessURL>
-      <securityMethod standardID="ivo://ivoa.net/sso#BasicAA"/>
+      <securityMethod standardID="ivo://ivoa.net/sso#tls-with-certificate"/>
     </interface>
   </capability> 
 
+<!--
   <capability xmlns:vg="http://www.ivoa.net/xml/VORegistry/v1.0" 
         standardID="ivo://ivoa.net/std/Registry" xsi:type="vg:Harvest">
     <interface role="std" xsi:type="vg:OAIHTTP">
@@ -30,12 +32,7 @@
     </interface>
     <maxRecords>100</maxRecords>
   </capability>
-
-  <capability standardID="intTest:canned-apps-query-test">
-    <interface xsi:type="vs:ParamHTTP" role="std">
-      <accessURL use="full">https://replace.me.com/reg/applications</accessURL>
-    </interface>
-  </capability>
+-->
 
 </vosi:capabilities>
 
