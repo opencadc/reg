@@ -123,12 +123,16 @@ public class Standards {
     @Deprecated
     public static final URI UMS_WHOAMI_01 = URI.create("ivo://ivoa.net/std/UMS#whoami-0.1");
     
-    public static final URI UMS_USERS_10 = URI.create("ivo://opencadc.org/std/UMS#users-1.0");
-    public static final URI UMS_REQS_10 = URI.create("ivo://opencadc.org/std/UMS#reqs-1.0");
-    public static final URI UMS_LOGIN_10 = URI.create("ivo://opencadc.org/std/UMS#login-1.0");
-    public static final URI UMS_RESETPASS_10 = URI.create("ivo://opencadc.org/std/UMS#resetpass-1.0");
-    public static final URI UMS_WHOAMI_10 = URI.create("ivo://opencadc.org/std/UMS#whoami-1.0");
+    public static final URI UMS_USERS_10 = URI.create("http://www.opencadc.org/std/UMS#users-1.0");
+    public static final URI UMS_REQS_10 = URI.create("http://www.opencadc.org/std/UMS#reqs-1.0");
+    public static final URI UMS_LOGIN_10 = URI.create("http://www.opencadc.org/std/UMS#login-1.0");
+    public static final URI UMS_RESETPASS_10 = URI.create("http://www.opencadc.org/std/UMS#resetpass-1.0");
+    public static final URI UMS_WHOAMI_10 = URI.create("http://www.opencadc.org/std/UMS#whoami-1.0");
 
+    // SRCNet prototypes
+    public static final URI POSIX_GROUPMAP = URI.create("http://www.opencadc.org/std/posix#group-mapping-0.1");
+    public static final URI POSIX_USERMAP = URI.create("http://www.opencadc.org/std/posix#user-mapping-0.1");
+    
     public static final URI VOSI_CAPABILITIES = URI.create("ivo://ivoa.net/std/VOSI#capabilities");
     public static final URI VOSI_AVAILABILITY = URI.create("ivo://ivoa.net/std/VOSI#availability");
     public static final URI VOSI_TABLES = URI.create("ivo://ivoa.net/std/VOSI#tables");
