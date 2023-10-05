@@ -152,8 +152,13 @@ public class Standards {
     public static final URI VOSPACE_TRANSFERS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
     public static final URI VOSPACE_VIEWS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
     public static final URI VOSPACE_FILES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.x#files");
+    
+    public static final URI VOSPACE_RECURSIVE_DELETE = URI.create("ivo://ivoa.net/std/VOSpace#recursive-delete-proto");
+    public static final URI VOSPACE_RECURSIVE_NODEPROPS = URI.create("ivo://ivoa.net/std/VOSpace#recursive-nodeprops-proto");
 
+    @Deprecated
     public static final URI VOSPACE_XFER_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOSpace#xfer");
+    @Deprecated
     public static final URI VOSPACE_NODEPROPS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/VOSpace#nodeprops");
 
     public static final URI CAOM2_OBS_20 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/CAOM2#obs-1.0");
