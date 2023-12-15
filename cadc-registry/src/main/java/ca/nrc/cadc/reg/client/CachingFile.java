@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2019.                            (c) 2019.
+*  (c) 2023.                            (c) 2023.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,7 +69,8 @@
 
 package ca.nrc.cadc.reg.client;
 
-import ca.nrc.cadc.net.HttpDownload;
+import ca.nrc.cadc.net.HttpGet;
+import ca.nrc.cadc.net.HttpTransfer;
 import ca.nrc.cadc.profiler.Profiler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -109,6 +110,8 @@ public class CachingFile {
 
     // 10 minutes
     private static final int DEFAULT_EXPRIY_SECONDS = 10 * 60;
+    private int connectionTimeout = 3000; // millis
+    private int readTimeout = 60000;      // millis
 
     private File localCache;
     private URL remoteSource;
@@ -157,6 +160,24 @@ public class CachingFile {
         this.expirySeconds = expirySeconds;
     }
 
+    /**
+     * HTTP connection timeout in milliseconds (default: 30000).
+     * 
+     * @param connectionTimeout in milliseconds
+     */
+    public void setConnectionTimeout(int connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+    }
+
+    /**
+     * HTTP read timeout in milliseconds (default: 60000).
+     * 
+     * @param readTimeout in milliseconds
+     */
+    public void setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
+    }
+    
     private File checkCacheDirectory(File cacheFile) {
         Profiler profiler = new Profiler(CachingFile.class);
         log.debug("Cache file: " + cacheFile);
@@ -290,7 +311,10 @@ public class CachingFile {
     private void loadRemoteContent(OutputStream dest) throws IOException {
         Profiler profiler = new Profiler(CachingFile.class);
         try {
-            HttpDownload download = new HttpDownload(remoteSource, dest);
+            HttpGet download = new HttpGet(remoteSource, dest);
+            download.setConnectionTimeout(connectionTimeout);
+            download.setReadTimeout(readTimeout);
+            log.warn("exec: " + download.getClass().getName() + " with timeouts: " + connectionTimeout + "," + readTimeout);
             download.run();
 
             if (download.getThrowable() != null) {

@@ -151,6 +151,9 @@ public class RegistryClient {
     private String hostname;
     private URL regBaseURL;
     private String capsDomain;
+    
+    private int connectionTimeout = 30000; // millis
+    private int readTimeout = 60000;      // millis
 
     static {
         try {
@@ -205,6 +208,24 @@ public class RegistryClient {
     }
 
     /**
+     * HTTP connection timeout in milliseconds (default: 30000).
+     * 
+     * @param connectionTimeout in milliseconds
+     */
+    public void setConnectionTimeout(int connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+    }
+
+    /**
+     * HTTP read timeout in milliseconds (default: 60000).
+     * 
+     * @param readTimeout in milliseconds
+     */
+    public void setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
+    }
+    
+    /**
      * Find out if registry lookup URL was modified by a system property. This
      * typically indicates that the code is running in a development/test environment.
      *
@@ -240,6 +261,8 @@ public class RegistryClient {
         log.debug("Capabilities cache file: " + queryCacheFile);
         URL queryURL = new URL(regBaseURL + "/" + queryName.getValue());
         CachingFile cachedCapSource = new CachingFile(queryCacheFile, queryURL);
+        cachedCapSource.setConnectionTimeout(connectionTimeout);
+        cachedCapSource.setReadTimeout(readTimeout);
         String map = cachedCapSource.getContent();
         InputStream mapStream = new ByteArrayInputStream(map.getBytes(StandardCharsets.UTF_8));
         MultiValuedProperties mvp = new MultiValuedProperties();
@@ -285,6 +308,8 @@ public class RegistryClient {
 
         File capabilitiesFile = this.getCapabilitiesCacheFile(resourceID);
         CachingFile cachedCapabilities = new CachingFile(capabilitiesFile, serviceCapsURL);
+        cachedCapabilities.setConnectionTimeout(connectionTimeout);
+        cachedCapabilities.setReadTimeout(readTimeout);
         String xml = cachedCapabilities.getContent();
         CapabilitiesReader capReader = new CapabilitiesReader();
         return capReader.read(xml);
