@@ -314,11 +314,10 @@ public class CachingFile {
             HttpGet download = new HttpGet(remoteSource, dest);
             download.setConnectionTimeout(connectionTimeout);
             download.setReadTimeout(readTimeout);
-            log.warn("exec: " + download.getClass().getName() + " with timeouts: " + connectionTimeout + "," + readTimeout);
             download.run();
 
             if (download.getThrowable() != null) {
-                log.warn("Could not get source from " + remoteSource, download.getThrowable());
+                log.warn("Could not get source from " + remoteSource + ": " + download.getThrowable());
                 throw new IOException(download.getThrowable());
             }
         } finally {
