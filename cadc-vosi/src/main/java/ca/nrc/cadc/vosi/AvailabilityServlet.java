@@ -111,7 +111,8 @@ public class AvailabilityServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config)
             throws ServletException {
-        this.appName = config.getServletContext().getServletContextName();
+        // TECHNICAL DEBT: recreate cadc-rest appName
+        this.appName = config.getServletContext().getContextPath().substring(1).replaceAll("/", "-"); 
         this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
         log.info("application: " + appName + " plugin impl: " + pluginClassName);
     }
