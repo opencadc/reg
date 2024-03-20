@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2020.                            (c) 2020.
+*  (c) 2024.                            (c) 2024.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -111,7 +111,7 @@ public class CapInitAction extends InitAction {
     static boolean getAuthRequired(String componentID) {
         String jndiKey = componentID + ".authRequired";
         try {
-            log.debug("retrieving capabilities template via JNDI: " + jndiKey);
+            log.debug("retrieving authRequired via JNDI: " + jndiKey);
             Context initContext = new InitialContext();
             Boolean authRequired = (Boolean) initContext.lookup(jndiKey);
             if (authRequired == null) {
@@ -120,6 +120,18 @@ public class CapInitAction extends InitAction {
             return authRequired;
         } catch (Exception ex) {
             throw new IllegalStateException("failed to find authRequired via JNDI: init failed", ex);
+        }
+    }
+    
+    static String getVersion(String componentID) {
+        String jndiKey = componentID + ".version";
+        try {
+            log.debug("retrieving version via JNDI: " + jndiKey);
+            Context initContext = new InitialContext();
+            String version = (String) initContext.lookup(jndiKey);
+            return version;
+        } catch (Exception ex) {
+            throw new IllegalStateException("failed to find version via JNDI: init failed", ex);
         }
     }
     
@@ -175,5 +187,57 @@ public class CapInitAction extends InitAction {
         } catch (Exception ex) {
             throw new IllegalArgumentException("CONFIG: failed to set authRequired flag", ex);
         }
+        
+        try {
+            String version = findLibraryVersion(CapInitAction.class);
+            
+            jndiKey = componentID + ".version";
+            try {
+                log.debug("unbinding possible version value");
+                initContext.unbind(jndiKey);
+            } catch (NamingException e) {
+                log.debug("no previously bound value, continuting");
+            }
+            initContext.bind(jndiKey, version);
+            log.info("doInit: version=" + version + " stored via JNDI: " + jndiKey);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("CONFIG: failed to set version flag", ex);
+        }
+    }
+    
+    // TODO: move this code up to cadc-rest or cadc-util
+    private String findLibraryVersion(Class probe) {
+        String ret = "no-version-found";
+        String rname = probe.getSimpleName() + ".class";
+        try {
+            
+            URL resURL = probe.getResource(rname);
+            log.debug("library URL: " + resURL);
+            // assume assume maven-central naming conventions for jar
+            // jar:file:/path/to/{library}-{ver}.jar!/package/subpackage/{rname}
+            if (resURL != null) {
+                String[] parts = resURL.toExternalForm().split("[:!]");
+                int i = 0;
+                for (String p : parts) {
+                    if (p.endsWith(".jar")) {
+                        int s = p.lastIndexOf('/');
+                        String ver = p.substring(s + 1); // {library}-{ver}.jar
+                        ver = ver.replace(".jar", "");   // {library}-{ver}
+                        
+                        // extract {major}.{minor} only
+                        String[] mmp = ver.split("\\.");
+                        if (mmp.length > 2) {
+                            ret = mmp[0] + "." + mmp[1];
+                        } else {
+                            ret = ver;
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            log.error("failed to find version for " + rname + " from classpath", ex);
+        }
+        
+        return ret;
     }
 }
