@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2022.                            (c) 2022.
+ *  (c) 2024.                            (c) 2024.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -70,6 +70,7 @@
 package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.auth.AuthenticationUtil;
+import ca.nrc.cadc.auth.IdentityManager;
 import ca.nrc.cadc.log.ServletLogInfo;
 import ca.nrc.cadc.log.WebServiceLogInfo;
 import ca.nrc.cadc.net.NetUtil;
@@ -101,22 +102,19 @@ public class AvailabilityServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(AvailabilityServlet.class);
     private static final long serialVersionUID = 201003131300L;
 
-    private static final String AVAILABILITY_PROPERTIES = "availabilityProperties";
-    private static final String USERS_PROPERTY = "users";
+    private static final String AVAILABILITY_PROPERTIES = "cadc-vosi.properties";
+    private static final String USERS_PROPERTY = "user";
 
     private String pluginClassName;
     private String appName;
-    private String availabilityProperties;
 
     @Override
     public void init(ServletConfig config)
             throws ServletException {
-        this.appName = config.getServletContext().getServletContextName();
+        // TECHNICAL DEBT: recreate cadc-rest appName
+        this.appName = config.getServletContext().getContextPath().substring(1).replaceAll("/", "-"); 
         this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
         log.info("application: " + appName + " plugin impl: " + pluginClassName);
-
-        // get the logControl.properties file for this service if it exists
-        availabilityProperties = config.getInitParameter(AVAILABILITY_PROPERTIES);
     }
 
     @Override
@@ -180,8 +178,9 @@ public class AvailabilityServlet extends HttpServlet {
             AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.newInstance();
             ap.setAppName(appName);
 
-            Principal caller = AuthenticationUtil.getX500Principal(subject);
-            if (authorized(caller)) {
+            IdentityManager im = AuthenticationUtil.getIdentityManager();
+            String caller = im.toDisplayString(subject);
+            if (authorized(subject)) {
                 String state = request.getParameter("state");
                 ap.setState(state);
                 log.info("WebService state change by " + caller + " [OK]");
@@ -203,66 +202,45 @@ public class AvailabilityServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Checks if the caller Principal matches an authorized Principal
-     * from the properties file.
-     *
-     * @param caller The calling Principal
-     * @return true if the calling Principal matches an authorized principal.
-     */
-    private boolean authorized(Principal caller) {
+    private boolean authorized(Subject caller) {
         if (caller != null) {
             Set<Principal> authorizedPrincipals = getAuthorizedPrincipals();
-            for (Principal authorizedPrincipal : authorizedPrincipals) {
-                if (AuthenticationUtil.equals(authorizedPrincipal, caller)) {
-                    log.debug("Authorized Principal: " + authorizedPrincipal.getName());
-                    return true;
+            for (Principal cp : caller.getPrincipals()) {
+                for (Principal ap : authorizedPrincipals) {
+                    log.debug("authorize?  " + ap.getName() + " vs " + cp.getName());
+                    if (AuthenticationUtil.equals(ap, cp)) {
+                        log.debug("Authorized Principal: " + ap.getName());
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
 
-    /**
-     * Get a Set of X500Principal's from the availability properties. Return
-     * an empty set if the properties do not exist or can't be read.
-     *
-     * @return Set of X500Principals, can be an empty Set if there are no authorized principals.
-     */
     private Set<Principal> getAuthorizedPrincipals() {
         Set<Principal> authorizedPrincipals = new HashSet<Principal>();
-        PropertiesReader propertiesReader = getAvailabilityProperties();
-        if (propertiesReader != null) {
-            try {
-                MultiValuedProperties mvp = propertiesReader.getAllProperties();
-                List<String> authorizedUsers = mvp.getProperty(USERS_PROPERTY);
-                for (String authorizedUser : authorizedUsers) {
-                    if (StringUtil.hasLength(authorizedUser)) {
-                        authorizedPrincipals.add(new X500Principal(authorizedUser));
-                    }
+        try {
+            MultiValuedProperties mvp = getAvailabilityProperties();
+            List<String> authorizedUsers = mvp.getProperty(USERS_PROPERTY);
+            for (String authorizedUser : authorizedUsers) {
+                if (StringUtil.hasLength(authorizedUser)) {
+                    authorizedPrincipals.add(new X500Principal(authorizedUser));
                 }
-            } catch (IllegalArgumentException e) {
-                log.debug("No authorized users configured");
             }
+        } catch (IllegalArgumentException e) {
+            log.debug("No authorized users configured");
         }
+        log.debug("configured aithorized: " + authorizedPrincipals.size());
         return authorizedPrincipals;
     }
 
-    /**
-     * Read the availability properties file and returns a PropertiesReader.
-     *
-     * @return A PropertiesReader, or null if the properties file does not
-     *          exist or can not be read.
-     */
-    private PropertiesReader getAvailabilityProperties() {
-        PropertiesReader reader = null;
-        if (availabilityProperties != null) {
-            reader = new PropertiesReader(availabilityProperties);
-            if (!reader.canRead()) {
-                reader = null;
-            }
+    private MultiValuedProperties getAvailabilityProperties() {
+        PropertiesReader reader = new PropertiesReader(AVAILABILITY_PROPERTIES);
+        if (!reader.canRead()) {
+            return new MultiValuedProperties();
         }
-        return reader;
+        return reader.getAllProperties();
     }
 
 }

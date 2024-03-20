@@ -86,6 +86,12 @@ public class CapHeadAction extends RestAction {
     }
 
     @Override
+    protected String getServerImpl() {
+        return CapInitAction.getVersion(componentID);
+    }
+
+    
+    @Override
     protected InlineContentHandler getInlineContentHandler() {
         return null;
     }

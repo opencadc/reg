@@ -91,8 +91,7 @@ public class CheckCertificate implements CheckResource {
 
     private static Logger log = Logger.getLogger(CheckCertificate.class);
 
-    private File cert;
-    private File key;
+    private final File cert;
 
     /**
      * Check a certificate. This certificate is assumed to hold a cert and key.
@@ -103,35 +102,20 @@ public class CheckCertificate implements CheckResource {
         this.cert = cert;
     }
 
-    /**
-     * Check a certificate. This certificate and key file are separate.
-     *
-     * @param cert certificate
-     * @param key private key
-     */
-    public CheckCertificate(File cert, File key) {
-        this.cert = cert;
-        this.key = key;
-    }
-
     @Override
     public void check()
             throws CheckException {
-        log.debug("read - cert: " + cert + " key: " + key);
+        log.debug("read - cert: " + cert);
         Subject s = null;
         try {
-            if (key != null) {
-                s = SSLUtil.createSubject(cert, key);
-            } else {
-                s = SSLUtil.createSubject(cert);
-            }
+            s = SSLUtil.createSubject(cert);
         } catch (Throwable t) {
-            log.debug("test failed: " + cert + " " + key);
+            log.debug("test failed: " + cert);
             // filename and reason detail are in throwable message
             throw new CheckException("cert check failed (not found): " + t.getMessage());
         }
 
-        log.debug("check validity - cert: " + cert.getAbsolutePath() + " " + cert + " key: " + key);
+        log.debug("check validity - cert: " + cert.getAbsolutePath() + " " + cert);
         try {
             Set<X509CertificateChain> certs = s.getPublicCredentials(X509CertificateChain.class);
             if (certs.isEmpty()) {
@@ -141,11 +125,11 @@ public class CheckCertificate implements CheckResource {
             X509CertificateChain chain = certs.iterator().next(); // the first one
             checkValidity(chain);
         } catch (Throwable t) {
-            log.debug("test failed: " + cert + " " + key);
+            log.debug("test failed: " + cert);
             // filename and reason detail are in throwable message
             throw new CheckException("cert check failed (invalid): " + t.getMessage());
         }
-        log.debug("test succeeded: " + cert.getAbsolutePath() + " " + cert + " " + key);
+        log.debug("test succeeded: " + cert.getAbsolutePath() + " " + cert);
     }
 
     private void checkValidity(X509CertificateChain chain) {
