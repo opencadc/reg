@@ -70,6 +70,7 @@ package ca.nrc.cadc.vosi;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.rest.InitAction;
+import ca.nrc.cadc.rest.Version;
 import ca.nrc.cadc.util.StringUtil;
 
 import java.io.StringReader;
@@ -189,7 +190,7 @@ public class CapInitAction extends InitAction {
         }
         
         try {
-            String version = findLibraryVersion(CapInitAction.class);
+            Version version = getLibraryVersion(CapInitAction.class);
             
             jndiKey = componentID + ".version";
             try {
@@ -198,46 +199,10 @@ public class CapInitAction extends InitAction {
             } catch (NamingException e) {
                 log.debug("no previously bound value, continuting");
             }
-            initContext.bind(jndiKey, version);
+            initContext.bind(jndiKey, version.getMajorMinor());
             log.info("doInit: version=" + version + " stored via JNDI: " + jndiKey);
         } catch (Exception ex) {
             throw new IllegalArgumentException("CONFIG: failed to set version flag", ex);
         }
-    }
-    
-    // TODO: move this code up to cadc-rest or cadc-util
-    private String findLibraryVersion(Class probe) {
-        String ret = "no-version-found";
-        String rname = probe.getSimpleName() + ".class";
-        try {
-            
-            URL resURL = probe.getResource(rname);
-            log.debug("library URL: " + resURL);
-            // assume assume maven-central naming conventions for jar
-            // jar:file:/path/to/{library}-{ver}.jar!/package/subpackage/{rname}
-            if (resURL != null) {
-                String[] parts = resURL.toExternalForm().split("[:!]");
-                int i = 0;
-                for (String p : parts) {
-                    if (p.endsWith(".jar")) {
-                        int s = p.lastIndexOf('/');
-                        String ver = p.substring(s + 1); // {library}-{ver}.jar
-                        ver = ver.replace(".jar", "");   // {library}-{ver}
-                        
-                        // extract {major}.{minor} only
-                        String[] mmp = ver.split("\\.");
-                        if (mmp.length > 2) {
-                            ret = mmp[0] + "." + mmp[1];
-                        } else {
-                            ret = ver;
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            log.error("failed to find version for " + rname + " from classpath", ex);
-        }
-        
-        return ret;
     }
 }
