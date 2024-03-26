@@ -33,7 +33,7 @@ user even when the associated AAI system is unavailable, so this mechanism is mo
 as it does not depend on any other functioning component.
 
 If an optional _startupMode_ is configured, the availability servlet will create the service-specific
-AvailabilityPlugin and call `setState`. The behaviour is completely in rthe control of the service
+AvailabilityPlugin and call `setState`. The behaviour is completely in the control of the service
 and how it implements the plugin.
 
 ## TODO
