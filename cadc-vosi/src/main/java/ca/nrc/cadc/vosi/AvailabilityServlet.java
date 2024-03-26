@@ -74,10 +74,12 @@ import ca.nrc.cadc.auth.IdentityManager;
 import ca.nrc.cadc.log.ServletLogInfo;
 import ca.nrc.cadc.log.WebServiceLogInfo;
 import ca.nrc.cadc.net.NetUtil;
+import ca.nrc.cadc.util.InvalidConfigException;
 import ca.nrc.cadc.util.MultiValuedProperties;
 import ca.nrc.cadc.util.PropertiesReader;
 import ca.nrc.cadc.util.StringUtil;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
@@ -103,6 +105,7 @@ public class AvailabilityServlet extends HttpServlet {
     private static final long serialVersionUID = 201003131300L;
 
     private static final String AVAILABILITY_PROPERTIES = "cadc-vosi.properties";
+    private static final String MODE_KEY = "startupMode";
     private static final String USERS_PROPERTY = "user";
 
     private String pluginClassName;
@@ -115,6 +118,27 @@ public class AvailabilityServlet extends HttpServlet {
         this.appName = config.getServletContext().getContextPath().substring(1).replaceAll("/", "-"); 
         this.pluginClassName = config.getInitParameter(AvailabilityPlugin.class.getName());
         log.info("application: " + appName + " plugin impl: " + pluginClassName);
+        
+        MultiValuedProperties mvp = getAvailabilityProperties();
+        String startupMode = mvp.getFirstPropertyValue(MODE_KEY);
+        if (startupMode != null) {
+            AvailabilityPlugin ap = loadPlugin();
+            ap.setState(startupMode);
+        }
+    }
+    
+    private AvailabilityPlugin loadPlugin() throws InvalidConfigException {
+        try {
+            Class wsClass = Class.forName(pluginClassName);
+            AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.getConstructor().newInstance();
+            ap.setAppName(appName);
+            log.debug("loaded: " + wsClass);
+            return ap;
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException 
+                | InstantiationException | NoSuchMethodException | SecurityException 
+                | InvocationTargetException ex) {
+            throw new InvalidConfigException("failed to load AvailabilityPlugin: " + pluginClassName, ex);
+        }
     }
 
     @Override
@@ -128,9 +152,7 @@ public class AvailabilityServlet extends HttpServlet {
             logInfo.setSubject(subject);
             log.info(logInfo.start());
 
-            Class wsClass = Class.forName(pluginClassName);
-            AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.newInstance();
-            ap.setAppName(appName);
+            AvailabilityPlugin ap = loadPlugin();
 
             String detail = request.getParameter("detail");
             if (detail != null && detail.equals("min")) {
@@ -174,9 +196,7 @@ public class AvailabilityServlet extends HttpServlet {
             logInfo.setSubject(subject);
             log.info(logInfo.start());
 
-            Class wsClass = Class.forName(pluginClassName);
-            AvailabilityPlugin ap = (AvailabilityPlugin) wsClass.newInstance();
-            ap.setAppName(appName);
+            AvailabilityPlugin ap = loadPlugin();
 
             IdentityManager im = AuthenticationUtil.getIdentityManager();
             String caller = im.toDisplayString(subject);
