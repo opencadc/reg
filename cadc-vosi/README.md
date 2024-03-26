@@ -8,6 +8,15 @@ cadc-tap-schema</a> library.
 In addition to the normal VOSI API, the VOSI-availability component supports optional
 changing of the service state. Supported states: ReadWrite (normal), ReadOnly, and Offline.
 
+Set state example:
+```
+curl --cert <cert file> -d state=ReadOnly https://example.net/srv/availability
+```
+Get example:
+```
+curl https://example.net/srv/availability
+```
+
 ## cadc-vosi.properties
 This config file (optional) allows deployers to specify users that are allowed to
 change the service state via HTTP POST to the `/availability` endpoint.
