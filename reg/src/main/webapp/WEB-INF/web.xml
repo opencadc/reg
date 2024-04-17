@@ -25,14 +25,9 @@
                 ca.nrc.cadc.uws
             </param-value>
         </init-param>
-        <init-param>
-            <param-name>logControlProperties</param-name>
-            <param-value>reg-log-control.properties</param-value>
-        </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
-<!--
     <servlet>
         <servlet-name>PubRegServlet</servlet-name>
         <servlet-class>ca.nrc.cadc.uws.server.JobServlet</servlet-class>
@@ -130,12 +125,10 @@
         <url-pattern>/applications</url-pattern>
     </servlet-mapping>
 
-<!--
     <servlet-mapping>
         <servlet-name>PubRegServlet</servlet-name>
         <url-pattern>/oai/*</url-pattern>
     </servlet-mapping>
--->    
     
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>

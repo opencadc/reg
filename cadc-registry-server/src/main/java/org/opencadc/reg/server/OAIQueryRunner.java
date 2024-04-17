@@ -345,7 +345,11 @@ public class OAIQueryRunner implements JobRunner {
     }
 
     private void doStatic(String oaiRequest) throws IOException {
-        InputStream istream = getInputStream(null, oaiRequest);
+        File f = getMetaResource(null, oaiRequest, true);
+        if (f == null) {
+            throw new RuntimeException("CONFIG: failed to find " + oaiRequest);
+        }
+        InputStream istream = new FileInputStream(f);
 
         OAIWriter w = new OAIWriter();
         syncOut.setCode(200);
@@ -394,10 +398,12 @@ public class OAIQueryRunner implements JobRunner {
         if (!"ivo_vor".equals(metadataPrefix)) {
             throw new IllegalArgumentException("cannotDisseminateFormat");
         }
-        InputStream istream = getInputStream(authority, uri.getPath().toLowerCase());
-        if (istream == null) {
+        File f = getMetaResource(authority, uri.getPath().toLowerCase(), true);
+        if (f == null) {
             throw new ResourceNotFoundException("idDoesNotExist");
         }
+        InputStream istream = new FileInputStream(f);
+        
         OAIWriter w = new OAIWriter();
         syncOut.setCode(200);
         syncOut.setHeader("Content-Type", "text/xml");
@@ -409,23 +415,22 @@ public class OAIQueryRunner implements JobRunner {
     private List<OAIHeader> getHeaders(Date start, Date end) throws IOException {
         String uriAuthority = getAuthority();
         // currently supports one authority directory
-        URL url = OAIQueryRunner.class.getClassLoader().getResource(uriAuthority);
-        if (url == null) {
-            throw new IOException(String.format("Unable to find configured authority directory (%s) in classpath.",
+        File authorityDir = getMetaResource(null, uriAuthority, false);
+        if (authorityDir == null) {
+            throw new IOException(String.format("Unable to find configured authority directory (%s)",
                                                 uriAuthority));
         } else {
-            File content = new File(url.getPath());
             List<OAIHeader> headers = new ArrayList<>();
 
             // authority record itself is a sibling of {authority} named {authority}.xml
-            File authority = new File(content.getAbsolutePath() + ".xml");
+            File authority = new File(authorityDir.getAbsolutePath() + ".xml");
             OAIHeader h = extractHeader(authority);
             h = filterByDate(h, start, end);
             if (h != null) {
                 headers.add(h);
             }
 
-            final File[] contentFiles = content.listFiles();
+            final File[] contentFiles = authorityDir.listFiles();
             if (contentFiles != null) {
                 for (File f : contentFiles) {
                     if (f.isDirectory()) { // one level recursion for the stuff under /archive/{name}
@@ -488,17 +493,29 @@ public class OAIQueryRunner implements JobRunner {
         return null;
     }
 
-    private InputStream getInputStream(String sub, String name) throws IOException {
+    private File getMetaResource(String sub, String name, boolean xml) throws IOException {
         StringBuilder sb = new StringBuilder();
         if (sub != null) {
             sb.append(sub);
         }
-        sb.append(name).append(".xml");
+        sb.append(name);
+        if (xml) {
+            sb.append(".xml");
+        }
         String filename = sb.toString();
+        
+        // look for content in {user.home}/config/content
+        File dir = new File(System.getProperty("user.home") + "/config/content");
+        File f = new File(dir, filename);
+        log.warn("look for: " + f.getAbsolutePath());
+        if (f.exists()) {
+            return f;
+        }
+        // look for content in classpath
         URL url = OAIQueryRunner.class.getClassLoader().getResource(filename);
         if (url == null) {
-            throw new RuntimeException("CONFIG: failed to find " + filename);
+            return null;
         }
-        return url.openStream();
+        return new File(url.getFile());
     }
 }

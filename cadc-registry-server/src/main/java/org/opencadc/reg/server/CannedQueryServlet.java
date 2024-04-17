@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2019.                            (c) 2019.
+ *  (c) 2024.                            (c) 2024.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -100,37 +100,38 @@ public class CannedQueryServlet extends HttpServlet {
 
     private static final Logger log = Logger.getLogger(CannedQueryServlet.class);
 
+    private static String PARAM_QUERY_FILE = "queryFile";
+    
     private String configFileName;
-    private String initParameKey = "queryFile";
-
+    
     public CannedQueryServlet() {
     }
 
-    static void checkSystemConfig() throws IllegalStateException {
-        checkFileExists("reg-resource-caps.properties");
-        checkFileExists("reg-applications.properties");
-    }
-
-    static File checkFileExists(String paramFileName) throws IllegalStateException {
+    static File checkFileExists(String paramFileName) {
         File f = new File(System.getProperty("user.home") + "/config/" + paramFileName);
-
-        if (f.exists() && f.canRead()) {
+        if (f.exists()) {
             return f;
         }
-        throw new IllegalStateException("CONFIG: canned query file not found or not readable: " + f.getAbsolutePath());
+        return null;
     }
 
     @Override
     public void init(ServletConfig config)
             throws ServletException {
         super.init(config);
-        configFileName = config.getInitParameter(initParameKey);
+        this.configFileName = config.getInitParameter(PARAM_QUERY_FILE);
 
-        try {
-            checkFileExists(configFileName);
-            log.info("CONFIG: canned query file: " + configFileName);
-        } catch (IllegalStateException ex) {
-            log.error(ex.getMessage());
+        log.info("initCannedQuery: checking for " + configFileName);
+        File f = checkFileExists(configFileName);
+        if (f != null) {
+            if (f.canRead()) {
+                log.info("initCannedQuery: " + configFileName + " OK");
+            } else {
+                log.error("initCannedQuery: " + configFileName + " not readable FAIL");
+            }
+        } else {
+            log.info("initCannedQuery: " + configFileName + " not found DISABLED");
+            this.configFileName = null; // disabled
         }
     }
 
@@ -143,29 +144,32 @@ public class CannedQueryServlet extends HttpServlet {
 
         try {
             log.info(logInfo.start());
-
-            File f = checkFileExists(configFileName);
-            byte[] buf = FileUtil.readFile(f);
-            response.setStatus(200);
-            response.setContentType("text/plain");
-            response.setContentLength(buf.length);
-            OutputStream ostream = response.getOutputStream();
-            ostream.write(buf);
-            ostream.flush();
-            logInfo.setSuccess(true);
-        } catch (IllegalStateException ise) {
-            logInfo.setSuccess(false);
-            logInfo.setMessage("CONFIG: cannot read canned query file " + configFileName);
-            log.error(ise.getMessage());
-            response.setStatus(500);
-            response.setContentType("text/plain");
-            Writer w = response.getWriter();
-            w.write("canned query lookup query failed");
-            w.flush();
+            if (configFileName != null) {
+                File f = checkFileExists(configFileName);
+                byte[] buf = FileUtil.readFile(f);
+                response.setStatus(200);
+                response.setContentType("text/plain");
+                response.setContentLength(buf.length);
+                
+                OutputStream ostream = response.getOutputStream();
+                ostream.write(buf);
+                ostream.flush();
+                logInfo.setSuccess(true);
+            } else {
+                String msg = "not found: feature not configured\n";
+                logInfo.setSuccess(false);
+                logInfo.setMessage(msg);
+                
+                response.setStatus(404);
+                response.setContentType("text/plain");
+                Writer w = response.getWriter();
+                w.write(msg);
+                w.flush();
+            }
         } catch (Throwable t) {
             logInfo.setSuccess(false);
             logInfo.setMessage(t.toString());
-            log.error("BUG: failed to rewrite hostname in accessURL elements", t);
+            log.error("BUG: failed to deliver file content", t);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getMessage());
         } finally {
             logInfo.setElapsedTime(System.currentTimeMillis() - start);

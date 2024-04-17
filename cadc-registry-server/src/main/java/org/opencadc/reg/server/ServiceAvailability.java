@@ -69,6 +69,7 @@ package org.opencadc.reg.server;
 
 import ca.nrc.cadc.vosi.Availability;
 import ca.nrc.cadc.vosi.AvailabilityPlugin;
+import java.io.File;
 
 /**
  * @author pdowler
@@ -91,7 +92,23 @@ public class ServiceAvailability implements AvailabilityPlugin {
     @Override
     public Availability getStatus() {
         try {
-            CannedQueryServlet.checkSystemConfig();
+            String fname;
+            File rc;
+            
+            fname = "reg-resource-caps.properties";
+            rc = CannedQueryServlet.checkFileExists(fname);
+            if (rc != null && !rc.canRead()) {
+                return new Availability(false, "CONFIG: " + fname + " not readable");
+            }
+            
+            fname = "reg-applications.properties";
+            rc = CannedQueryServlet.checkFileExists(fname);
+            if (rc != null && !rc.canRead()) {
+                return new Availability(false, "CONFIG: " + fname + " not readable");
+            }
+            
+            // TODO: check for OAI content if configured
+            
             return new Availability(true, "accepting requests");
         } catch (IllegalStateException ex) {
             return new Availability(false, ex.getMessage());
