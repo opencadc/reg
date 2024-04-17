@@ -34,11 +34,3 @@ dependencies {
     
     intTestCompile 'org.opencadc:cadc-test-vosi:[1.0.2,)'
 }
-
-configurations {
-  runtime.exclude group: 'javax.servlet'
-  runtime.exclude group: 'net.sourceforge.jtds'
-  runtime.exclude group: 'org.restlet.jee'
-}
-
-
