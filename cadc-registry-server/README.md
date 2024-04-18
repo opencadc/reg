@@ -1,4 +1,11 @@
-# cadc-registry-server
+# cadc-registry-server: OBSOLETE
+
+The last published version of this library is `org.opencadc:cadc-registry-server:1.1.2`.
+
+The code has been moved into the `reg` service which has been improved to allow for
+runtime configuration of service behaviour and content.
+
+## old information
 
 Simple registry implementation that provides limited support for two IVOA Registry features:
 

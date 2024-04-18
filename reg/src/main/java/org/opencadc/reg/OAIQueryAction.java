@@ -1,90 +1,87 @@
 /*
- ************************************************************************
- *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
- **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
- *
- *  (c) 2019.                            (c) 2019.
- *  Government of Canada                 Gouvernement du Canada
- *  National Research Council            Conseil national de recherches
- *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
- *  All rights reserved                  Tous droits réservés
- *
- *  NRC disclaims any warranties,        Le CNRC dénie toute garantie
- *  expressed, implied, or               énoncée, implicite ou légale,
- *  statutory, of any kind with          de quelque nature que ce
- *  respect to the software,             soit, concernant le logiciel,
- *  including without limitation         y compris sans restriction
- *  any warranty of merchantability      toute garantie de valeur
- *  or fitness for a particular          marchande ou de pertinence
- *  purpose. NRC shall not be            pour un usage particulier.
- *  liable in any event for any          Le CNRC ne pourra en aucun cas
- *  damages, whether direct or           être tenu responsable de tout
- *  indirect, special or general,        dommage, direct ou indirect,
- *  consequential or incidental,         particulier ou général,
- *  arising from the use of the          accessoire ou fortuit, résultant
- *  software.  Neither the name          de l'utilisation du logiciel. Ni
- *  of the National Research             le nom du Conseil National de
- *  Council of Canada nor the            Recherches du Canada ni les noms
- *  names of its contributors may        de ses  participants ne peuvent
- *  be used to endorse or promote        être utilisés pour approuver ou
- *  products derived from this           promouvoir les produits dérivés
- *  software without specific prior      de ce logiciel sans autorisation
- *  written permission.                  préalable et particulière
- *                                       par écrit.
- *
- *  This file is part of the             Ce fichier fait partie du projet
- *  OpenCADC project.                    OpenCADC.
- *
- *  OpenCADC is free software:           OpenCADC est un logiciel libre ;
- *  you can redistribute it and/or       vous pouvez le redistribuer ou le
- *  modify it under the terms of         modifier suivant les termes de
- *  the GNU Affero General Public        la “GNU Affero General Public
- *  License as published by the          License” telle que publiée
- *  Free Software Foundation,            par la Free Software Foundation
- *  either version 3 of the              : soit la version 3 de cette
- *  License, or (at your option)         licence, soit (à votre gré)
- *  any later version.                   toute version ultérieure.
- *
- *  OpenCADC is distributed in the       OpenCADC est distribué
- *  hope that it will be useful,         dans l’espoir qu’il vous
- *  but WITHOUT ANY WARRANTY;            sera utile, mais SANS AUCUNE
- *  without even the implied             GARANTIE : sans même la garantie
- *  warranty of MERCHANTABILITY          implicite de COMMERCIALISABILITÉ
- *  or FITNESS FOR A PARTICULAR          ni d’ADÉQUATION À UN OBJECTIF
- *  PURPOSE.  See the GNU Affero         PARTICULIER. Consultez la Licence
- *  General Public License for           Générale Publique GNU Affero
- *  more details.                        pour plus de détails.
- *
- *  You should have received             Vous devriez avoir reçu une
- *  a copy of the GNU Affero             copie de la Licence Générale
- *  General Public License along         Publique GNU Affero avec
- *  with OpenCADC.  If not, see          OpenCADC ; si ce n’est
- *  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
- *                                       <http://www.gnu.org/licenses/>.
- *
- ************************************************************************
- */
+************************************************************************
+*******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
+**************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
+*
+*  (c) 2024.                            (c) 2024.
+*  Government of Canada                 Gouvernement du Canada
+*  National Research Council            Conseil national de recherches
+*  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
+*  All rights reserved                  Tous droits réservés
+*
+*  NRC disclaims any warranties,        Le CNRC dénie toute garantie
+*  expressed, implied, or               énoncée, implicite ou légale,
+*  statutory, of any kind with          de quelque nature que ce
+*  respect to the software,             soit, concernant le logiciel,
+*  including without limitation         y compris sans restriction
+*  any warranty of merchantability      toute garantie de valeur
+*  or fitness for a particular          marchande ou de pertinence
+*  purpose. NRC shall not be            pour un usage particulier.
+*  liable in any event for any          Le CNRC ne pourra en aucun cas
+*  damages, whether direct or           être tenu responsable de tout
+*  indirect, special or general,        dommage, direct ou indirect,
+*  consequential or incidental,         particulier ou général,
+*  arising from the use of the          accessoire ou fortuit, résultant
+*  software.  Neither the name          de l'utilisation du logiciel. Ni
+*  of the National Research             le nom du Conseil National de
+*  Council of Canada nor the            Recherches du Canada ni les noms
+*  names of its contributors may        de ses  participants ne peuvent
+*  be used to endorse or promote        être utilisés pour approuver ou
+*  products derived from this           promouvoir les produits dérivés
+*  software without specific prior      de ce logiciel sans autorisation
+*  written permission.                  préalable et particulière
+*                                       par écrit.
+*
+*  This file is part of the             Ce fichier fait partie du projet
+*  OpenCADC project.                    OpenCADC.
+*
+*  OpenCADC is free software:           OpenCADC est un logiciel libre ;
+*  you can redistribute it and/or       vous pouvez le redistribuer ou le
+*  modify it under the terms of         modifier suivant les termes de
+*  the GNU Affero General Public        la “GNU Affero General Public
+*  License as published by the          License” telle que publiée
+*  Free Software Foundation,            par la Free Software Foundation
+*  either version 3 of the              : soit la version 3 de cette
+*  License, or (at your option)         licence, soit (à votre gré)
+*  any later version.                   toute version ultérieure.
+*
+*  OpenCADC is distributed in the       OpenCADC est distribué
+*  hope that it will be useful,         dans l’espoir qu’il vous
+*  but WITHOUT ANY WARRANTY;            sera utile, mais SANS AUCUNE
+*  without even the implied             GARANTIE : sans même la garantie
+*  warranty of MERCHANTABILITY          implicite de COMMERCIALISABILITÉ
+*  or FITNESS FOR A PARTICULAR          ni d’ADÉQUATION À UN OBJECTIF
+*  PURPOSE.  See the GNU Affero         PARTICULIER. Consultez la Licence
+*  General Public License for           Générale Publique GNU Affero
+*  more details.                        pour plus de détails.
+*
+*  You should have received             Vous devriez avoir reçu une
+*  a copy of the GNU Affero             copie de la Licence Générale
+*  General Public License along         Publique GNU Affero avec
+*  with OpenCADC.  If not, see          OpenCADC ; si ce n’est
+*  <http://www.gnu.org/licenses/>.      pas le cas, consultez :
+*                                       <http://www.gnu.org/licenses/>.
+*
+************************************************************************
+*/
 
-package org.opencadc.reg.server;
+package org.opencadc.reg;
 
-import ca.nrc.cadc.auth.AuthMethod;
-import ca.nrc.cadc.dali.ParamExtractor;
 import ca.nrc.cadc.date.DateUtil;
+import ca.nrc.cadc.net.HttpTransfer;
 import ca.nrc.cadc.net.ResourceNotFoundException;
-import ca.nrc.cadc.reg.Standards;
-import ca.nrc.cadc.reg.client.RegistryClient;
-import ca.nrc.cadc.rest.SyncOutput;
-import ca.nrc.cadc.uws.Job;
-import ca.nrc.cadc.uws.server.JobRunner;
-import ca.nrc.cadc.uws.server.JobUpdater;
-import ca.nrc.cadc.uws.util.JobLogInfo;
+import ca.nrc.cadc.rest.InlineContentHandler;
+import ca.nrc.cadc.rest.RestAction;
+import ca.nrc.cadc.util.MultiValuedProperties;
+import ca.nrc.cadc.util.PropertiesReader;
 import ca.nrc.cadc.xml.XmlUtil;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -95,8 +92,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -104,121 +99,58 @@ import org.jdom2.Namespace;
 import org.opencadc.reg.oai.OAIHeader;
 import org.opencadc.reg.oai.OAIWriter;
 
-
 /**
+ * A cadc-rest GetAction implementation that implements minimal OAI publishing.
+ * 
  * @author pdowler
  */
-public class OAIQueryRunner implements JobRunner {
+public class OAIQueryAction extends RestAction {
+    private static final Logger log = Logger.getLogger(OAIQueryAction.class);
 
-    private static final Logger log = Logger.getLogger(OAIQueryRunner.class);
-
-    public static final String AUTHORITY = "cadc.nrc.ca";
-    private static final URI RESOURCE_ID = URI.create("ivo://cadc.nrc.ca/reg");
+    private static final String CONFIG = "reg.properties";
+    private static final String AUTHORITY_KEY = "org.opencadc.reg.authority";
 
     enum OAI {
         verb, metadataPrefix, set, identifier, from, until, resumptionToken
     }
 
-    private Job job;
-    private Map<String, List<String>> params;
-    private SyncOutput syncOut;
-    private JobLogInfo logInfo;
-    private final URL oaiEndpoint;
+    private URL oaiEndpoint;
+    private String authority;
 
-    public OAIQueryRunner() {
-        RegistryClient rc = new RegistryClient();
-        this.oaiEndpoint = rc.getServiceURL(getResourceID(), Standards.REGISTRY_10, AuthMethod.ANON,
-                                            Standards.INTERFACE_REG_OAI);
-        if (oaiEndpoint == null) {
-            throw new RuntimeException("CONFIG: unable to lookup OAI endpoint");
-        }
+    public OAIQueryAction() {
     }
 
     @Override
-    public void setJobUpdater(JobUpdater jobUpdater) {
-        // Do nothing.
+    protected InlineContentHandler getInlineContentHandler() {
+        return null; // not used
     }
 
     @Override
-    public void setJob(Job job) {
-        this.job = job;
-        List<String> pnames = new ArrayList<>();
-        for (OAI o : OAI.values()) {
-            pnames.add(o.name());
-        }
-        ParamExtractor pe = new ParamExtractor(pnames);
-        this.params = pe.getParameters(job.getParameterList());
+    public void initAction() throws Exception {
+        super.initAction();
+        this.oaiEndpoint = new URL(syncInput.getRequestURI());
+        PropertiesReader pr = new PropertiesReader(CONFIG);
+        MultiValuedProperties mvp = pr.getAllProperties();
+        this.authority = mvp.getFirstPropertyValue(AUTHORITY_KEY);
     }
-
+    
     @Override
-    public void setSyncOutput(SyncOutput syncOut) {
-        this.syncOut = syncOut;
-    }
+    public void doAction() throws Exception {
+        
+        if (authority == null) {
+            String msg = "not found: OAI publishing not configured\n";
+            logInfo.setSuccess(false);
+            logInfo.setMessage(msg);
 
-    private String getParamValue(String s) {
-        List<String> vals = params.get(s);
-        if (vals != null) {
-            Iterator<String> iter = vals.iterator();
-            if (iter.hasNext()) {
-                String ret = iter.next();
-                if (iter.hasNext()) {
-                    throw new IllegalArgumentException("badArgument");
-                }
-                return ret;
-            }
+            syncOutput.setCode(404);
+            syncOutput.setHeader(HttpTransfer.CONTENT_TYPE, "text/plain");
+            Writer w = new OutputStreamWriter(syncOutput.getOutputStream());
+            w.write(msg);
+            w.flush();
+            return;
         }
-        return null;
-    }
 
-    @Override
-    public void run() {
-        long t1 = System.currentTimeMillis();
-        try {
-            this.logInfo = new JobLogInfo(job);
-            log.info(logInfo.start());
-            doit();
-        } finally {
-            long dt = System.currentTimeMillis() - t1;
-            logInfo.setElapsedTime(dt);
-            log.info(logInfo.end());
-        }
-    }
-
-    /**
-     * Obtain the URI's Authority.  Implementors can override this method to obtain their own authority.
-     * @return  The authority domain to look for in the classpath.  Never null.
-     */
-    public String getAuthority() {
-        return OAIQueryRunner.AUTHORITY;
-    }
-
-    /**
-     * Obtain the Resource ID of the registry service to query.  Implementors can override this method to obtain their
-     * own resource ID.
-     * @return  URI resource ID.  Never null.
-     */
-    public URI getResourceID() {
-        return OAIQueryRunner.RESOURCE_ID;
-    }
-
-    private Date toDate(String s) {
-        if (s == null) {
-            return null;
-        }
-        DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
-        try {
-            if (s.endsWith("Z")) {
-                s = s.substring(0, s.length() - 2);
-            }
-            return DateUtil.flexToDate(s, df);
-        } catch (ParseException ex) {
-            throw new IllegalArgumentException("badArgument");
-        }
-    }
-
-    private void doit() {
         logInfo.setSuccess(false);
-
         try {
             // mandatory OAI verb
             String verb = getParamValue(OAI.verb.name());
@@ -327,21 +259,51 @@ public class OAIQueryRunner implements JobRunner {
         }
     }
 
-    private void sendError(int code, String msg) throws IOException {
-        syncOut.setCode(code);
-        syncOut.setHeader("Content-Type", "text/plain");
+    private String getParamValue(String s) {
+        List<String> vals = syncInput.getParameters(s);
+        if (vals != null) {
+            Iterator<String> iter = vals.iterator();
+            if (iter.hasNext()) {
+                String ret = iter.next();
+                if (iter.hasNext()) {
+                    throw new IllegalArgumentException("badArgument");
+                }
+                return ret;
+            }
+        }
+        return null;
+    }
 
-        PrintWriter w = new PrintWriter(syncOut.getOutputStream());
+    private Date toDate(String s) {
+        if (s == null) {
+            return null;
+        }
+        DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
+        try {
+            if (s.endsWith("Z")) {
+                s = s.substring(0, s.length() - 2);
+            }
+            return DateUtil.flexToDate(s, df);
+        } catch (ParseException ex) {
+            throw new IllegalArgumentException("badArgument");
+        }
+    }
+    
+    private void sendError(int code, String msg) throws IOException {
+        syncOutput.setCode(code);
+        syncOutput.setHeader("Content-Type", "text/plain");
+
+        PrintWriter w = new PrintWriter(syncOutput.getOutputStream());
         w.println(msg);
         w.close();
     }
 
     private void sendError(String oaiRequest, int code, String msg) throws IOException {
-        syncOut.setCode(code);
-        syncOut.setHeader("Content-Type", "text/xml");
+        syncOutput.setCode(code);
+        syncOutput.setHeader("Content-Type", "text/xml");
 
         OAIWriter w = new OAIWriter();
-        w.writeError(oaiEndpoint, oaiRequest, msg, syncOut.getOutputStream());
+        w.writeError(oaiEndpoint, oaiRequest, msg, syncOutput.getOutputStream());
     }
 
     private void doStatic(String oaiRequest) throws IOException {
@@ -352,9 +314,9 @@ public class OAIQueryRunner implements JobRunner {
         InputStream istream = new FileInputStream(f);
 
         OAIWriter w = new OAIWriter();
-        syncOut.setCode(200);
-        syncOut.setHeader("Content-Type", "text/xml");
-        w.write(oaiEndpoint, oaiRequest, istream, syncOut.getOutputStream());
+        syncOutput.setCode(200);
+        syncOutput.setHeader("Content-Type", "text/xml");
+        w.write(oaiEndpoint, oaiRequest, istream, syncOutput.getOutputStream());
     }
 
     private void doListIdentifiers(Date start, Date end, String metadataPrefix) throws IOException {
@@ -368,9 +330,9 @@ public class OAIQueryRunner implements JobRunner {
         }
         List<OAIHeader> out = new ArrayList<>(headers);
         OAIWriter w = new OAIWriter();
-        syncOut.setCode(200);
-        syncOut.setHeader("Content-Type", "text/xml");
-        w.writeList(oaiEndpoint, "ListIdentifiers", out, syncOut.getOutputStream());
+        syncOutput.setCode(200);
+        syncOutput.setHeader("Content-Type", "text/xml");
+        w.writeList(oaiEndpoint, "ListIdentifiers", out, syncOutput.getOutputStream());
     }
 
     private void doListRecords(Date start, Date end, String metadataPrefix) throws IOException {
@@ -384,14 +346,14 @@ public class OAIQueryRunner implements JobRunner {
         }
         List<OAIHeader> out = new ArrayList<>(headers);
         OAIWriter w = new OAIWriter();
-        syncOut.setCode(200);
-        syncOut.setHeader("Content-Type", "text/xml");
-        w.writeList(oaiEndpoint, "ListRecords", out, syncOut.getOutputStream());
+        syncOutput.setCode(200);
+        syncOutput.setHeader("Content-Type", "text/xml");
+        w.writeList(oaiEndpoint, "ListRecords", out, syncOutput.getOutputStream());
     }
 
-    private void doGetRecord(String identifier, String metadataPrefix) throws IOException, ResourceNotFoundException, URISyntaxException {
+    private void doGetRecord(String identifier, String metadataPrefix) 
+            throws IOException, ResourceNotFoundException, URISyntaxException {
         URI uri = new URI(identifier);
-        String authority = getAuthority();
         if (!authority.equals(uri.getAuthority())) {
             throw new IllegalArgumentException("idDoesNotExist");
         }
@@ -405,20 +367,18 @@ public class OAIQueryRunner implements JobRunner {
         InputStream istream = new FileInputStream(f);
         
         OAIWriter w = new OAIWriter();
-        syncOut.setCode(200);
-        syncOut.setHeader("Content-Type", "text/xml");
-        w.write(oaiEndpoint, "GetRecord", istream, syncOut.getOutputStream());
+        syncOutput.setCode(200);
+        syncOutput.setHeader("Content-Type", "text/xml");
+        w.write(oaiEndpoint, "GetRecord", istream, syncOutput.getOutputStream());
     }
 
     // implementation details below
 
     private List<OAIHeader> getHeaders(Date start, Date end) throws IOException {
-        String uriAuthority = getAuthority();
         // currently supports one authority directory
-        File authorityDir = getMetaResource(null, uriAuthority, false);
+        File authorityDir = getMetaResource(null, authority, false);
         if (authorityDir == null) {
-            throw new IOException(String.format("Unable to find configured authority directory (%s)",
-                                                uriAuthority));
+            throw new IOException(String.format("Unable to find configured authority directory (%s)", authority));
         } else {
             List<OAIHeader> headers = new ArrayList<>();
 
@@ -511,11 +471,6 @@ public class OAIQueryRunner implements JobRunner {
         if (f.exists()) {
             return f;
         }
-        // look for content in classpath
-        URL url = OAIQueryRunner.class.getClassLoader().getResource(filename);
-        if (url == null) {
-            return null;
-        }
-        return new File(url.getFile());
+        return null;
     }
 }

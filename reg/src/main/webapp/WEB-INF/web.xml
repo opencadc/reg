@@ -19,7 +19,6 @@
             <param-name>logLevelPackages</param-name>
             <param-value>
                 org.opencadc.reg
-                org.opencadc.reg
                 ca.nrc.cadc.reg
                 ca.nrc.cadc.vosi
                 ca.nrc.cadc.rest
@@ -47,7 +46,7 @@
             <param-name>queryFile</param-name>
             <param-value>reg-resource-caps.properties</param-value>
         </init-param>
-        <servlet-class>org.opencadc.reg.server.CannedQueryServlet</servlet-class>
+        <servlet-class>org.opencadc.reg.CannedQueryServlet</servlet-class>
     </servlet>
 
     <servlet>
@@ -57,7 +56,7 @@
              <param-name>queryFile</param-name>
              <param-value>reg-applications.properties</param-value>
         </init-param>
-        <servlet-class>org.opencadc.reg.server.CannedQueryServlet</servlet-class>
+        <servlet-class>org.opencadc.reg.CannedQueryServlet</servlet-class>
     </servlet>
     
     <!-- VOSI capabilities -->
