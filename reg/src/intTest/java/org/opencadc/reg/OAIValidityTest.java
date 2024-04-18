@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2018.                            (c) 2018.
+*  (c) 2024.                            (c) 2024.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,6 +69,9 @@ package org.opencadc.reg;
 
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.net.HttpDownload;
+import ca.nrc.cadc.reg.Capabilities;
+import ca.nrc.cadc.reg.Capability;
+import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
@@ -104,13 +107,14 @@ public class OAIValidityTest {
         DELETED_RESOURCES.add("ivo://cadc.nrc.ca/vospace");
     }
     
-    URL oaiEndpoint;
+    final URL oaiEndpoint;
     
     public OAIValidityTest() { 
         try {
-            RegistryClient rc = new RegistryClient();
-            this.oaiEndpoint = rc.getServiceURL(VosiCapabilitiesTest.RESOURCE_ID, Standards.REGISTRY_10, AuthMethod.ANON, Standards.INTERFACE_REG_OAI);
-            
+            Capabilities caps = VosiCapabilitiesTest.getCapabilities();
+            Capability oai = caps.findCapability(Standards.REGISTRY_10);
+            Interface iface = oai.findInterface(Standards.SECURITY_METHOD_ANON, Standards.INTERFACE_REG_OAI);
+            this.oaiEndpoint = iface.getAccessURL().getURL();
         } catch (Exception ex) {
             throw new RuntimeException("CONFIG: failed to find OAI endpoint", ex);
         }

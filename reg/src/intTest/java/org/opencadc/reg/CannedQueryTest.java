@@ -78,6 +78,7 @@ import java.net.URL;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 /**
@@ -86,7 +87,6 @@ import org.junit.Test;
  */
 public class CannedQueryTest {
     private static final Logger log = Logger.getLogger(CannedQueryTest.class);
-    private static final URI TEST_APP_RESOURCE_ID = URI.create("ivo://opencadc.org/reg");
 
     static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
@@ -99,8 +99,7 @@ public class CannedQueryTest {
     @Test
     public void testApplicationsEndpoint() {
         try {
-            RegistryClient applicationsRC = new RegistryClient();
-            URL capURL = applicationsRC.getServiceURL(TEST_APP_RESOURCE_ID, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
+            URL capURL = VosiCapabilitiesTest.CAP_URL;
             Assert.assertNotNull(capURL);
             
             // HACK: unregistered
@@ -110,6 +109,7 @@ public class CannedQueryTest {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             HttpGet get = new HttpGet(target, bos);
             get.run();
+            log.info("result: " + get.getResponseCode() + " " + get.getThrowable());
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());
             Assert.assertEquals("text/plain", get.getContentType());
@@ -117,15 +117,15 @@ public class CannedQueryTest {
             log.info("content-length = " + get.getContentLength());
             log.info("content:\n" + bos.toString());
         } catch (Exception ex) {
-            throw new RuntimeException("BUG: failed to find and access test applications endpoint " + TEST_APP_RESOURCE_ID, ex);
+            log.error("unexpected fail", ex);
+            Assert.fail("unexpected fail: " + ex);
         }
     }
     
     @Test
     public void testResourceCapsEndpoint() {
         try {
-            RegistryClient applicationsRC = new RegistryClient();
-            URL capURL = applicationsRC.getServiceURL(TEST_APP_RESOURCE_ID, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
+            URL capURL = VosiCapabilitiesTest.CAP_URL;
             Assert.assertNotNull(capURL);
             
             // HACK: unregistered
@@ -143,7 +143,8 @@ public class CannedQueryTest {
             log.info("content-length = " + get.getContentLength());
             log.info("content:\n" + bos.toString());
         } catch (Exception ex) {
-            throw new RuntimeException("BUG: failed to find and access test applications endpoint " + TEST_APP_RESOURCE_ID, ex);
+            log.error("unexpected fail", ex);
+            Assert.fail("unexpected fail: " + ex);
         }
     }
 

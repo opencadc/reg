@@ -2,13 +2,27 @@
   "swagger": "2.0",
   "info": {
     "title": "reg: Simple Registry Service",
-    "description": "This is a simple registry service that mimics a couple of canned queries one could do with an IVOA Registry (RegTAP) service.\n"
+    "description": "This is a simple registry service that provides an OAI publishing endpoint and mimics a couple of canned queries one could do with an IVOA Registry (RegTAP) service.\n"
   },
   "schemes": [
     "https"
   ],
   "basePath": "/reg",
   "paths": {
+        "/oai": {
+            "get": {
+                "summary": "OAI Publishing",
+            "description": "\n",
+            "produces": [
+              "text/xml"
+            ],
+            "responses": {
+              "200": {
+                "description": "An OAI query response."
+              }
+            }
+        }
+    },
     "/capabilities": {
       "get": {
         "summary": "VOSI Capabilities",

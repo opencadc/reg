@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2016.                            (c) 2016.
+*  (c) 2024.                            (c) 2024.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,13 +69,19 @@
 
 package org.opencadc.reg;
 
+import ca.nrc.cadc.auth.AuthenticationUtil;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.Log4jInit;
 import ca.nrc.cadc.vosi.CapabilitiesTest;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import javax.security.auth.Subject;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
@@ -88,14 +94,33 @@ public class VosiCapabilitiesTest extends CapabilitiesTest {
 
     private static final Logger log = Logger.getLogger(VosiCapabilitiesTest.class);
 
-    public static final URI RESOURCE_ID = URI.create("ivo://opencadc.org/reg");
+    public static final String CAP_URL_PROP = "org.opencadc.reg.capabilitiesURL";
+    public static URL CAP_URL;
     
     static {
         Log4jInit.setLevel("org.opencadc.reg", Level.INFO);
+        String surl = System.getProperty(CAP_URL_PROP);
+        if (surl == null) {
+            String msg = "TEST CONFIG: set java system property '" + CAP_URL_PROP + "'";
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+        try {
+            CAP_URL = new URL(surl);
+        } catch (MalformedURLException ex) {
+            String msg = "TEST CONFIG: " + CAP_URL_PROP + "=" + surl 
+                    + " but the URL is invalid: " + ex.toString();
+            throw new RuntimeException(msg, ex);
+        }
+    }
+    
+    public static Capabilities getCapabilities() throws IOException, URISyntaxException {
+        Subject anon = AuthenticationUtil.getAnonSubject();
+        return CapabilitiesTest.getCapabilitiesFromServer(anon, CAP_URL);
     }
 
     public VosiCapabilitiesTest() {
-        super(RESOURCE_ID);
+        super(CAP_URL);
     }
 
     @Override
