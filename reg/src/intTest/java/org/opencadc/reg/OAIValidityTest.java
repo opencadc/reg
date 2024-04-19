@@ -67,13 +67,11 @@
 
 package org.opencadc.reg;
 
-import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.net.HttpDownload;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
 import ca.nrc.cadc.reg.Standards;
-import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
@@ -97,14 +95,11 @@ import org.opencadc.reg.oai.OAIReader;
 public class OAIValidityTest {
     private static final Logger log = Logger.getLogger(OAIValidityTest.class);
 
-    private static final List<String> DELETED_RESOURCES = new ArrayList<String>();
+    private static final String DELETED_RESOURCE = "ivo://example.net/deleted";
     
     static {
-        Log4jInit.setLevel("org.opencadc.reg.server", Level.INFO);
+        Log4jInit.setLevel("org.opencadc.reg", Level.INFO);
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
-        DELETED_RESOURCES.add("ivo://cadc.nrc.ca/hips2");
-        DELETED_RESOURCES.add("ivo://cadc.nrc.ca/tap");
-        DELETED_RESOURCES.add("ivo://cadc.nrc.ca/vospace");
     }
     
     final URL oaiEndpoint;
@@ -234,7 +229,7 @@ public class OAIValidityTest {
                 log.info("testListIdentifiers: " + id + " status: " + status);
                 Assert.assertNotNull(id);
                 
-                if (DELETED_RESOURCES.contains(id)) {
+                if (DELETED_RESOURCE.equals(id)) {
                     Assert.assertEquals("deleted", status);
                 } else {
                     Assert.assertNull(status);
@@ -277,7 +272,10 @@ public class OAIValidityTest {
     @Test
     public void testListIdentifiersFromUntil() {
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListIdentifiers&metadataPrefix=ivo_vor&from=2019-06-15T21:15:10Z&until=2019-06-15T21:15:20Z");
+            String from = "2020-01-01T00:00:00Z";
+            String until = "2020-02-02T00:00:00Z";
+            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListIdentifiers&metadataPrefix=ivo_vor"
+                    + "&from=" + from + "&until=" + until);
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             HttpDownload get = new HttpDownload(u, bos);
@@ -304,7 +302,7 @@ public class OAIValidityTest {
     @Test
     public void testGetRecord() {
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=GetRecord&metadataPrefix=ivo_vor&identifier=ivo://cadc.nrc.ca/argus");
+            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=GetRecord&metadataPrefix=ivo_vor&identifier=ivo://example.net/registry");
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             HttpDownload get = new HttpDownload(u, bos);
@@ -348,7 +346,7 @@ public class OAIValidityTest {
     @Test
     public void testGetDeletedRecord() {
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=GetRecord&metadataPrefix=ivo_vor&identifier=ivo://cadc.nrc.ca/tap");
+            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=GetRecord&metadataPrefix=ivo_vor&identifier=" + DELETED_RESOURCE);
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             HttpDownload get = new HttpDownload(u, bos);
