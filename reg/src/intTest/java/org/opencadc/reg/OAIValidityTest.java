@@ -67,7 +67,8 @@
 
 package org.opencadc.reg;
 
-import ca.nrc.cadc.net.HttpDownload;
+import ca.nrc.cadc.date.DateUtil;
+import ca.nrc.cadc.net.HttpGet;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.Interface;
@@ -75,10 +76,16 @@ import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.util.Log4jInit;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
+import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
@@ -95,14 +102,13 @@ import org.opencadc.reg.oai.OAIReader;
 public class OAIValidityTest {
     private static final Logger log = Logger.getLogger(OAIValidityTest.class);
 
-    private static final String DELETED_RESOURCE = "ivo://example.net/deleted";
-    
     static {
         Log4jInit.setLevel("org.opencadc.reg", Level.INFO);
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
     
-    final URL oaiEndpoint;
+    private final URL oaiEndpoint;
+    private final DateFormat dateFormat = DateUtil.getDateFormat(DateUtil.ISO8601_DATE_FORMAT_Z, DateUtil.UTC);
     
     public OAIValidityTest() { 
         try {
@@ -121,7 +127,7 @@ public class OAIValidityTest {
             URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=Identify");
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
+            HttpGet get = new HttpGet(u, bos);
             get.run();
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());
@@ -148,7 +154,7 @@ public class OAIValidityTest {
             URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListMetadataFormats");
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
+            HttpGet get = new HttpGet(u, bos);
             get.run();
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());
@@ -175,7 +181,7 @@ public class OAIValidityTest {
             URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListSets");
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
+            HttpGet get = new HttpGet(u, bos);
             get.run();
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());
@@ -196,46 +202,101 @@ public class OAIValidityTest {
         }
     }
     
+    private class IdentRecord implements Comparable<IdentRecord> {
+        Date datestamp;
+        URI resourceID;
+
+        public IdentRecord(Date datestamp, URI resourceID) {
+            this.datestamp = datestamp;
+            this.resourceID = resourceID;
+        }
+
+        @Override
+        public int compareTo(IdentRecord t) {
+            int ret = datestamp.compareTo(t.datestamp);
+            if (ret != 0) {
+                return ret;
+            }
+            return resourceID.compareTo(t.resourceID);
+        }
+    }
+
+    // list all records in datestamp order in a map<datesmap,resourceID>
+    private SortedSet<IdentRecord> listRecords() throws Exception {
+        URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListIdentifiers&metadataPrefix=ivo_vor");
+        log.info(u.toExternalForm());
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        HttpGet get = new HttpGet(u, bos);
+        get.run();
+        Assert.assertNull("throwable", get.getThrowable());
+        Assert.assertEquals(200, get.getResponseCode());
+        Assert.assertEquals("text/xml", get.getContentType());
+
+        String xml = bos.toString();
+        log.debug("xml:\n" + xml);
+
+        StringReader sr = new StringReader(xml);
+        OAIReader r = new OAIReader();
+        Document doc = r.read(sr);
+        Element root = doc.getRootElement();
+        Element error = root.getChild("error", root.getNamespace());
+        Assert.assertNull("OAI error", error);
+        
+        Namespace ns = root.getNamespace();
+        Element li = root.getChild("ListIdentifiers", ns);
+        Assert.assertNotNull(li);
+        List<Element> headers = li.getChildren("header", ns);
+        Assert.assertFalse(headers.isEmpty());
+        
+        SortedSet<IdentRecord> ret = new TreeSet<>();
+        for (Element h : headers) {
+            String id = h.getChildText("identifier", ns);
+            String datestamp = h.getChildText("datestamp", ns);
+            String status = h.getAttributeValue("status", Namespace.NO_NAMESPACE);
+            log.info("testListIdentifiers: " + datestamp + " " + id + " " + status);
+            Assert.assertNotNull(id);
+            Assert.assertNotNull(datestamp);
+            URI resourceID = new URI(id);
+            Date d = dateFormat.parse(datestamp);
+            IdentRecord ir = new IdentRecord(d, resourceID);
+            ret.add(ir);
+        }
+        return ret;
+    }
+
+    // this assumes that at least 2 seconds separates each record timestamp
+    private Date[] getReducedFromUntil(SortedSet<IdentRecord> allRecords) {
+        Iterator<IdentRecord> all = allRecords.iterator();
+        Assert.assertTrue(all.hasNext());
+        final IdentRecord first = all.next();
+        
+        Assert.assertTrue(all.hasNext());
+        final IdentRecord r2 = all.next();
+        
+        Assert.assertTrue(all.hasNext());
+        IdentRecord penultimate = r2;
+        IdentRecord ultimate = all.next();
+        while (all.hasNext()) {
+            penultimate = ultimate;
+            ultimate = all.next();
+        }
+
+        // compute mid
+        long t1 = (first.datestamp.getTime() + r2.datestamp.getTime()) / 2L; // between 1 and 2 
+        long t2 = (penultimate.datestamp.getTime() + ultimate.datestamp.getTime()) / 2L; // between N-1 and N
+        // truncate to seconds
+        t1 = (t1 / 1000L) * 1000L;
+        t2 = (t2 / 1000L) * 1000L;
+        // shift by eps
+        t1 = t1 + 1000L;
+        t2 = t2 - 1000L;
+        return new Date[] { new Date(t1), new Date(t2) };
+    }
+
     @Test
     public void testListIdentifiers() {
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListIdentifiers&metadataPrefix=ivo_vor");
-            log.info(u.toExternalForm());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
-            get.run();
-            Assert.assertNull("throwable", get.getThrowable());
-            Assert.assertEquals(200, get.getResponseCode());
-            Assert.assertEquals("text/xml", get.getContentType());
-            
-            String xml = bos.toString();
-            log.debug("xml:\n" + xml);
-            
-            StringReader sr = new StringReader(xml);
-            OAIReader r = new OAIReader();
-            Document doc = r.read(sr);
-            Element root = doc.getRootElement();
-            Element error = root.getChild("error", root.getNamespace());
-            Assert.assertNull("OAI error", error);
-            Namespace ns = root.getNamespace();
-            
-            Element li = root.getChild("ListIdentifiers", ns);
-            Assert.assertNotNull(li);
-            List<Element> headers = li.getChildren("header", ns);
-            Assert.assertFalse(headers.isEmpty());
-            for (Element h : headers) {
-                String id = h.getChildText("identifier", ns);
-                String status = h.getAttributeValue("status", Namespace.NO_NAMESPACE);
-                log.info("testListIdentifiers: " + id + " status: " + status);
-                Assert.assertNotNull(id);
-                
-                if (DELETED_RESOURCE.equals(id)) {
-                    Assert.assertEquals("deleted", status);
-                } else {
-                    Assert.assertNull(status);
-                }
-            }
-            
+            listRecords();
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -245,10 +306,11 @@ public class OAIValidityTest {
     @Test
     public void testListIdentifiersEmpty() {
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListIdentifiers&metadataPrefix=ivo_vor&until=1999-01-01");
+            // TODO: use listRecords, get oldest datestamp, and make until= param before that? or just 1984 is fine
+            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListIdentifiers&metadataPrefix=ivo_vor&until=1984-01-01");
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
+            HttpGet get = new HttpGet(u, bos);
             get.run();
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());
@@ -272,13 +334,34 @@ public class OAIValidityTest {
     @Test
     public void testListIdentifiersFromUntil() {
         try {
-            String from = "2020-01-01T00:00:00Z";
-            String until = "2020-02-02T00:00:00Z";
+            SortedSet<IdentRecord> allRecords = listRecords();
+            log.info("all records: " + allRecords.size());
+            if (allRecords.size() < 3) {
+                log.warn("found " + allRecords.size() + " records: unable to test ListIdentifiers with from & until");
+                return;
+            }
+            Date[] range = getReducedFromUntil(allRecords);
+            String from = dateFormat.format(range[0]);
+            String until = dateFormat.format(range[1]);
+            
+            // figure out expected number of records between the dates
+            int expectedNum = 0;
+            for (IdentRecord ir: allRecords) {
+                Date d = ir.datestamp;
+                if (range[0].getTime() <= d.getTime()
+                        && d.getTime() <= range[1].getTime()) {
+                    expectedNum++;
+                    log.debug("testListIdentifiersFromUntil expect: " + expectedNum + " " + ir.resourceID);
+                } else {
+                    log.debug("testListIdentifiersFromUntil skip: " + ir.resourceID);
+                }
+            }
+            
             URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListIdentifiers&metadataPrefix=ivo_vor"
                     + "&from=" + from + "&until=" + until);
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
+            HttpGet get = new HttpGet(u, bos);
             get.run();
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());
@@ -293,6 +376,27 @@ public class OAIValidityTest {
             Element root = doc.getRootElement();
             Element error = root.getChild("error", root.getNamespace());
             Assert.assertNull("OAI error", error);
+            
+            // check: should have N-2
+            Namespace ns = root.getNamespace();
+            Element li = root.getChild("ListIdentifiers", ns);
+            Assert.assertNotNull(li);
+            List<Element> headers = li.getChildren("header", ns);
+            Assert.assertFalse(headers.isEmpty());
+
+            int found = 0;
+            for (Element h : headers) {
+                found++;
+                String id = h.getChildText("identifier", ns);
+                String datestamp = h.getChildText("datestamp", ns);
+                String status = h.getAttributeValue("status", Namespace.NO_NAMESPACE);
+                log.info("testListIdentifiersFromUntil: " + found + " " + datestamp + " " + id + " " + status);
+                Assert.assertNotNull(id);
+                Assert.assertNotNull(datestamp);
+                URI resourceID = new URI(id);
+                Date d = dateFormat.parse(datestamp);
+            }
+            Assert.assertEquals("found expected num records", expectedNum, found);
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -301,115 +405,53 @@ public class OAIValidityTest {
     
     @Test
     public void testGetRecord() {
+        // currently: schema validation only
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=GetRecord&metadataPrefix=ivo_vor&identifier=ivo://example.net/registry");
-            log.info(u.toExternalForm());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
-            get.run();
-            Assert.assertNull("throwable", get.getThrowable());
-            Assert.assertEquals(200, get.getResponseCode());
-            Assert.assertEquals("text/xml", get.getContentType());
-            
-            String xml = bos.toString();
-            log.debug("xml:\n" + xml);
-            
-            StringReader sr = new StringReader(xml);
-            OAIReader r = new OAIReader();
-            Document doc = r.read(sr);
-            Element root = doc.getRootElement();
-            Element error = root.getChild("error", root.getNamespace());
-            Assert.assertNull("OAI error", error);
-            Namespace ns = root.getNamespace();
-            
-            Element req = root.getChild("request", ns);
-            Assert.assertNotNull(req);
-            
-            Assert.assertEquals("GetRecord", req.getAttributeValue("verb"));
-            Element gr = root.getChild("GetRecord", ns);
-            Assert.assertNotNull(gr);
-            Element record = gr.getChild("record", ns);
-            Assert.assertNotNull(record);
-            Element header = record.getChild("header", ns);
-            Assert.assertNotNull(header);
+            SortedSet<IdentRecord> allRecords = listRecords();
+            for (IdentRecord ir: allRecords) {
+                URL u = new URL(oaiEndpoint.toExternalForm() 
+                    + "?verb=GetRecord&metadataPrefix=ivo_vor&identifier=" + ir.resourceID.toASCIIString());
+                log.info(u.toExternalForm());
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                HttpGet get = new HttpGet(u, bos);
+                get.run();
+                Assert.assertNull("throwable", get.getThrowable());
+                Assert.assertEquals(200, get.getResponseCode());
+                Assert.assertEquals("text/xml", get.getContentType());
 
-            // status: active
-            Assert.assertNull(header.getAttributeValue("status"));
-            Element metadata = record.getChild("metadata", ns);
-            Assert.assertNotNull(metadata);
-        } catch (Exception unexpected) {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
-    }
-    
-    @Test
-    public void testGetDeletedRecord() {
-        try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=GetRecord&metadataPrefix=ivo_vor&identifier=" + DELETED_RESOURCE);
-            log.info(u.toExternalForm());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
-            get.run();
-            Assert.assertNull("throwable", get.getThrowable());
-            Assert.assertEquals(200, get.getResponseCode());
-            Assert.assertEquals("text/xml", get.getContentType());
-            
-            String xml = bos.toString();
-            log.debug("xml:\n" + xml);
-            
-            StringReader sr = new StringReader(xml);
-            OAIReader r = new OAIReader();
-            Document doc = r.read(sr);
-            Element root = doc.getRootElement();
-            Element error = root.getChild("error", root.getNamespace());
-            Assert.assertNull("OAI error", error);
-            
-            Namespace ns = root.getNamespace();
-            
-            Element req = root.getChild("request", ns);
-            Assert.assertNotNull(req);
-            
-            Assert.assertEquals("GetRecord", req.getAttributeValue("verb"));
-            Element gr = root.getChild("GetRecord", ns);
-            Assert.assertNotNull(gr);
-            Element record = gr.getChild("record", ns);
-            Assert.assertNotNull(record);
-            Element header = record.getChild("header", ns);
-            Assert.assertNotNull(header);
+                String xml = bos.toString();
+                log.debug("xml:\n" + xml);
 
-            // status: deleted
-            Assert.assertEquals("deleted", header.getAttributeValue("status"));
-            Element metadata = record.getChild("metadata", ns);
-            Assert.assertNull(metadata);
-            
-        } catch (Exception unexpected) {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        }
-    }
-    
-    @Test
-    public void testListRecordsFrom() {
-        try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListRecords&metadataPrefix=ivo_vor&from=2019-06-15T21:15:20Z");
-            log.info(u.toExternalForm());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
-            get.run();
-            Assert.assertNull("throwable", get.getThrowable());
-            Assert.assertEquals(200, get.getResponseCode());
-            Assert.assertEquals("text/xml", get.getContentType());
-            
-            String xml = bos.toString();
-            log.debug("xml:\n" + xml);
-            
-            StringReader sr = new StringReader(xml);
-            OAIReader r = new OAIReader();
-            Document doc = r.read(sr);
-            Element root = doc.getRootElement();
-            Element error = root.getChild("error", root.getNamespace());
-            Assert.assertNull("OAI error", error);
+                StringReader sr = new StringReader(xml);
+                OAIReader r = new OAIReader();
+                Document doc = r.read(sr);
+                Element root = doc.getRootElement();
+                Element error = root.getChild("error", root.getNamespace());
+                Assert.assertNull("OAI error", error);
+                Namespace ns = root.getNamespace();
+
+                Element req = root.getChild("request", ns);
+                Assert.assertNotNull(req);
+
+                Assert.assertEquals("GetRecord", req.getAttributeValue("verb"));
+                Element gr = root.getChild("GetRecord", ns);
+                Assert.assertNotNull(gr);
+                Element record = gr.getChild("record", ns);
+                Assert.assertNotNull(record);
+                Element header = record.getChild("header", ns);
+                Assert.assertNotNull(header);
+
+                // status: active or deleted
+                String status = header.getAttributeValue("status");
+                Assert.assertTrue(status == null || "deleted".equals(status));
+                
+                if (status == null) {
+                    Element metadata = record.getChild("metadata", ns);
+                    Assert.assertNotNull(metadata);
+                
+                    // TODO: further validation of the Resource??
+                }
+            }
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -419,10 +461,41 @@ public class OAIValidityTest {
     @Test
     public void testListRecordsEmpty() {
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListRecords&metadataPrefix=ivo_vor&until=1999-01-01");
+            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListRecords&metadataPrefix=ivo_vor&until=1984-01-01");
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
+            HttpGet get = new HttpGet(u, bos);
+            get.run();
+            Assert.assertNull("throwable", get.getThrowable());
+            Assert.assertEquals(200, get.getResponseCode());
+            Assert.assertEquals("text/xml", get.getContentType());
+            
+            String xml = bos.toString();
+            log.debug("xml:\n" + xml);
+            
+            StringReader sr = new StringReader(xml);
+            OAIReader r = new OAIReader();
+            Document doc = r.read(sr);
+            Element root = doc.getRootElement();
+            Namespace ns = root.getNamespace();
+            
+            Element error = root.getChild("error", ns);
+            Assert.assertNotNull("OAI error", error);
+            String code = error.getAttributeValue("code", Namespace.NO_NAMESPACE);
+            Assert.assertEquals("noRecordsMatch", code);
+        } catch (Exception unexpected) {
+            log.error("unexpected exception", unexpected);
+            Assert.fail("unexpected exception: " + unexpected);
+        }
+    }
+    
+    @Test
+    public void testListRecords() {
+        try {
+            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListRecords&metadataPrefix=ivo_vor");
+            log.info(u.toExternalForm());
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            HttpGet get = new HttpGet(u, bos);
             get.run();
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());
@@ -436,20 +509,29 @@ public class OAIValidityTest {
             Document doc = r.read(sr);
             Element root = doc.getRootElement();
             Element error = root.getChild("error", root.getNamespace());
-            Assert.assertNotNull("OAI error", error);
+            Assert.assertNull("OAI error", error);
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
         }
     }
-    
+
     @Test
-    public void testGetRecordsAll() {
+    public void testListRecordsFrom() {
         try {
-            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListRecords&metadataPrefix=ivo_vor");
+            SortedSet<IdentRecord> allRecords = listRecords();
+            if (allRecords.size() < 3) {
+                log.warn("found " + allRecords.size() + " records: unable to test ListRecords with from & until");
+                return;
+            }
+            Date[] range = getReducedFromUntil(allRecords);
+            String from = dateFormat.format(range[0]);
+            String until = dateFormat.format(range[1]);
+            
+            URL u = new URL(oaiEndpoint.toExternalForm() + "?verb=ListRecords&metadataPrefix=ivo_vor&from=" + from);
             log.info(u.toExternalForm());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            HttpDownload get = new HttpDownload(u, bos);
+            HttpGet get = new HttpGet(u, bos);
             get.run();
             Assert.assertNull("throwable", get.getThrowable());
             Assert.assertEquals(200, get.getResponseCode());

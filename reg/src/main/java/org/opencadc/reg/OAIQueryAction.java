@@ -274,19 +274,37 @@ public class OAIQueryAction extends RestAction {
         return null;
     }
 
-    private Date toDate(String s) {
+    // unit test
+    static Date toDate(String s) {
         if (s == null) {
             return null;
         }
-        DateFormat df = DateUtil.getDateFormat(DateUtil.IVOA_DATE_FORMAT, DateUtil.UTC);
+        DateFormat df = DateUtil.getDateFormat(DateUtil.ISO8601_DATE_FORMAT_Z, DateUtil.UTC);
+        
         try {
-            if (s.endsWith("Z")) {
-                s = s.substring(0, s.length() - 2);
-            }
-            return DateUtil.flexToDate(s, df);
-        } catch (ParseException ex) {
-            throw new IllegalArgumentException("badArgument");
+            return df.parse(s);
+        } catch (ParseException oops) {
+            log.warn("fail: " + oops);
         }
+        try {
+            // missing Z
+            return df.parse(s + "Z");
+        } catch (ParseException oops) {
+            log.warn("fail: " + oops);
+        }
+        try {
+            // missing time but has T
+            return df.parse(s + "00:00:00Z");
+        } catch (ParseException oops) {
+            log.warn("fail: " + oops);
+        }
+        try {
+            // missing time
+            return df.parse(s + "T00:00:00Z");
+        } catch (ParseException oops) {
+            log.warn("fail: " + oops);
+        }
+        throw new IllegalArgumentException("badArgument");
     }
     
     private void sendError(int code, String msg) throws IOException {
@@ -467,7 +485,7 @@ public class OAIQueryAction extends RestAction {
         // look for content in {user.home}/config/content
         File dir = new File(System.getProperty("user.home") + "/config/content");
         File f = new File(dir, filename);
-        log.warn("look for: " + f.getAbsolutePath());
+        log.debug("look for: " + f.getAbsolutePath());
         if (f.exists()) {
             return f;
         }

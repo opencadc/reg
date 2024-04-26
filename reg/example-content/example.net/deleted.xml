@@ -3,7 +3,7 @@
     <record>
       <header status="deleted">
         <identifier>ivo://example.net/deleted</identifier>
-        <datestamp>2021-01-02T03:04:05Z</datestamp>
+        <datestamp>2020-01-03T03:04:05Z</datestamp>
         <setSpec>ivo_managed</setSpec>
       </header>
     </record>

@@ -3,12 +3,12 @@
     <record>
       <header>
         <identifier>ivo://example.net</identifier>
-        <datestamp>2020-01-02T03:04:05Z</datestamp>
+        <datestamp>2020-01-01T03:04:05Z</datestamp>
         <setSpec>ivo_managed</setSpec>
       </header>
       <metadata>
-        <ri:Resource created="2020-01-02T03:04:05Z" status="active"   
-                     updated="2020-01-02T03:04:05Z" 
+        <ri:Resource created="2020-01-01T03:04:05Z" status="active"   
+                     updated="2020-01-01T03:04:05Z" 
                 xmlns:ri="http://www.ivoa.net/xml/RegistryInterface/v1.0" 
                 xmlns:vg="http://www.ivoa.net/xml/VORegistry/v1.0" 
                 xmlns:vr="http://www.ivoa.net/xml/VOResource/v1.0" 
