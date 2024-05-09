@@ -19,10 +19,8 @@
             <param-name>logLevelPackages</param-name>
             <param-value>
                 org.opencadc.reg
-                ca.nrc.cadc.reg
                 ca.nrc.cadc.vosi
                 ca.nrc.cadc.rest
-                ca.nrc.cadc.uws
             </param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
