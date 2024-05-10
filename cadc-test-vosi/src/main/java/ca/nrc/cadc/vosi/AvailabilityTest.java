@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2019.                            (c) 2019.
+ *  (c) 2024.                            (c) 2024.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -70,30 +70,20 @@
 package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.auth.AuthMethod;
-import ca.nrc.cadc.net.HttpDownload;
 import ca.nrc.cadc.reg.Standards;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
 import ca.nrc.cadc.vosi.avail.CheckWebService;
-import ca.nrc.cadc.xml.XmlUtil;
+import java.net.URI;
+import java.net.URL;
+import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdom2.Content;
-import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.filter.ContentFilter;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
 
 /**
  * Tests the availability of a service.
@@ -172,8 +162,8 @@ public class AvailabilityTest {
             @Override
             public Content filter(final Object obj) {
                 final Content c = super.filter(obj);
-                return ((c != null) && (c.getValue().indexOf("</clientip>") > -1) &&
-                        (c.getValue().indexOf("</clientip>") > c.getValue().indexOf("<clientip>"))) ?  c : null;
+                return ((c != null) && (c.getValue().indexOf("</clientip>") > -1) 
+                        && (c.getValue().indexOf("</clientip>") > c.getValue().indexOf("<clientip>"))) ?  c : null;
             }
         });
 

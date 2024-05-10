@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2022.                            (c) 2022.
+ *  (c) 2024.                            (c) 2024.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,10 +65,11 @@
  ************************************************************************
  */
 
-package org.opencadc.reg.server;
+package org.opencadc.reg;
 
 import ca.nrc.cadc.vosi.Availability;
 import ca.nrc.cadc.vosi.AvailabilityPlugin;
+import java.io.File;
 
 /**
  * @author pdowler
@@ -91,7 +92,23 @@ public class ServiceAvailability implements AvailabilityPlugin {
     @Override
     public Availability getStatus() {
         try {
-            CannedQueryServlet.checkSystemConfig();
+            String fname;
+            File rc;
+            
+            fname = "reg-resource-caps.properties";
+            rc = CannedQueryServlet.checkFileExists(fname);
+            if (rc != null && !rc.canRead()) {
+                return new Availability(false, "CONFIG: " + fname + " not readable");
+            }
+            
+            fname = "reg-applications.properties";
+            rc = CannedQueryServlet.checkFileExists(fname);
+            if (rc != null && !rc.canRead()) {
+                return new Availability(false, "CONFIG: " + fname + " not readable");
+            }
+            
+            // TODO: check for OAI content if configured
+            
             return new Availability(true, "accepting requests");
         } catch (IllegalStateException ex) {
             return new Availability(false, ex.getMessage());

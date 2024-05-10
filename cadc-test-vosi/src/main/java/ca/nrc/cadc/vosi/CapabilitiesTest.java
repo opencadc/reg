@@ -134,54 +134,40 @@ public class CapabilitiesTest {
         Log4jInit.setLevel("ca.nrc.cadc.vosi", Level.INFO);
     }
 
-    private final URI resourceIdentifier;
+    private final URI resourceID;
+    private final URL capURL;
     private Subject subject = AuthenticationUtil.getAnonSubject(); // default
 
-    public CapabilitiesTest() {
-        this(null);
+    /**
+     * Test the service starting with the specified VOSI-capabilites URL.
+     * @param capURL 
+     */
+    public CapabilitiesTest(URL capURL) {
+        this.capURL = capURL;
+        this.resourceID = null;
     }
 
-    public CapabilitiesTest(URI resourceIdentifier) {
-        if (resourceIdentifier == null) {
-            // get resourceIdentifier from system property
-            String resourceIdentifierName = CapabilitiesTest.class.getName() + ".resourceIdentifier";
-            String resourceIdentifierValue = System.getProperty(resourceIdentifierName);
-            log.info(resourceIdentifierName + "=" + resourceIdentifierValue);
-            this.resourceIdentifier = URI.create(resourceIdentifierValue);
-        } else {
-            this.resourceIdentifier = resourceIdentifier;
-        }
+    /**
+     * Lookup the specified service using the OpenCADC RegistryClient and test it.
+     * @param resourceID
+     */
+    public CapabilitiesTest(URI resourceID) {
+        this.resourceID = resourceID;
+        this.capURL = null;
     }
 
     protected void setSubject(Subject subject) {
         this.subject = subject;
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
-    private Capabilities getCapabilitiesFromServer(final URL accessURL)
+    public static Capabilities getCapabilitiesFromServer(final Subject caller, final URL accessURL)
             throws IOException, URISyntaxException {
         log.info("get capabilties: " + accessURL);
         
         ByteArrayOutputStream dest = new ByteArrayOutputStream();
         HttpGet get = new HttpGet(accessURL, dest);
         get.setFollowRedirects(true);
-        Subject.doAs(subject, new RunnableAction(get));
+        Subject.doAs(caller, new RunnableAction(get));
         log.info("getCapabilitiesFromServer: " + get.getResponseCode() + " " + get.getThrowable());
         Assert.assertEquals(200, get.getResponseCode());
         
@@ -213,51 +199,39 @@ public class CapabilitiesTest {
         // no-op
     }
 
-    // will be removed once RegistryClient.getServiceURL() has been deleted
-    @Test
-    public void testValidateCapabilitiesUsingGetServiceURL() {
-        RegistryClient rc = new RegistryClient();
-        try {
-            URL serviceURL = rc.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
-            Assert.assertNotNull(serviceURL);
-            log.info("serviceURL=" + serviceURL);
-
-            Capabilities caps = this.getCapabilitiesFromServer(serviceURL);
-            validateContent(caps);
-        } catch (Exception t) {
-            log.error("unexpected exception", t);
-            Assert.fail("unexpected exception: " + t);
+    protected URL getCapURL() {
+        URL serviceURL = capURL;
+        if (serviceURL == null && resourceID != null) {
+            RegistryClient rc = new RegistryClient();
+            serviceURL = rc.getServiceURL(resourceID, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
         }
+        Assert.assertNotNull(serviceURL);
+        log.info("capabilities URL=" + serviceURL);
+        return serviceURL;
     }
 
     @Test
-    public void testValidateCapabilitiesUsingGetCapabilities() {
-        RegistryClient rc = new RegistryClient();
+    public void testValidateCapabilities() {
         try {
-            Subject.doAs(subject, new PrivilegedExceptionAction<Object>() {
-                @Override
-                public Object run() throws Exception {
-                    // get the capabilities associated with the resourceIdentifier
-                    Capabilities caps = rc.getCapabilities(resourceIdentifier);
-                    Assert.assertNotNull(caps);
+            URL serviceURL = getCapURL();
+            Capabilities caps = this.getCapabilitiesFromServer(subject, serviceURL);
+            Assert.assertNotNull(caps);
 
-                    // each web service supports capabilitites, availability and logControl
-                    // in addition to capabilities specific to the web service
-                    List<Capability> capList = caps.getCapabilities();
-                    Assert.assertTrue("Incorrect number of capabilities (expected > 1)", capList.size() > 1);
+            // each web service supports capabilitites, availability and logControl
+            // in addition to capabilities specific to the web service
+            List<Capability> capList = caps.getCapabilities();
+            Assert.assertTrue("Incorrect number of capabilities (expected > 1)", capList.size() > 1);
 
-                    // get the capability associated with the standard ID
-                    Capability cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
-                    Assert.assertNotNull(cap);
+            // get the capability associated with the standard ID
+            Capability cap = caps.findCapability(Standards.VOSI_CAPABILITIES);
+            Assert.assertNotNull(cap);
 
-                    // get the interface associated with the securityMethod
-                    Interface intf = cap.findInterface(Standards.SECURITY_METHOD_ANON);
-                    Assert.assertNotNull(intf);
+            // get the interface associated with the securityMethod
+            Interface intf = cap.findInterface(Standards.SECURITY_METHOD_ANON);
+            Assert.assertNotNull(intf);
 
-                    validateContent(caps);
-                    return null;
-                }
-            });
+            validateContent(caps);
+                    
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
@@ -268,9 +242,7 @@ public class CapabilitiesTest {
     public void testValidateCapabilitiesNamespaces() {
         RegistryClient rc = new RegistryClient();
         try {
-            URL serviceURL = rc.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
-            Assert.assertNotNull(serviceURL);
-            log.info("serviceURL=" + serviceURL);
+            URL serviceURL = getCapURL();
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             HttpGet get = new HttpGet(serviceURL, out);
@@ -301,7 +273,7 @@ public class CapabilitiesTest {
     @Test
     public void testTokenAuth() throws Exception {
         RegistryClient reg = new RegistryClient();
-        URL capURL = reg.getServiceURL(resourceIdentifier, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
+        URL capURL = reg.getServiceURL(resourceID, Standards.VOSI_CAPABILITIES, AuthMethod.ANON);
         HttpGet head = new HttpGet(capURL, false);
         head.setHeadOnly(true);
         head.prepare();

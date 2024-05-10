@@ -24,7 +24,6 @@
     </interface>
   </capability> 
 
-<!--
   <capability xmlns:vg="http://www.ivoa.net/xml/VORegistry/v1.0" 
         standardID="ivo://ivoa.net/std/Registry" xsi:type="vg:Harvest">
     <interface role="std" xsi:type="vg:OAIHTTP">
@@ -32,7 +31,6 @@
     </interface>
     <maxRecords>100</maxRecords>
   </capability>
--->
 
 </vosi:capabilities>
 

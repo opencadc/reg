@@ -22,8 +22,9 @@ jobs:
     - name: build and test cadc-vosi
       run: cd cadc-vosi && ../gradlew --info clean build javadoc checkstyleMain install
       
-    - name: build and test cadc-registry-server
-      run: cd cadc-registry-server && ../gradlew --info clean build javadoc checkstyleMain install
-      
     - name: build and test cadc-test-vosi
-      run: cd cadc-test-vosi && ../gradlew --info clean build javadoc install
+      run: cd cadc-test-vosi && ../gradlew --info clean build javadoc checkstyleMain install
+
+    - name: build reg
+      run: cd reg && ../gradlew --info clean build compileIntTest javadoc checkstyleMain
+

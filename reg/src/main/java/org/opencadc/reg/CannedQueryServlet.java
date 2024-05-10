@@ -3,7 +3,7 @@
  *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
  **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
  *
- *  (c) 2019.                            (c) 2019.
+ *  (c) 2024.                            (c) 2024.
  *  Government of Canada                 Gouvernement du Canada
  *  National Research Council            Conseil national de recherches
  *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -65,29 +65,116 @@
  ************************************************************************
  */
 
-package org.opencadc.reg.server;
+package org.opencadc.reg;
 
-import ca.nrc.cadc.uws.server.JobExecutor;
-import ca.nrc.cadc.uws.server.MemoryJobPersistence;
-import ca.nrc.cadc.uws.server.RandomStringGenerator;
-import ca.nrc.cadc.uws.server.SimpleJobManager;
-import ca.nrc.cadc.uws.server.ThreadExecutor;
-import ca.nrc.cadc.uws.server.impl.AnonOnlyIdentityManager;
+import ca.nrc.cadc.log.ServletLogInfo;
+import ca.nrc.cadc.log.WebServiceLogInfo;
+import ca.nrc.cadc.util.FileUtil;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
 
 
 /**
- * Usable JobManager implementation for anonymous-only OAI deployment.
- * 
- * @author pdowler
+ * Simple servlet that performs a canned query to the registry and returns a
+ * list of resourceID(s) and the accessURL of the associated VOSI-capabilities
+ * endpoint.
+ * For access to resource capabilities for web services, add this to a web.xml:
+ * &lt;init-param&gt;
+ * &lt;param-name&gt;queryFile&lt;/param-name&gt;
+ * &lt;param-value&gt;(query file name as found in /config directory on server)&lt;/param-value&gt;
+ * &lt;/init-param&gt;
+ *
+ * @author jeevesh
  */
-public class OAIJobManager extends SimpleJobManager {
+public class CannedQueryServlet extends HttpServlet {
 
-    public OAIJobManager() {
-        super();
-        MemoryJobPersistence jp = new MemoryJobPersistence(new RandomStringGenerator(16), new AnonOnlyIdentityManager(), 60000L);
-        JobExecutor je = new ThreadExecutor(jp, OAIQueryRunner.class);
-        setJobPersistence(jp);
-        setJobExecutor(je);
-        setMaxDestruction(60L);
+    private static final Logger log = Logger.getLogger(CannedQueryServlet.class);
+
+    private static String PARAM_QUERY_FILE = "queryFile";
+    
+    private String configFileName;
+    
+    public CannedQueryServlet() {
     }
+
+    static File checkFileExists(String paramFileName) {
+        File f = new File(System.getProperty("user.home") + "/config/" + paramFileName);
+        if (f.exists()) {
+            return f;
+        }
+        return null;
+    }
+
+    @Override
+    public void init(ServletConfig config)
+            throws ServletException {
+        super.init(config);
+        this.configFileName = config.getInitParameter(PARAM_QUERY_FILE);
+
+        log.info("initCannedQuery: checking for " + configFileName);
+        File f = checkFileExists(configFileName);
+        if (f != null) {
+            if (f.canRead()) {
+                log.info("initCannedQuery: " + configFileName + " OK");
+            } else {
+                log.error("initCannedQuery: " + configFileName + " not readable FAIL");
+            }
+        } else {
+            log.info("initCannedQuery: " + configFileName + " not found DISABLED");
+            this.configFileName = null; // disabled
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        WebServiceLogInfo logInfo = new ServletLogInfo(request);
+        long start = System.currentTimeMillis();
+
+        try {
+            log.info(logInfo.start());
+            if (configFileName != null) {
+                File f = checkFileExists(configFileName);
+                byte[] buf = FileUtil.readFile(f);
+                response.setStatus(200);
+                response.setContentType("text/plain");
+                response.setContentLength(buf.length);
+                
+                OutputStream ostream = response.getOutputStream();
+                ostream.write(buf);
+                ostream.flush();
+                logInfo.setSuccess(true);
+            } else {
+                String msg = "not found: feature not configured\n";
+                logInfo.setSuccess(false);
+                logInfo.setMessage(msg);
+                
+                response.setStatus(404);
+                response.setContentType("text/plain");
+                Writer w = response.getWriter();
+                w.write(msg);
+                w.flush();
+            }
+        } catch (Throwable t) {
+            logInfo.setSuccess(false);
+            logInfo.setMessage(t.toString());
+            log.error("BUG: failed to deliver file content", t);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getMessage());
+        } finally {
+            logInfo.setElapsedTime(System.currentTimeMillis() - start);
+            log.info(logInfo.end());
+        }
+    }
+
 }

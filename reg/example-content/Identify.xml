@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Identify>
+    <repositoryName>Example Repository</repositoryName>
+    <baseURL>https://www.example.net/reg/oai</baseURL>
+    <protocolVersion>2.0</protocolVersion>
+    <adminEmail>support@example.net</adminEmail>
+    <earliestDatestamp>2000-01-01T00:00:00Z</earliestDatestamp>
+    <deletedRecord>persistent</deletedRecord>
+    <granularity>YYYY-MM-DDThh:mm:ssZ</granularity>
+    <description>
+      <ri:Resource created="2020-01-02T03:04:05Z" status="active" updated="2020-01-02T03:04:05Z" 
+                   xmlns:ri="http://www.ivoa.net/xml/RegistryInterface/v1.0" 
+                   xmlns:vg="http://www.ivoa.net/xml/VORegistry/v1.0" 
+                   xmlns:vr="http://www.ivoa.net/xml/VOResource/v1.0" 
+                   xmlns:vs="http://www.ivoa.net/xml/VODataService/v1.1"
+                   xsi:type="vg:Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <title >Example Registry</title>
+          <shortName>Example Registry</shortName>
+          <identifier>ivo://example.net/registry</identifier>
+          <curation xmlns="">
+            <publisher>Example Data Provider</publisher>
+            <contact>
+              <name>Responsible Person</name>
+              <address>Center of the Universe</address>
+              <email>responsible.person@example.net</email>
+            </contact>
+          </curation>
+          <content>
+            <subject>registry</subject>
+            <description>Example Registry</description>
+            <referenceURL>https://www.example.net/reg</referenceURL>
+            <type>Registry</type>
+          </content>
+          <capability standardID="ivo://ivoa.net/std/VOSI#capabilities">
+            <interface xsi:type="vs:ParamHTTP" role="std">
+                <accessURL use="full">https://www.example.net/reg/capabilities</accessURL>
+            </interface>
+          </capability>
+          <capability standardID="ivo://ivoa.net/std/Registry" xsi:type="vg:Harvest">
+            <interface role="std" xsi:type="vg:OAIHTTP">
+              <accessURL>https://www.example.net/reg/oai</accessURL>
+            </interface>
+            <maxRecords>100</maxRecords>
+          </capability>
+          <full>false</full>
+          <managedAuthority xmlns="">example.net</managedAuthority>
+        </ri:Resource>
+    </description>
+  </Identify>

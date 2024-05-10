@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <GetRecord>
+    <record>
+      <header>
+        <identifier>ivo://example.net</identifier>
+        <datestamp>2020-01-01T03:04:05Z</datestamp>
+        <setSpec>ivo_managed</setSpec>
+      </header>
+      <metadata>
+        <ri:Resource created="2020-01-01T03:04:05Z" status="active"   
+                     updated="2020-01-01T03:04:05Z" 
+                xmlns:ri="http://www.ivoa.net/xml/RegistryInterface/v1.0" 
+                xmlns:vg="http://www.ivoa.net/xml/VORegistry/v1.0" 
+                xmlns:vr="http://www.ivoa.net/xml/VOResource/v1.0" 
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="vg:Authority" >
+          <title xmlns="">Example Data Provider</title>
+          <shortName xmlns="">EG</shortName>
+          <identifier xmlns="">ivo://example.net</identifier>
+          <curation xmlns="">
+            <publisher>Example Data Provider</publisher>
+            <contact>
+              <name>Responsible Person</name>
+              <address>Center of the Universe</address>
+              <email>responsible.person@example.net</email>
+            </contact>
+          </curation>
+          <content xmlns="">
+            <subject>virtual observatory</subject>
+            <description>authority for EG</description>
+            <referenceURL>https://www.example.net/</referenceURL>
+            <type>Other</type>
+            <contentLevel>General</contentLevel>
+          </content>
+          <managingOrg xmlns="">Example Data Provider</managingOrg>
+        </ri:Resource>
+      </metadata>
+    </record>
+  </GetRecord>
