@@ -1,5 +1,13 @@
 # simple service registry (reg)
 
+## docker image
+Prebuilt and tested images are available in the `images.opencadc.org` image registry. 
+
+The image name is `images.opencadc.org/core/reg`. The current version comes from the VERSION file, e.g. 
+```
+images.opencadc.org/core/reg:1.1.0
+```
+
 ## deployment
 The `reg` war file can be renamed at deployment time in order to support an alternate 
 service name, including introducing additional path elements. 
