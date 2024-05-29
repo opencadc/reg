@@ -14,11 +14,9 @@ service name, including introducing additional path elements.
 See <a href="https://github.com/opencadc/docker-base/tree/master/cadc-tomcat">cadc-tomcat</a> (war-rename.conf).
 
 ## configuration
-
 The following configuration files must be available in the `/config` directory.
 
 ### catalina.properties
-
 This file contains java system properties to configure the tomcat server and some
 of the java libraries used in the service.
 
@@ -77,16 +75,16 @@ service state control.
 
 ## content
 The _content_ (registry records to publish) are simply XML files stored in the `/config/content`
-directory. The following files are required:
+directory. See: `example-content`. The following files are required:
 ### Identify.xml
 This is the OAI `<Identify>` record for the publishing registry with `<VOResource>` extension in
-the `<description>`. See example: TODO.
+the `<description>`.
 
 ### ListMetadataFormats.xml
-This is a static response to the OAI `verb=ListMetadataFormats` query. See (use) example: TODO.
+This is a static response to the OAI `verb=ListMetadataFormats` query.
 
 ### ListSets.xml
-This is a static response to the OAI `verb=ListSets` query. See (use) example: TODO.
+This is a static response to the OAI `verb=ListSets` query.
 
 ### {authority}.xml
 This is an OAI `<GetRecord>` response for the configured authority. The OAI `<metadata>`
@@ -122,15 +120,4 @@ docker run -it reg:latest /bin/bash
 ## running it
 ```
 docker run --user tomcat:tomcat --volume=/path/to/external/config:/config:ro --name reg reg:latest
-```
-
-## apply version tags
-```
-bash
-. VERSION && echo "tags: $TAGS"
-for t in $TAGS; do
-   docker image tag reg:latest reg:$t
-done
-unset TAGS
-docker image list reg
 ```
