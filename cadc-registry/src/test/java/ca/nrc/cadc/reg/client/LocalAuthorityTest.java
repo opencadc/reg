@@ -70,7 +70,10 @@
 package ca.nrc.cadc.reg.client;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -94,7 +97,10 @@ public class LocalAuthorityTest {
     private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
     
     private String OPENID = Standards.SECURITY_METHOD_OPENID.toASCIIString();
-    private String OPENID_URL = "https://oidc.example.net/";
+    private final URI[] OPENID_VALUES= new URI[] {
+            URI.create("https://oidc.example1.net/"),
+            URI.create("https://oidc.example2.net/")};
+    private Set<URI> OPENID_URLS = new HashSet<>(Arrays.asList(OPENID_VALUES));
     
     // values from backwards compat LocalAuthority.properties
     private String SERVICE_URI_COMPAT = "ivo://cadc.nrc.ca/cred/compat";
@@ -150,14 +156,19 @@ public class LocalAuthorityTest {
     }
     
     @Test
-    public void testFoundURL() {
+    public void testFoundMultipleURLs() {
         try {
             System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
             LocalAuthority loc = new LocalAuthority();
-            URI uri = loc.getServiceURI(OPENID);
-            Assert.assertNotNull(uri);
-            Assert.assertEquals(OPENID_URL, uri.toASCIIString());
+            try {
+                URI uri = loc.getServiceURI(OPENID);
+                Assert.fail("This interface cannot be used to access multiple service URIs");
+            } catch (NoSuchElementException expected) {
+            }
+            Set<URI> uris = loc.getServiceURIs(URI.create(OPENID));
+            Assert.assertEquals(2, uris.size());
+            Assert.assertTrue(uris.equals(OPENID_URLS));
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
