@@ -86,7 +86,7 @@
         <servlet-class>ca.nrc.cadc.vosi.AvailabilityServlet</servlet-class>
         <init-param>
             <param-name>ca.nrc.cadc.vosi.AvailabilityPlugin</param-name>
-            <param-value>org.opencadc.reg.server.ServiceAvailability</param-value>
+            <param-value>org.opencadc.reg.ServiceAvailability</param-value>
         </init-param>
         <load-on-startup>4</load-on-startup>
     </servlet>
