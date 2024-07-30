@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2023.                            (c) 2023.
+*  (c) 2024.                            (c) 2024.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -72,9 +72,11 @@ package ca.nrc.cadc.reg.client;
 import ca.nrc.cadc.util.MultiValuedProperties;
 import ca.nrc.cadc.util.PropertiesReader;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.TreeMap;
 import org.apache.log4j.Logger;
 
@@ -90,7 +92,7 @@ public class LocalAuthority {
 
     private static final String LOCAL_AUTH_PROP_FILE = LocalAuthority.class.getSimpleName() + ".properties";
 
-    private Map<String, String> authorityMap = new TreeMap<String, String>();
+    private Map<URI, Set<URI>> authorityMap = new TreeMap<>();
 
     public LocalAuthority() {
         PropertiesReader propReader = new PropertiesReader(RegistryClient.CONFIG_FILE);
@@ -104,24 +106,46 @@ public class LocalAuthority {
 
         for (String std : mvp.keySet()) {
             List<String> values = mvp.getProperty(std);
-            if (values.size() > 1) {
-                throw new IllegalStateException("found " + values.size() + " values for " + std);
-            }
-            if (values.isEmpty()) {
-                log.debug(std + " has no value, skipping");
-            } else {
-                String val = values.get(0);
-                log.debug("authorityMap: " + std + " -> " + val);
-                authorityMap.put(std, val);
+            Set<URI> vals = new HashSet<>();
+            URI stdURI = URI.create(std);
+            authorityMap.put(stdURI, vals);
+            for (String val : values) {
+                URI valURI = URI.create(val);
+                log.debug("authorityMap: " + stdURI + " -> " + valURI);
+                vals.add(valURI);
             }
         }
     }
 
+    /**
+     * Returns the service URI associated with the baseStandardID. This method fails if the local authority is
+     * configured with more than one service URI corresponding to the baseStandard. Use `getServiceURIs` method for
+     * the more generic case
+     * @param baseStandardID base standard ID
+     * @return corresponding service URI (http or ivo)
+     * @deprecated deprecated in favour of getServiceURIs method
+     */
     public URI getServiceURI(String baseStandardID) {
-        String resourceIdentifier = authorityMap.get(baseStandardID);
-        if (resourceIdentifier == null) {
+        Set<URI> resourceIdentifiers = authorityMap.get(URI.create(baseStandardID));
+        if ((resourceIdentifiers == null) || (resourceIdentifiers.isEmpty())) {
             throw new NoSuchElementException("not found: " + baseStandardID);
         }
-        return URI.create(resourceIdentifier);
+        if (resourceIdentifiers.size() > 1) {
+            throw new NoSuchElementException("Multiple service URIs found for " + baseStandardID);
+        }
+        return resourceIdentifiers.iterator().next();
+    }
+
+    /**
+     * Returns the URIs of services associated with the standard ID.
+     * @param standardID base standard ID URI
+     * @return set of service URIs
+     */
+    public Set<URI> getServiceURIs(URI standardID) {
+        Set<URI> resourceIdentifiers = authorityMap.get(standardID);
+        if ((resourceIdentifiers == null)) {
+            throw new NoSuchElementException("not found: " + standardID);
+        }
+        return resourceIdentifiers;
     }
 }
