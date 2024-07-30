@@ -137,14 +137,14 @@ public class LocalAuthority {
     }
 
     /**
-     * Returns the URIs of services associated with the baseStandardID.
-     * @param baseStandardID base standard ID URI
+     * Returns the URIs of services associated with the standard ID.
+     * @param standardID base standard ID URI
      * @return set of service URIs
      */
-    public Set<URI> getServiceURIs(URI baseStandardID) {
-        Set<URI> resourceIdentifiers = authorityMap.get(baseStandardID);
+    public Set<URI> getServiceURIs(URI standardID) {
+        Set<URI> resourceIdentifiers = authorityMap.get(standardID);
         if ((resourceIdentifiers == null)) {
-            throw new NoSuchElementException("not found: " + baseStandardID);
+            throw new NoSuchElementException("not found: " + standardID);
         }
         return resourceIdentifiers;
     }
