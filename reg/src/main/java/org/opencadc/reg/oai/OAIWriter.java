@@ -161,7 +161,7 @@ public class OAIWriter {
         //root.addNamespaceDeclaration(xsd);
         root.addNamespaceDeclaration(xsi);
         root.setAttribute("schemaLocation",
-                          "http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", xsi);
+                          "http://www.openarchives.org/OAI/2.0/ https://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", xsi);
 
         Document ret = new Document();
         ret.addContent(root);
