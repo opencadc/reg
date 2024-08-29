@@ -69,6 +69,7 @@ package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.auth.AuthMethod;
 import ca.nrc.cadc.auth.AuthenticationUtil;
+import ca.nrc.cadc.auth.IdentityManager;
 import ca.nrc.cadc.auth.NotAuthenticatedException;
 import ca.nrc.cadc.net.HttpTransfer;
 import ca.nrc.cadc.net.ResourceNotFoundException;
@@ -87,6 +88,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.TreeSet;
 import org.apache.log4j.Logger;
@@ -173,6 +175,19 @@ public class CapGetAction extends RestAction {
                 URL nurl = new URL(url.getProtocol(), hostname, npath);
                 u.setURL(nurl);
                 log.debug("transform: " + url + " -> " + nurl);
+                
+                IdentityManager im = AuthenticationUtil.getIdentityManager();
+                log.debug("IM: " + im.getClass().getName());
+                ListIterator<URI> iter = i.getSecurityMethods().listIterator();
+                while (iter.hasNext()) {
+                    URI sm = iter.next();
+                    if (!im.getSecurityMethods().contains(sm)) {
+                        log.debug("unsupported securityMethod: " + sm + " - REMOVE");
+                        iter.remove();
+                    } else {
+                        log.debug("supported securityMethod: " + sm + " - KEEP");
+                    }
+                }
             }
         }
     }
