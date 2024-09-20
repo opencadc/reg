@@ -79,6 +79,7 @@ import ca.nrc.cadc.util.MultiValuedProperties;
 import ca.nrc.cadc.util.PropertiesReader;
 import ca.nrc.cadc.util.StringUtil;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Principal;
 import java.util.HashSet;
@@ -211,6 +212,14 @@ public class AvailabilityServlet extends HttpServlet {
             response.sendRedirect(request.getRequestURL().toString());
 
             logInfo.setSuccess(true);
+        } catch (IllegalArgumentException ex) {
+            response.setStatus(400);
+            response.setHeader("content-type", "text/plain");
+            PrintWriter w = response.getWriter();
+            w.println(ex.getMessage());
+            w.close();
+            logInfo.setSuccess(true);
+            logInfo.setMessage(ex.toString());
         } catch (Throwable t) {
             log.error("BUG", t);
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, t.getMessage());
