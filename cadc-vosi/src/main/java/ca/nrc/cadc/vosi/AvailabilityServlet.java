@@ -203,7 +203,6 @@ public class AvailabilityServlet extends HttpServlet {
             String caller = im.toDisplayString(subject);
             if (authorized(subject)) {
                 String state = request.getParameter("state");
-                log.debug("state=" + state + " by " + caller);
                 ap.setState(state);
                 log.info("WebService state change by " + caller + " [OK]");
             } else {
