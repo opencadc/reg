@@ -267,7 +267,7 @@ public class CapabilitiesReader {
             if (standardIDString.startsWith("${") && standardIDString.endsWith("}")) {
                 String prop = standardIDString.substring(2, standardIDString.length() - 1);
                 String val = System.getProperty(prop);
-                log.warn("resolve: " + prop + " = " + val);
+                log.debug("resolve: " + prop + " = " + val);
                 if (val != null) {
                     standardIDString = val;
                 }
