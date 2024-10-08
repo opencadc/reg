@@ -102,6 +102,7 @@ public class Standards {
 
     public static final URI SIA_10 = URI.create("ivo://ivoa.net/std/SIA");
     public static final URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
+    public static final URI DAP_QUERY_21 = URI.create("ivo://ivoa.net/std/DAP#query-2.1");
     //public static final URI SIA_META_2x = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
 
     // Simple Cone Search 1.1
