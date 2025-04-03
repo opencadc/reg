@@ -70,6 +70,7 @@
 package ca.nrc.cadc.vosi;
 
 import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.util.PropertiesReader;
 import java.net.URI;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -108,6 +109,7 @@ public class AvailabilityClientTest {
     @Test
     public void testCheck() throws Exception {
         try {
+            System.setProperty(PropertiesReader.CONFIG_DIR_SYSTEM_PROPERTY, "src/test/resources");
             AvailabilityClient client = new AvailabilityClient(URI.create("ivo://cadc.nrc.ca/cred"));
             Availability a = client.getAvailability();
             Assert.assertNotNull(a);
