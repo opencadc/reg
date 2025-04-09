@@ -124,7 +124,6 @@ public class RegistryClientTest {
         }
     }
     
-    
     @Test
     public void testGetCapabilitiesWithNullResourceID() {
         String currentUserHome = System.getProperty("user.home");
@@ -184,6 +183,28 @@ public class RegistryClientTest {
             Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
             List<Capability> capList = caps.getCapabilities();
             Assert.assertTrue("Incorrect number of capabilities", capList.size() > 3);
+        } catch (Exception t) {
+            log.error("unexpected exception", t);
+            Assert.fail("unexpected exception: " + t);
+        } finally {
+            // restore java.io.tmpdir environment
+            System.setProperty("java.io.tmpdir", currentTmpDir);
+            System.clearProperty(TEST_CONFIG_DIR);
+        }
+    }
+    
+    @Test
+    public void testNoConfig() {
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", "build/tmp");
+        System.setProperty(TEST_CONFIG_DIR, "built/tmp");
+
+        RegistryClient rc = new RegistryClient();
+        try {
+            Capabilities caps = rc.getCapabilities(new URI(RESOURCE_ID));
+            Assert.fail("expected IllegalStateException, got: " + caps);
+        } catch (IllegalStateException expected) {
+            log.info("caught expected: " + expected);
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
@@ -264,7 +285,7 @@ public class RegistryClientTest {
             URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.ANON);
             Assert.assertNotNull("Service URL should not be null", serviceURL);
             Assert.assertEquals("got an incorrect URL", expected, serviceURL);
-            Assert.assertNull("wrong caps domain", rc.getCapsDomain());
+            Assert.assertNotNull("no caps domain", rc.getCapsDomain());
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -289,7 +310,7 @@ public class RegistryClientTest {
             URL resourceCapsURL = rc.getRegistryBaseURL();
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
-            Assert.assertEquals("wrong caps domain", "alt-domains/foo.bar.com", rc.getCapsDomain());
+            Assert.assertEquals("wrong caps domain", "reg-domains/foo.bar.com", rc.getCapsDomain());
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
@@ -340,11 +361,11 @@ public class RegistryClientTest {
             
             String srvKey = "ivo://cadc.nrc.ca/myservice/entry";
             String srvVal = "https://mysite.com/services/mygreatservice";
-            createCache(RegistryClient.Query.CAPABILITIES, srvKey + " = " + srvVal);
+            createCache(registryClient, RegistryClient.Query.CAPABILITIES, srvKey + " = " + srvVal);
             
             String appKey = "ivo://cadc.nrc.ca/app/entry";
             String appVal = "https://mysite.com/application/page";
-            createCache(RegistryClient.Query.APPLICATIONS, appKey + " = " + appVal);
+            createCache(registryClient, RegistryClient.Query.APPLICATIONS, appKey + " = " + appVal);
             
             // query caps
             URI srvID = URI.create(srvKey);
@@ -383,13 +404,16 @@ public class RegistryClientTest {
         }
     }
     
-    private void createCache(RegistryClient.Query query, String line) throws IOException {
+    private void createCache(RegistryClient rc, RegistryClient.Query query, String line) throws IOException {
         final String fileSeparator = System.getProperty("file.separator");
         String cache = query.getValue();
-        File cacheDir = new File(System.getProperty("java.io.tmpdir") + fileSeparator
-                + System.getProperty("user.name") + fileSeparator + RegistryClient.CONFIG_CACHE_DIR);
-        cacheDir.mkdirs();
-        File cacheFile = new File(cacheDir, cache);
+        //File cacheDir = new File(System.getProperty("java.io.tmpdir") 
+        //        + fileSeparator + System.getProperty("user.name") 
+        //        + fileSeparator + RegistryClient.CONFIG_CACHE_DIR);
+        //cacheDir.mkdirs();
+        //File cacheFile = new File(cacheDir, cache);
+        File cacheFile = rc.getQueryCacheFile(query);
+        cacheFile.getParentFile().mkdirs();
 
         FileWriter fileWriter = new FileWriter(cacheFile);
         fileWriter.write(line);

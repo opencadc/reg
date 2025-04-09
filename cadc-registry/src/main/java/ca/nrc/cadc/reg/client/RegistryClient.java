@@ -83,32 +83,21 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.log4j.Logger;
 
 
 /**
  * A very simple caching IVOA Registry client. All the lookups done by this client use properties
- * files served from a well-known URL. 
- * <p>
- * Deployers can set a java system property to force this class to replace the hostname
- * in the resulting URL with an arbitrary hostname. This is useful for testing a specific remote server:
- * </p>
- * <pre>
- * ca.nrc.cadc.reg.client.RegistryClient.host=www.example.com
- * </pre>
- * <p>
- * The <code>ca.nrc.cadc.reg.client.RegistryClient.host</code> property replaces the entire fully-qualified host name
- * with the specified value.
- * </p>
+ * files served from a well-known URL. Requires either baseURL configuration in cadc-registry.properties
+ * OR a java system property <code>ca.nrc.cadc.reg.client.RegistryClient.host</code>
+ * set to the hostname of the registry service (hard-coded: https protocol and a service named "reg").
+ * The config file takes priority; the system property is intended for use by developers to lookup
+ * local services in their own reg service for testing purposes.
  *
  * @author pdowler
  */
@@ -116,7 +105,6 @@ public class RegistryClient {
 
     private static Logger log = Logger.getLogger(RegistryClient.class);
 
-    @Deprecated
     private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
     
     private static final String CONFIG_BASE_URL = RegistryClient.class.getName() + ".baseURL";
@@ -139,30 +127,19 @@ public class RegistryClient {
     static final String CONFIG_FILE = "cadc-registry.properties";
     
     // version the cache dir so we can increment when we have incompatible cache structure
-    static final String CONFIG_CACHE_DIR = "cadc-registry-1.4";
+    // 1.5 because we now put all reg lookups under a capsDomain
+    static final String CONFIG_CACHE_DIR = "cadc-registry-1.5";
     
-    @Deprecated
-    private static final URL DEFAULT_REG_BASE_URL;
     private static final String FILE_SEP = System.getProperty("file.separator");
 
     // fully qualified type value (see CapabilitiesReader)
     private static final URI DEFAULT_ITYPE = Standards.INTERFACE_PARAM_HTTP;
 
-    private String hostname;
     private URL regBaseURL;
     private String capsDomain;
-    
+    private boolean isRegOverride = false;
     private int connectionTimeout = 30000; // millis
-    private int readTimeout = 60000;      // millis
-
-    static {
-        try {
-            DEFAULT_REG_BASE_URL = new URL("https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg");
-        } catch (MalformedURLException e) {
-            log.fatal("BUG: hard-coded default URL is malformed", e);
-            throw new ExceptionInInitializerError("BUG: hard-coded default URL is malformed: " + e.getMessage());
-        }
-    }
+    private int readTimeout = 60000;       // millis
 
     public RegistryClient() {
         // standard behaviour: get regBaseURL from config file
@@ -175,36 +152,29 @@ public class RegistryClient {
                     str = str.substring(0, str.length() - 1);
                 }
                 this.regBaseURL = new URL(str);
-                log.debug("regbaseURL: " + regBaseURL);
-                return;
             } catch (MalformedURLException ex) {
                 throw new InvalidConfigException(CONFIG_FILE + ": " + CONFIG_BASE_URL
                         + " = " + str + " is not a valid URL", ex);
             }
-        }
-        
-        // temporary backwards compatible behaviour
-        URL origURL = DEFAULT_REG_BASE_URL;
-        try {
-            String hostP = System.getProperty(HOST_PROPERTY);
-            log.debug("     host: " + hostP);
-            if (hostP != null && this.hostname == null) {
-                hostP = hostP.trim();
-                if (hostP.length() > 0) {
-                    this.hostname = hostP;
+        } else {
+            // developer support for targetting integration tests at a reg servcie without config
+            try {
+                String hostP = System.getProperty(HOST_PROPERTY);
+                log.debug("     host: " + hostP);
+                if (hostP != null) {
+                    this.regBaseURL = new URL("https://" + hostP + "/reg");
+                    this.isRegOverride = true;
                 }
+            } catch (MalformedURLException e) {
+                log.error("Error transforming resource-caps URL", e);
+                throw new RuntimeException(e);
             }
-
-            log.debug("Original resourceCapURL: " + origURL);
-            this.regBaseURL = mangleHostname(origURL);
-            log.debug("Mangled resourceCapURL: " + this.regBaseURL);
-            if (!origURL.equals(this.regBaseURL)) {
-                capsDomain = "alt-domains/" + this.regBaseURL.getHost();
-            }
-        } catch (MalformedURLException e) {
-            log.error("Error transforming resource-caps URL", e);
-            throw new RuntimeException(e);
         }
+            
+        if (regBaseURL != null) {
+            this.capsDomain = "reg-domains/" + regBaseURL.getHost();
+        }
+        log.debug("regBaseURL: " + regBaseURL + " domain: " + capsDomain);
     }
 
     /**
@@ -229,10 +199,10 @@ public class RegistryClient {
      * Find out if registry lookup URL was modified by a system property. This
      * typically indicates that the code is running in a development/test environment.
      *
-     * @return true if lookup is modified, false if default (production)
+     * @return true if lookup is modified, false if configured
      */
     public boolean isRegistryLookupOverride() {
-        return !DEFAULT_REG_BASE_URL.equals(regBaseURL);
+        return isRegOverride;
     }
 
     /**
@@ -257,8 +227,11 @@ public class RegistryClient {
      * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry
      */
     public URL getAccessURL(Query queryName, URI uri) throws IOException, ResourceNotFoundException {
+        if (regBaseURL == null) {
+            throw new IllegalStateException("no registry service base URL configured");
+        }
         File queryCacheFile = getQueryCacheFile(queryName);
-        log.debug("Capabilities cache file: " + queryCacheFile);
+        log.debug("resource-caps cache file: " + queryCacheFile);
         URL queryURL = new URL(regBaseURL + "/" + queryName.getValue());
         CachingFile cachedCapSource = new CachingFile(queryCacheFile, queryURL);
         cachedCapSource.setConnectionTimeout(connectionTimeout);
@@ -361,6 +334,7 @@ public class RegistryClient {
         try {
             caps = this.getCapabilities(resourceID);
         } catch (ResourceNotFoundException ex) {
+            log.warn("getCapabilities: " + ex);
             return null;
         } catch (IOException e) {
             throw new RuntimeException("Could not obtain service URL", e);
@@ -385,11 +359,9 @@ public class RegistryClient {
 
     File getQueryCacheFile(Query queryName) {
         String baseCacheDir = getBaseCacheDirectory();
-        if (this.capsDomain != null) {
-            baseCacheDir += FILE_SEP + this.capsDomain;
-        }
+        baseCacheDir += FILE_SEP + capsDomain;
         String path = FILE_SEP + queryName.getValue();
-        log.debug("Caching file [" + path + "] in dir [" + baseCacheDir + "]");
+        log.debug("getQueryCacheFile [" + path + "] in dir [" + baseCacheDir + "]");
         File file = new File(baseCacheDir + path);
         return file;
     }
@@ -397,11 +369,9 @@ public class RegistryClient {
     private File getCapabilitiesCacheFile(URI resourceID) {
         String baseCacheDir = getBaseCacheDirectory();
         String resourceCacheDir = baseCacheDir + resourceID.getAuthority();
-        if (capsDomain != null) {
-            resourceCacheDir = baseCacheDir + capsDomain + FILE_SEP + resourceID.getAuthority();
-        }
+        resourceCacheDir = baseCacheDir + capsDomain + FILE_SEP + resourceID.getAuthority();
         String path = resourceID.getPath() + FILE_SEP + "capabilities.xml";
-        log.debug("Caching file [" + path + "] in dir [" + resourceCacheDir + "]");
+        log.debug("getCapabilitiesCacheFile [" + path + "] in dir [" + resourceCacheDir + "]");
         File file = new File(resourceCacheDir, path);
         return file;
     }
@@ -414,51 +384,12 @@ public class RegistryClient {
         }
         String baseCacheDir = null;
         if (userName == null) {
-            baseCacheDir = tmpDir + FILE_SEP + CONFIG_CACHE_DIR + FILE_SEP;
+            baseCacheDir = tmpDir + FILE_SEP + CONFIG_CACHE_DIR;
         } else {
-            baseCacheDir = tmpDir + FILE_SEP + userName + FILE_SEP + CONFIG_CACHE_DIR + FILE_SEP;
+            baseCacheDir = tmpDir + FILE_SEP + userName + FILE_SEP + CONFIG_CACHE_DIR;
         }
         log.debug("Base cache dir: " + baseCacheDir);
         return baseCacheDir;
-    }
-
-    public URL mangleHostname(final URL url) throws MalformedURLException {
-        URL retURL = url;
-
-        log.debug("mangling URL: " + url);
-        if (this.hostname != null) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(url.getProtocol());
-            sb.append("://");
-
-            sb.append(this.hostname);
-
-            int p = url.getPort();
-            if (p > 0 && p != url.getDefaultPort()) {
-                sb.append(":");
-                sb.append(p);
-            }
-
-            sb.append(url.getPath());
-            retURL = new URL(sb.toString());
-        }
-
-        log.debug("mangled URL: " + retURL);
-        return retURL;
-    }
-
-    public static String getDomain(String hostname) {
-        if (hostname == null) {
-            return null;
-        }
-        int dotIndex = hostname.indexOf('.');
-        if (dotIndex <= 0) {
-            return null;
-        }
-        if (dotIndex + 1 == hostname.length()) {
-            return null;
-        }
-        return hostname.substring(dotIndex + 1);
     }
 
     // for test access
