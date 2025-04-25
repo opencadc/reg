@@ -1,6 +1,5 @@
 plugins {
-    id 'java'
-    id 'maven'
+    id 'java-library'
     id 'maven-publish'
     id 'checkstyle'
 }
@@ -10,9 +9,9 @@ repositories {
     mavenLocal()
 }
 
-sourceCompatibility = 1.8
-
 apply from: '../opencadc.gradle'
+
+sourceCompatibility = 11
 
 group = 'org.opencadc'
 
@@ -22,11 +21,11 @@ description = 'OpenCADC VOSI test library'
 def git_url = 'https://github.com/opencadc/reg'
 
 dependencies {
-    compile 'junit:junit:[4.0,)'
+    implementation 'junit:junit:[4.0,)'
 
-    compile 'org.opencadc:cadc-util:[1.7.3,)'
-    compile 'org.opencadc:cadc-vosi:[1.0,)'
-    compile 'org.opencadc:cadc-registry:[1.0,)'
+    implementation 'org.opencadc:cadc-util:[1.7.3,)'
+    implementation 'org.opencadc:cadc-vosi:[1.0,)'
+    implementation 'org.opencadc:cadc-registry:[1.0,)'
 
-    testCompile 'org.opencadc:cadc-quality:[1.0,)'
+    testImplementation 'org.opencadc:cadc-quality:[1.0,)'
 }

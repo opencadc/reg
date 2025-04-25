@@ -153,6 +153,9 @@ public class CapGetAction extends RestAction {
         log.debug("context: " + syncInput.getContextPath());
         log.debug("component: " + syncInput.getComponentPath());
         
+        // obscure optional config: default to true
+        final boolean filterSecurityMethods = !"false".equals(initParams.get("filterSecurityMethods"));
+        
         String hostname = new URL(syncInput.getRequestURI()).getHost();
         
         // find context path in the template using capabilities endpoint
@@ -176,16 +179,18 @@ public class CapGetAction extends RestAction {
                 u.setURL(nurl);
                 log.debug("transform: " + url + " -> " + nurl);
                 
-                IdentityManager im = AuthenticationUtil.getIdentityManager();
-                log.debug("IM: " + im.getClass().getName());
-                ListIterator<URI> iter = i.getSecurityMethods().listIterator();
-                while (iter.hasNext()) {
-                    URI sm = iter.next();
-                    if (!im.getSecurityMethods().contains(sm)) {
-                        log.debug("unsupported securityMethod: " + sm + " - REMOVE");
-                        iter.remove();
-                    } else {
-                        log.debug("supported securityMethod: " + sm + " - KEEP");
+                if (filterSecurityMethods) {
+                    IdentityManager im = AuthenticationUtil.getIdentityManager();
+                    log.debug("IM: " + im.getClass().getName());
+                    ListIterator<URI> iter = i.getSecurityMethods().listIterator();
+                    while (iter.hasNext()) {
+                        URI sm = iter.next();
+                        if (!im.getSecurityMethods().contains(sm)) {
+                            log.debug("unsupported securityMethod: " + sm + " - REMOVE");
+                            iter.remove();
+                        } else {
+                            log.debug("supported securityMethod: " + sm + " - KEEP");
+                        }
                     }
                 }
             }
