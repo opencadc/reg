@@ -127,7 +127,7 @@ public class LocalAuthorityTest {
                 URI uri = loc.getServiceURI("foo:bar");
                 Assert.fail("expected NoSuchElementException, found: " + uri);
             } catch (NoSuchElementException expected) {
-                log.debug("caught expected exception: " + expected);
+                log.info("caught expected exception: " + expected);
             }
 
         } catch (Exception unexpected) {
@@ -169,40 +169,6 @@ public class LocalAuthorityTest {
             Set<URI> uris = loc.getServiceURIs(URI.create(OPENID));
             Assert.assertEquals(2, uris.size());
             Assert.assertTrue(uris.equals(OPENID_URLS));
-        } catch (Exception unexpected) {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        } finally {
-            System.clearProperty(TEST_CONFIG_DIR);
-        }
-    }
-    
-    @Test
-    public void testCompatFoundIVO() {
-        try {
-            System.setProperty(TEST_CONFIG_DIR, "src/test/resources/compat");
-
-            LocalAuthority loc = new LocalAuthority();
-            URI uri = loc.getServiceURI(SERVICE);
-            Assert.assertNotNull(uri);
-            Assert.assertEquals(SERVICE_URI_COMPAT, uri.toASCIIString());
-        } catch (Exception unexpected) {
-            log.error("unexpected exception", unexpected);
-            Assert.fail("unexpected exception: " + unexpected);
-        } finally {
-            System.clearProperty(TEST_CONFIG_DIR);
-        }
-    }
-    
-    @Test
-    public void testCompatFoundURL() {
-        try {
-            System.setProperty(TEST_CONFIG_DIR, "src/test/resources/compat");
-
-            LocalAuthority loc = new LocalAuthority();
-            URI uri = loc.getServiceURI(OPENID);
-            Assert.assertNotNull(uri);
-            Assert.assertEquals(OPENID_URL_COMPAT, uri.toASCIIString());
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);

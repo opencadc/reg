@@ -223,16 +223,12 @@ public class RegistryClientTest {
 
         RegistryClient rc = new RegistryClient();
         try {
-            URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
+            URI resourceID = new URI(RESOURCE_ID);
             URI standardID = Standards.TAP_10;
             AuthMethod authMethod = null;
-            rc.getServiceURL(resourceID, standardID, authMethod);
-        } catch (IllegalArgumentException ex) {
-            // expecting a null parameter related exception
-            if (!ex.getMessage().contains("No input parameters should be null")) {
-                log.error("unexpected exception", ex);
-                Assert.fail("unexpected exception: " + ex);
-            }
+            URL actual = rc.getServiceURL(resourceID, standardID, authMethod);
+            log.info("found accessURL: " + actual);
+            Assert.assertNotNull(actual);
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
@@ -251,7 +247,7 @@ public class RegistryClientTest {
 
         RegistryClient rc = new RegistryClient();
         try {
-            URI resourceID = new URI("ivo://cadc.nrc.ca/tap");
+            URI resourceID = new URI(RESOURCE_ID);
             URI standardID = null;
             AuthMethod authMethod = AuthMethod.getAuthMethod("anon");
             rc.getServiceURL(resourceID, standardID, authMethod);

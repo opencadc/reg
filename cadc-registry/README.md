@@ -4,8 +4,9 @@ client implementation of IVOA Registry specifications
 ## configuration
 
 The RegistryClient and LocalAuthority classes in this library are configured
-using a single configuration file: `cadc-registry.properties`.  The old `LocalAuthority.properties` file
-is still recognized and read if `cadc-registry.properties` is not found.
+using a single configuration file: `cadc-registry.properties`.
+
+Obsolete: The old `LocalAuthority.properties` file is no longer used.
 
 ### cadc-registry.properties
 The cadc-registry.properties file specifies which local service is authoritative for various site-wide functions. The keys are IVOA standardID values representing the functions and the values are resourceID values (`ivo` scheme) for the service that implements that standard feature or a direct `https` 
@@ -31,4 +32,3 @@ ivo://ivoa.net/std/UMS#login-0.1 = ivo://cadc.nrc.ca/gms
 ## OIDC issuer
 ivo://ivoa.net/sso#OpenID = https://oidc.example.net/
 ```
-

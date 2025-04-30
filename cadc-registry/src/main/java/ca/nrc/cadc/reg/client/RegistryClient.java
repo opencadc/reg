@@ -260,8 +260,7 @@ public class RegistryClient {
     }
 
     /**
-     * Get the capabilities object for the resource identified
-     * by resourceID.
+     * Get the capabilities object for the resource identified by resourceID.
      *
      * @param resourceID Identifies the resource.
      * @return The associated capabilities object.
@@ -320,7 +319,7 @@ public class RegistryClient {
      */
     public URL getServiceURL(final URI resourceID, final URI standardID, final AuthMethod authMethod,
                              URI interfaceType) {
-        if (resourceID == null || standardID == null || authMethod == null || interfaceType == null) {
+        if (resourceID == null || standardID == null || interfaceType == null) {
             String msg = "No input parameters should be null";
             throw new IllegalArgumentException(msg);
         }
@@ -369,7 +368,7 @@ public class RegistryClient {
     private File getCapabilitiesCacheFile(URI resourceID) {
         String baseCacheDir = getBaseCacheDirectory();
         String resourceCacheDir = baseCacheDir + resourceID.getAuthority();
-        resourceCacheDir = baseCacheDir + capsDomain + FILE_SEP + resourceID.getAuthority();
+        resourceCacheDir = baseCacheDir + FILE_SEP + capsDomain + FILE_SEP + resourceID.getAuthority();
         String path = resourceID.getPath() + FILE_SEP + "capabilities.xml";
         log.debug("getCapabilitiesCacheFile [" + path + "] in dir [" + resourceCacheDir + "]");
         File file = new File(resourceCacheDir, path);
