@@ -211,6 +211,8 @@ public class Standards {
 
     public static final URI DOI_INSTANCES_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/DOI#instances-1.0");
 
+    public static final URI DOI_SEARCH_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/DOI#search-1.0");
+
     // Security method standardIDs
     public static final URI SECURITY_METHOD_PASSWORD = URI.create("ivo://ivoa.net/sso#tls-with-password");
     public static final URI SECURITY_METHOD_OAUTH = URI.create("ivo://ivoa.net/sso#OAuth");
