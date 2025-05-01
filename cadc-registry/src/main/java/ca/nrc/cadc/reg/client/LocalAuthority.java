@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg.client;
 
+import ca.nrc.cadc.util.InvalidConfigException;
 import ca.nrc.cadc.util.MultiValuedProperties;
 import ca.nrc.cadc.util.PropertiesReader;
 import java.net.URI;
@@ -122,7 +123,10 @@ public class LocalAuthority {
      */
     @Deprecated
     public URI getServiceURI(String baseStandardID) {
-        Set<URI> resourceIdentifiers = getServiceURIs(URI.create(baseStandardID));
+        Set<URI> resourceIdentifiers = lookup(URI.create(baseStandardID));
+        if (resourceIdentifiers.isEmpty()) {
+            throw new NoSuchElementException("not found: " + baseStandardID);
+        }
         if (resourceIdentifiers.size() > 1) {
             throw new NoSuchElementException("Multiple service URIs found for " + baseStandardID);
         }
@@ -130,15 +134,31 @@ public class LocalAuthority {
     }
     
     /**
-     * Get a single (first) resourceID that provides the specified standardID.
+     * Convenience: Get a single (first) resourceID that provides the specified standardID
+     * and do not fail if configuration includes multiple values.
      * 
      * @param standardID the requested API feature
      * @return a resourceID that implements the feature or null if no configured provider
      */
     public URI getResourceID(URI standardID) {
+        return getResourceID(standardID, true);
+    }
+    
+    /**
+     * Get a single (first) resourceID that provides the specified standardID.
+     * 
+     * @param standardID the requested API feature
+     * @param failOnMultiple treat multiple values as a configuration error
+     * @return a resourceID that implements the feature or null if no configured provider
+     * @throws InvalidConfigException if failOnMultiple=true and configuration has multiple values
+     */
+    public URI getResourceID(URI standardID, boolean failOnMultiple) {
         Set<URI> s = lookup(standardID);
         if (s.isEmpty()) {
             return null;
+        }
+        if (failOnMultiple && s.size() > 1) {
+            throw new InvalidConfigException("found multiple values for " + standardID);
         }
         return s.iterator().next();
     }
@@ -150,11 +170,7 @@ public class LocalAuthority {
      * @throws NoSuchElementException if configuration for this standardID not found
      */
     public Set<URI> getServiceURIs(URI standardID) {
-        Set<URI> ret = lookup(standardID);
-        if (ret.isEmpty()) {
-            throw new NoSuchElementException("not found: " + standardID);
-        }
-        return ret;
+        return lookup(standardID);
     }
     
     private Set<URI> lookup(URI standardID) {

@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2011.                            (c) 2011.
+*  (c) 2025.                            (c) 2025.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -69,20 +69,19 @@
 
 package ca.nrc.cadc.reg.client;
 
+import ca.nrc.cadc.reg.Standards;
+import ca.nrc.cadc.util.InvalidConfigException;
+import ca.nrc.cadc.util.Log4jInit;
+import ca.nrc.cadc.util.PropertiesReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
-
-import ca.nrc.cadc.reg.Standards;
-import ca.nrc.cadc.util.Log4jInit;
-import ca.nrc.cadc.util.PropertiesReader;
 
 /**
  *
@@ -93,20 +92,14 @@ public class LocalAuthorityTest {
     private static final Logger log = Logger.getLogger(LocalAuthorityTest.class);
 
     // values from cadc-registry.properties
-    private String SERVICE = Standards.CRED_DELEGATE_10.toASCIIString();
-    private String SERVICE_URI = "ivo://cadc.nrc.ca/cred";
+    private static final URI SERVICE = Standards.CRED_PROXY_10;
+    private static final URI SERVICE_URI = URI.create("ivo://cadc.nrc.ca/cred");
     
-    private String OPENID = Standards.SECURITY_METHOD_OPENID.toASCIIString();
-    private final URI[] OPENID_VALUES= new URI[] {
+    private static final Set<URI> OPENID_URLS = new HashSet<>(Arrays.asList(new URI[] {
             URI.create("https://oidc.example1.net/"),
-            URI.create("https://oidc.example2.net/")};
-    private Set<URI> OPENID_URLS = new HashSet<>(Arrays.asList(OPENID_VALUES));
+            URI.create("https://oidc.example2.net/")}));
     
-    // values from backwards compat LocalAuthority.properties
-    private String SERVICE_URI_COMPAT = "ivo://cadc.nrc.ca/cred/compat";
     
-    private String OPENID_URL_COMPAT = "https://oidc.example.net/compat";
-
     static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.INFO);
     }
@@ -130,6 +123,12 @@ public class LocalAuthorityTest {
                 log.info("caught expected exception: " + expected);
             }
 
+            URI notFound = loc.getResourceID(URI.create("foo:bar"));
+            Assert.assertNull(notFound);
+            
+            Set<URI> uris = loc.getServiceURIs(URI.create("foo:bar"));
+            Assert.assertNotNull(uris);
+            Assert.assertTrue(uris.isEmpty());
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -144,9 +143,14 @@ public class LocalAuthorityTest {
             System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
             LocalAuthority loc = new LocalAuthority();
-            URI uri = loc.getServiceURI(SERVICE);
+            URI uri = loc.getServiceURI(SERVICE.toASCIIString());
             Assert.assertNotNull(uri);
-            Assert.assertEquals(SERVICE_URI, uri.toASCIIString());
+            Assert.assertEquals(SERVICE_URI, uri);
+            
+            uri = loc.getResourceID(SERVICE);
+            Assert.assertNotNull(uri);
+            Assert.assertEquals(SERVICE_URI, uri);
+            
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -156,17 +160,36 @@ public class LocalAuthorityTest {
     }
     
     @Test
-    public void testFoundMultipleURLs() {
+    public void testFoundMultiple() {
         try {
             System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
 
             LocalAuthority loc = new LocalAuthority();
             try {
-                URI uri = loc.getServiceURI(OPENID);
+                URI uri = loc.getServiceURI(Standards.SECURITY_METHOD_OPENID.toASCIIString());
                 Assert.fail("This interface cannot be used to access multiple service URIs");
             } catch (NoSuchElementException expected) {
+                log.info("caught expected: " + expected);
             }
-            Set<URI> uris = loc.getServiceURIs(URI.create(OPENID));
+            
+            try {
+                URI uri = loc.getResourceID(Standards.SECURITY_METHOD_OPENID);
+                Assert.fail("This interface cannot be used to access multiple service URIs");
+            } catch (InvalidConfigException expected) {
+                log.info("caught expected: " + expected);
+            }
+            
+            try {
+                URI uri = loc.getResourceID(Standards.SECURITY_METHOD_OPENID, true);
+                Assert.fail("This interface cannot be used to access multiple service URIs");
+            } catch (InvalidConfigException expected) {
+                log.info("caught expected: " + expected);
+            }
+            
+            URI uri = loc.getResourceID(Standards.SECURITY_METHOD_OPENID, false);
+            Assert.assertNotNull(uri);
+            
+            Set<URI> uris = loc.getServiceURIs(Standards.SECURITY_METHOD_OPENID);
             Assert.assertEquals(2, uris.size());
             Assert.assertTrue(uris.equals(OPENID_URLS));
         } catch (Exception unexpected) {
