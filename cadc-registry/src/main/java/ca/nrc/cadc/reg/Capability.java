@@ -162,7 +162,7 @@ public class Capability {
     }
     
     /**
-     * Convenience: find an interface of the specified type that uses the specified authMethdod.
+     * Convenience: find an interface of the specified type that uses the specified authMethod.
      * This method returns the first matching interface.
      * 
      * @param authMethod AuthMethod to match
