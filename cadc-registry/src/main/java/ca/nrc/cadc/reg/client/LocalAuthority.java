@@ -169,7 +169,7 @@ public class LocalAuthority {
      * @return all resourceID(s) that implement the feature
      * @throws NoSuchElementException if configuration for this standardID not found
      */
-    public Set<URI> getServiceURIs(URI standardID) {
+    public Set<URI> getResourceIDs(URI standardID) {
         return lookup(standardID);
     }
     

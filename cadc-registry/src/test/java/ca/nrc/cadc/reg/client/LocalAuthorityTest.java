@@ -126,7 +126,7 @@ public class LocalAuthorityTest {
             URI notFound = loc.getResourceID(URI.create("foo:bar"));
             Assert.assertNull(notFound);
             
-            Set<URI> uris = loc.getServiceURIs(URI.create("foo:bar"));
+            Set<URI> uris = loc.getResourceIDs(URI.create("foo:bar"));
             Assert.assertNotNull(uris);
             Assert.assertTrue(uris.isEmpty());
         } catch (Exception unexpected) {
@@ -189,7 +189,7 @@ public class LocalAuthorityTest {
             URI uri = loc.getResourceID(Standards.SECURITY_METHOD_OPENID, false);
             Assert.assertNotNull(uri);
             
-            Set<URI> uris = loc.getServiceURIs(Standards.SECURITY_METHOD_OPENID);
+            Set<URI> uris = loc.getResourceIDs(Standards.SECURITY_METHOD_OPENID);
             Assert.assertEquals(2, uris.size());
             Assert.assertTrue(uris.equals(OPENID_URLS));
         } catch (Exception unexpected) {
