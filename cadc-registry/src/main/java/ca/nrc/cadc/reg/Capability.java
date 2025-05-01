@@ -141,7 +141,7 @@ public class Capability {
             }
             for (URI sm : intf.getSecurityMethods()) {
                 if (intf.getType().equals(interfaceType)
-                        && sm.equals(securityMethod)) {
+                        && (securityMethod == null || sm.equals(securityMethod))) {
                     return intf;
                 }
             }
@@ -151,7 +151,7 @@ public class Capability {
     }
     
     /**
-     * Find a ParamHTTP interface that uses the specified securityMethod.
+     * Convenience: find a ParamHTTP interface that uses the specified auth method.
      * This method returns the first matching interface.
      * 
      * @param authMethod AuthMethod to match
@@ -162,7 +162,7 @@ public class Capability {
     }
     
     /**
-     * Find an interface of the specified type that uses the specified authMethdod.
+     * Convenience: find an interface of the specified type that uses the specified authMethod.
      * This method returns the first matching interface.
      * 
      * @param authMethod AuthMethod to match
@@ -171,6 +171,7 @@ public class Capability {
      */
     public Interface findInterface(final AuthMethod authMethod, final URI interfaceType) {
         URI secMethod = Standards.getSecurityMethod(authMethod);
+        // TODO: throw if non-null authMethod -> null securityMethod?
         return findInterface(secMethod, interfaceType);
     }
 

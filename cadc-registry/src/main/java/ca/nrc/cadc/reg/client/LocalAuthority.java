@@ -69,15 +69,17 @@
 
 package ca.nrc.cadc.reg.client;
 
+import ca.nrc.cadc.util.InvalidConfigException;
 import ca.nrc.cadc.util.MultiValuedProperties;
 import ca.nrc.cadc.util.PropertiesReader;
 import java.net.URI;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.apache.log4j.Logger;
 
 /**
@@ -87,26 +89,19 @@ import org.apache.log4j.Logger;
  * @author pdowler
  */
 public class LocalAuthority {
-
     private static final Logger log = Logger.getLogger(LocalAuthority.class);
 
-    private static final String LOCAL_AUTH_PROP_FILE = LocalAuthority.class.getSimpleName() + ".properties";
-
-    private Map<URI, Set<URI>> authorityMap = new TreeMap<>();
+    private static final Set<URI> EMPTY_SET = Collections.unmodifiableSet(Collections.EMPTY_SET);
+    
+    private final Map<URI, Set<URI>> authorityMap = new TreeMap<>();
 
     public LocalAuthority() {
         PropertiesReader propReader = new PropertiesReader(RegistryClient.CONFIG_FILE);
         MultiValuedProperties mvp = propReader.getAllProperties();
         
-        // backwards compat: try the old config file name
-        if (mvp.isEmpty()) {
-            propReader = new PropertiesReader(LOCAL_AUTH_PROP_FILE);
-            mvp = propReader.getAllProperties();
-        }
-
         for (String std : mvp.keySet()) {
             List<String> values = mvp.getProperty(std);
-            Set<URI> vals = new HashSet<>();
+            Set<URI> vals = new TreeSet<>(); // TreeSet is sorted so get-first will be predictable
             URI stdURI = URI.create(std);
             authorityMap.put(stdURI, vals);
             for (String val : values) {
@@ -123,11 +118,13 @@ public class LocalAuthority {
      * the more generic case
      * @param baseStandardID base standard ID
      * @return corresponding service URI (http or ivo)
+     * @throws NoSuchElementException if configuration for this standardID not found
      * @deprecated deprecated in favour of getServiceURIs method
      */
+    @Deprecated
     public URI getServiceURI(String baseStandardID) {
-        Set<URI> resourceIdentifiers = authorityMap.get(URI.create(baseStandardID));
-        if ((resourceIdentifiers == null) || (resourceIdentifiers.isEmpty())) {
+        Set<URI> resourceIdentifiers = lookup(URI.create(baseStandardID));
+        if (resourceIdentifiers.isEmpty()) {
             throw new NoSuchElementException("not found: " + baseStandardID);
         }
         if (resourceIdentifiers.size() > 1) {
@@ -135,17 +132,52 @@ public class LocalAuthority {
         }
         return resourceIdentifiers.iterator().next();
     }
+    
+    /**
+     * Convenience: Get a single (first) resourceID that provides the specified standardID
+     * and do not fail if configuration includes multiple values.
+     * 
+     * @param standardID the requested API feature
+     * @return a resourceID that implements the feature or null if no configured provider
+     */
+    public URI getResourceID(URI standardID) {
+        return getResourceID(standardID, true);
+    }
+    
+    /**
+     * Get a single (first) resourceID that provides the specified standardID.
+     * 
+     * @param standardID the requested API feature
+     * @param failOnMultiple treat multiple values as a configuration error
+     * @return a resourceID that implements the feature or null if no configured provider
+     * @throws InvalidConfigException if failOnMultiple=true and configuration has multiple values
+     */
+    public URI getResourceID(URI standardID, boolean failOnMultiple) {
+        Set<URI> s = lookup(standardID);
+        if (s.isEmpty()) {
+            return null;
+        }
+        if (failOnMultiple && s.size() > 1) {
+            throw new InvalidConfigException("found multiple values for " + standardID);
+        }
+        return s.iterator().next();
+    }
 
     /**
      * Returns the URIs of services associated with the standard ID.
-     * @param standardID base standard ID URI
-     * @return set of service URIs
+     * @param standardID the requested API feature
+     * @return all resourceID(s) that implement the feature
+     * @throws NoSuchElementException if configuration for this standardID not found
      */
-    public Set<URI> getServiceURIs(URI standardID) {
-        Set<URI> resourceIdentifiers = authorityMap.get(standardID);
-        if ((resourceIdentifiers == null)) {
-            throw new NoSuchElementException("not found: " + standardID);
+    public Set<URI> getResourceIDs(URI standardID) {
+        return lookup(standardID);
+    }
+    
+    private Set<URI> lookup(URI standardID) {
+        Set<URI> ret = authorityMap.get(standardID);
+        if (ret == null) {
+            return EMPTY_SET;
         }
-        return resourceIdentifiers;
+        return ret;
     }
 }
