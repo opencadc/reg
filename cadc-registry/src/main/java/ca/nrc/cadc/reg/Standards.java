@@ -209,7 +209,9 @@ public class Standards {
 
     public static final URI RESOLVER_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/NameResolver#names-1.0");
 
-    public static final URI DOI_INSTANCES_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/DOI#instances-1.0");
+    public static final URI DOI_INSTANCES_10 = URI.create("http://www.opencadc.org/std/doi#instances-1.0");
+
+    public static final URI DOI_SEARCH_10 = URI.create("http://www.opencadc.org/std/doi#search-1.0");
 
     // Security method standardIDs
     public static final URI SECURITY_METHOD_PASSWORD = URI.create("ivo://ivoa.net/sso#tls-with-password");
