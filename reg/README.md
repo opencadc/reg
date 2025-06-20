@@ -74,8 +74,11 @@ See <a href="https://github.com/opencadc/reg/tree/master/cadc-vosi">cadc-vosi</a
 service state control.
 
 ## content
-The _content_ (registry records to publish) are simply XML files stored in the `/config/content`
-directory. See: `example-content`. The following files are required:
+The _content_ (registry records to publish) are simply XML files stored in `/content` directory 
+in the container. Tthe old location `/config/content` is deprecated but is still checked and used 
+if `/content` does not exist or is empty (removal: TBD).
+
+See: `example-content`. The following files are required:
 ### Identify.xml
 This is the OAI `<Identify>` record for the publishing registry with `<VOResource>` extension in
 the `<description>`.
