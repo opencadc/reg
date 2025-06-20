@@ -69,15 +69,15 @@ package org.opencadc.reg;
 
 import ca.nrc.cadc.log.ServletLogInfo;
 import ca.nrc.cadc.log.WebServiceLogInfo;
+import ca.nrc.cadc.rest.InlineContentHandler;
+import ca.nrc.cadc.rest.RestAction;
 import ca.nrc.cadc.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -96,15 +96,15 @@ import org.apache.log4j.Logger;
  *
  * @author jeevesh
  */
-public class CannedQueryServlet extends HttpServlet {
+public class CannedQueryGetAction extends RestAction {
 
-    private static final Logger log = Logger.getLogger(CannedQueryServlet.class);
+    private static final Logger log = Logger.getLogger(CannedQueryGetAction.class);
 
     private static String PARAM_QUERY_FILE = "queryFile";
     
     private String configFileName;
     
-    public CannedQueryServlet() {
+    public CannedQueryGetAction() {
     }
 
     static File checkFileExists(String paramFileName) {
@@ -116,65 +116,50 @@ public class CannedQueryServlet extends HttpServlet {
     }
 
     @Override
-    public void init(ServletConfig config)
-            throws ServletException {
-        super.init(config);
-        this.configFileName = config.getInitParameter(PARAM_QUERY_FILE);
-
-        log.info("initCannedQuery: checking for " + configFileName);
+    public void initAction() throws Exception {
+        this.configFileName = super.initParams.get(PARAM_QUERY_FILE);
+        log.debug("initCannedQuery: checking for " + configFileName);
         File f = checkFileExists(configFileName);
         if (f != null) {
             if (f.canRead()) {
-                log.info("initCannedQuery: " + configFileName + " OK");
+                log.debug("initCannedQuery: " + configFileName + " OK");
             } else {
                 log.error("initCannedQuery: " + configFileName + " not readable FAIL");
             }
         } else {
-            log.info("initCannedQuery: " + configFileName + " not found DISABLED");
+            log.debug("initCannedQuery: " + configFileName + " not found DISABLED");
             this.configFileName = null; // disabled
         }
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-
-        WebServiceLogInfo logInfo = new ServletLogInfo(request);
-        long start = System.currentTimeMillis();
-
-        try {
-            log.info(logInfo.start());
-            if (configFileName != null) {
-                File f = checkFileExists(configFileName);
-                byte[] buf = FileUtil.readFile(f);
-                response.setStatus(200);
-                response.setContentType("text/plain");
-                response.setContentLength(buf.length);
-                
-                OutputStream ostream = response.getOutputStream();
-                ostream.write(buf);
-                ostream.flush();
-                logInfo.setSuccess(true);
-            } else {
-                String msg = "not found: feature not configured\n";
-                logInfo.setSuccess(false);
-                logInfo.setMessage(msg);
-                
-                response.setStatus(404);
-                response.setContentType("text/plain");
-                Writer w = response.getWriter();
-                w.write(msg);
-                w.flush();
-            }
-        } catch (Throwable t) {
-            logInfo.setSuccess(false);
-            logInfo.setMessage(t.toString());
-            log.error("BUG: failed to deliver file content", t);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getMessage());
-        } finally {
-            logInfo.setElapsedTime(System.currentTimeMillis() - start);
-            log.info(logInfo.end());
-        }
+    protected InlineContentHandler getInlineContentHandler() {
+        return null;
     }
 
+    @Override
+    public void doAction() throws Exception {
+        if (configFileName != null) {
+            File f = checkFileExists(configFileName);
+            byte[] buf = FileUtil.readFile(f);
+            syncOutput.setCode(200);
+            syncOutput.setHeader("content-type", "text/plain");
+            syncOutput.setHeader("content-length", buf.length);
+
+            OutputStream ostream = syncOutput.getOutputStream();
+            ostream.write(buf);
+            ostream.flush();
+            logInfo.setSuccess(true);
+        } else {
+            String msg = "not found: feature not configured\n";
+            logInfo.setSuccess(false);
+            logInfo.setMessage(msg);
+
+            syncOutput.setCode(404);
+            syncOutput.setHeader("content-type", "text/plain");
+            Writer w = new OutputStreamWriter(syncOutput.getOutputStream());
+            w.write(msg);
+            w.flush();
+        }
+    }
 }

@@ -109,6 +109,11 @@ public class OAIQueryAction extends RestAction {
 
     private static final String CONFIG = "reg.properties";
     private static final String AUTHORITY_KEY = "org.opencadc.reg.authority";
+    
+    private static final String DEFAULT_CONTENT_DIR = "/content";
+    private static final String COMPAT_CONTENT_DIR = "/config/content";
+    
+    
 
     enum OAI {
         verb, metadataPrefix, set, identifier, from, until, resumptionToken
@@ -116,6 +121,7 @@ public class OAIQueryAction extends RestAction {
 
     private URL oaiEndpoint;
     private String authority;
+    private File contentDir;
 
     public OAIQueryAction() {
     }
@@ -132,12 +138,34 @@ public class OAIQueryAction extends RestAction {
         PropertiesReader pr = new PropertiesReader(CONFIG);
         MultiValuedProperties mvp = pr.getAllProperties();
         this.authority = mvp.getFirstPropertyValue(AUTHORITY_KEY);
+        if (authority != null) {
+            findContentDir(DEFAULT_CONTENT_DIR);
+            if (contentDir == null) {
+                findContentDir(COMPAT_CONTENT_DIR);
+            }
+        }
+    }
+    
+    private void findContentDir(String path) {
+        try {
+            this.contentDir = new File(path);
+            File authorityDir = getMetaResource(null, authority, false);
+            File authorityXML = getMetaResource(null, authority, true);
+            if (authorityDir != null && authorityXML != null) {
+                log.info("found authority " + authority + " in " + contentDir);
+            } else {
+                log.info("not found: " + authority + " + in " + contentDir);
+                this.contentDir = null;
+            }
+        } catch (IOException ignore) {
+            log.debug("ignore probe failure: " + ignore);
+        }
     }
     
     @Override
     public void doAction() throws Exception {
         
-        if (authority == null) {
+        if (authority == null || contentDir == null) {
             String msg = "not found: OAI publishing not configured\n";
             logInfo.setSuccess(false);
             logInfo.setMessage(msg);
@@ -482,9 +510,7 @@ public class OAIQueryAction extends RestAction {
         }
         String filename = sb.toString();
         
-        // look for content in {user.home}/config/content
-        File dir = new File(System.getProperty("user.home") + "/config/content");
-        File f = new File(dir, filename);
+        File f = new File(contentDir, filename);
         log.debug("look for: " + f.getAbsolutePath());
         if (f.exists()) {
             return f;
