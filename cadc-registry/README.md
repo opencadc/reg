@@ -13,9 +13,11 @@ The cadc-registry.properties file specifies which local service is authoritative
 base URL to the service. The latter is intended for specifying the registry service to use or for
 services like an OpenID issuer that does not implement IVOA VOSI-capabilities.
 
+All config in this file is now optional, including the _baseURL_. Failures should only occur if an actual lookup is attempted.
+
 Example:
 ```
-# configure RegistryClient (required)
+# configure RegistryClient
 ca.nrc.cadc.reg.client.RegistryClient.baseURL =  https://ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/reg
 
 # local IVOA CDP service
