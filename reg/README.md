@@ -73,10 +73,11 @@ dynamic logging control.
 See <a href="https://github.com/opencadc/reg/tree/master/cadc-vosi">cadc-vosi</a> for common 
 service state control.
 
-## content
+## OAI publishing content
 The _content_ (registry records to publish) are simply XML files stored in `/content` directory 
-in the container. Tthe old location `/config/content` is deprecated but is still checked and used 
-if `/content` does not exist or is empty (removal: TBD).
+in the container. The old location `/config/content` is deprecated but is still checked and used 
+if `/content` does not exist or is empty (removal of backwards compatible check: TBD). This 
+separation allows instance config and content to be included by different mechanisms.
 
 See: `example-content`. The following files are required:
 ### Identify.xml

@@ -96,13 +96,13 @@ public class ServiceAvailability implements AvailabilityPlugin {
             File rc;
             
             fname = "reg-resource-caps.properties";
-            rc = CannedQueryServlet.checkFileExists(fname);
+            rc = CannedQueryGetAction.checkFileExists(fname);
             if (rc != null && !rc.canRead()) {
                 return new Availability(false, "CONFIG: " + fname + " not readable");
             }
             
             fname = "reg-applications.properties";
-            rc = CannedQueryServlet.checkFileExists(fname);
+            rc = CannedQueryGetAction.checkFileExists(fname);
             if (rc != null && !rc.canRead()) {
                 return new Availability(false, "CONFIG: " + fname + " not readable");
             }

@@ -35,26 +35,33 @@
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
--->
     
     <servlet>
         <load-on-startup>2</load-on-startup>
         <servlet-name>resource-caps</servlet-name>
+        <servlet-class>ca.nrc.cadc.rest.RestServlet</servlet-class>
+        <init-param>
+            <param-name>get</param-name>
+            <param-value>org.opencadc.reg.CannedQueryGetAction</param-value>
+        </init-param>
         <init-param>
             <param-name>queryFile</param-name>
             <param-value>reg-resource-caps.properties</param-value>
         </init-param>
-        <servlet-class>org.opencadc.reg.CannedQueryServlet</servlet-class>
     </servlet>
 
     <servlet>
         <load-on-startup>2</load-on-startup>
         <servlet-name>applications</servlet-name>
+        <servlet-class>ca.nrc.cadc.rest.RestServlet</servlet-class>
+        <init-param>
+            <param-name>get</param-name>
+            <param-value>org.opencadc.reg.CannedQueryGetAction</param-value>
+        </init-param>
         <init-param>
              <param-name>queryFile</param-name>
              <param-value>reg-applications.properties</param-value>
         </init-param>
-        <servlet-class>org.opencadc.reg.CannedQueryServlet</servlet-class>
     </servlet>
     
     <!-- VOSI capabilities -->
