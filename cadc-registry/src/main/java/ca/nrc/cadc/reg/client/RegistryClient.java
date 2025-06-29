@@ -87,6 +87,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -105,9 +106,9 @@ public class RegistryClient {
 
     private static Logger log = Logger.getLogger(RegistryClient.class);
 
-    private static final String HOST_PROPERTY = RegistryClient.class.getName() + ".host";
+    private static final String HOST_PROPERTY_KEY = RegistryClient.class.getName() + ".host";
     
-    private static final String CONFIG_BASE_URL = RegistryClient.class.getName() + ".baseURL";
+    private static final String CONFIG_BASE_URL_KEY = RegistryClient.class.getName() + ".baseURL";
 
     public enum Query {
         APPLICATIONS("applications"),
@@ -124,7 +125,7 @@ public class RegistryClient {
         }
     }
     
-    static final String CONFIG_FILE = "cadc-registry.properties";
+    static final String DEFAULT_CONFIG_FILE_NAME = "cadc-registry.properties";
     
     // version the cache dir so we can increment when we have incompatible cache structure
     // 1.5 because we now put all reg lookups under a capsDomain
@@ -135,17 +136,54 @@ public class RegistryClient {
     // fully qualified type value (see CapabilitiesReader)
     private static final URI DEFAULT_ITYPE = Standards.INTERFACE_PARAM_HTTP;
 
-    private URL regBaseURL;
-    private String capsDomain;
+    private List<URL> regBaseURLs = new ArrayList<URL>();
+    // private String capsDomain;
     private boolean isRegOverride = false;
     private int connectionTimeout = 30000; // millis
     private int readTimeout = 60000;       // millis
 
     public RegistryClient() {
+        this(DEFAULT_CONFIG_FILE_NAME);
+    }
+    
+    public RegistryClient(final String configFileName) {
         // standard behaviour: get regBaseURL from config file
-        PropertiesReader propReader = new PropertiesReader(CONFIG_FILE);
+        PropertiesReader propReader = new PropertiesReader(configFileName);
         MultiValuedProperties mvp = propReader.getAllProperties();
-        String str = mvp.getFirstPropertyValue(CONFIG_BASE_URL);
+
+        for (String str : mvp.getProperty(CONFIG_BASE_URL_KEY))
+            {
+            try {
+                if (str.endsWith("/")) {
+                    str= str.substring(0, str.length() - 1);
+                    }
+                this.regBaseURLs.add(new URL(str));
+                }
+            catch (MalformedURLException ex)
+                {
+                throw new InvalidConfigException(configFileName + ": " + CONFIG_BASE_URL_KEY  + " = " + str + " is not a valid URL", ex);
+                }
+            }
+
+        if (this.regBaseURLs.isEmpty())
+            {
+            try {
+                String hostP = System.getProperty(HOST_PROPERTY_KEY);
+                log.debug("     host: " + hostP);
+                if (hostP != null) {
+                    this.regBaseURLs.add(new URL("https://" + hostP + "/reg"));
+                    this.isRegOverride = true;
+                    }
+                }
+            catch (MalformedURLException e) {
+                log.error("Error transforming resource-caps URL", e);
+                throw new RuntimeException(e);
+                }
+            }
+
+        /*
+        * 
+        String str = mvp.getFirstPropertyValue(CONFIG_BASE_URL_KEY);
         if (str != null) {
             try {
                 if (str.endsWith("/")) {
@@ -153,13 +191,13 @@ public class RegistryClient {
                 }
                 this.regBaseURL = new URL(str);
             } catch (MalformedURLException ex) {
-                throw new InvalidConfigException(CONFIG_FILE + ": " + CONFIG_BASE_URL
+                throw new InvalidConfigException(configFileName + ": " + CONFIG_BASE_URL_KEY
                         + " = " + str + " is not a valid URL", ex);
             }
         } else {
             // developer support for targetting integration tests at a reg servcie without config
             try {
-                String hostP = System.getProperty(HOST_PROPERTY);
+                String hostP = System.getProperty(HOST_PROPERTY_KEY);
                 log.debug("     host: " + hostP);
                 if (hostP != null) {
                     this.regBaseURL = new URL("https://" + hostP + "/reg");
@@ -175,6 +213,8 @@ public class RegistryClient {
             this.capsDomain = "reg-domains/" + regBaseURL.getHost();
         }
         log.debug("regBaseURL: " + regBaseURL + " domain: " + capsDomain);
+        * 
+        */
     }
 
     /**
@@ -227,36 +267,65 @@ public class RegistryClient {
      * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry
      */
     public URL getAccessURL(Query queryName, URI uri) throws IOException, ResourceNotFoundException {
-        if (regBaseURL == null) {
-            throw new IllegalStateException("no registry service base URL configured");
-        }
-        File queryCacheFile = getQueryCacheFile(queryName);
-        log.debug("resource-caps cache file: " + queryCacheFile);
-        URL queryURL = new URL(regBaseURL + "/" + queryName.getValue());
-        CachingFile cachedCapSource = new CachingFile(queryCacheFile, queryURL);
-        cachedCapSource.setConnectionTimeout(connectionTimeout);
-        cachedCapSource.setReadTimeout(readTimeout);
-        String map = cachedCapSource.getContent();
-        InputStream mapStream = new ByteArrayInputStream(map.getBytes(StandardCharsets.UTF_8));
-        MultiValuedProperties mvp = new MultiValuedProperties();
-        try {
-            mvp.load(mapStream);
-        } catch (Exception e) {
-            throw new RuntimeException("failed to load properties from cache, src=" + queryURL, e);
+
+    // TODO Iterate the list on errors
+   
+    
+        if (regBaseURLs.isEmpty()) {
+            throw new IllegalStateException("Registry base URL list is empty");
         }
 
-        List<String> values = mvp.getProperty(uri.toString());
-        if (values == null || values.isEmpty()) {
-            throw new ResourceNotFoundException("not found: " + uri + " src=" + queryURL);
+        for (URL regBaseURL : regBaseURLs) {
+            
+            log.debug("registry base URL [" + regBaseURL + "]");
+            File queryCacheFile = getQueryCacheFile(regBaseURL, queryName);
+            log.debug("resource-caps cache file [" + queryCacheFile + "]");
+
+            URL queryURL = new URL(regBaseURL + "/" + queryName.getValue());
+            log.debug("query URL [" + queryURL + "]");
+
+            CachingFile cachedCapSource = new CachingFile(queryCacheFile, queryURL);
+            cachedCapSource.setConnectionTimeout(connectionTimeout);
+            cachedCapSource.setReadTimeout(readTimeout);
+
+            String map = null ;
+            try {
+                map = cachedCapSource.getContent();
+            } catch (IOException e) {
+                log.debug("CachingFile.getContent failed with IOException [" + e.getMessage() + "]");
+                continue;
+            }
+            InputStream mapStream = new ByteArrayInputStream(map.getBytes(StandardCharsets.UTF_8));
+            MultiValuedProperties mvp = new MultiValuedProperties();
+            try {
+                mvp.load(mapStream);
+            } catch (IOException e) {
+                log.debug("MultiValuedProperties.load failed with IOException [" + queryURL + "][" + e.getMessage() + "]");
+                continue;
+            }
+            List<String> values = mvp.getProperty(uri.toString());
+            if (values == null) {
+                log.debug("MultiValuedProperties.getProperty [" + uri.toString() + "] is null");
+                continue;
+            }
+            else if (values.isEmpty()) {
+                log.debug("MultiValuedProperties.getProperty [" + uri.toString() + "] is empty");
+                continue;
+            }
+            if (values.size() > 1) {
+                log.debug("MultiValuedProperties.getProperty [" + uri.toString() + "] retruned more than one value");
+                continue;
+            }
+            try {
+                String str = values.get(0);
+                URL url = new URL(str);
+                return url;
+            } catch (MalformedURLException e) {
+                log.debug("MalformedURLException  [" + values.get(0) + "] [" + e.getMessage() + "]");
+                continue;
+            }
         }
-        if (values.size() > 1) {
-            throw new RuntimeException("multiple values for " + uri + " src=" + queryURL);
-        }
-        try {
-            return new URL(values.get(0));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("malformed URL for " + uri + " src=" + queryURL, e);
-        }
+        throw new ResourceNotFoundException("Failed to find registry resource for [" + queryName + "][" + uri + "]"); 
     }
 
     /**
@@ -278,7 +347,7 @@ public class RegistryClient {
 
         log.debug("Service capabilities URL: " + serviceCapsURL);
 
-        File capabilitiesFile = this.getCapabilitiesCacheFile(resourceID);
+        File capabilitiesFile = this.getCapabilitiesCacheFile(serviceCapsURL, resourceID);
         CachingFile cachedCapabilities = new CachingFile(capabilitiesFile, serviceCapsURL);
         cachedCapabilities.setConnectionTimeout(connectionTimeout);
         cachedCapabilities.setReadTimeout(readTimeout);
@@ -309,6 +378,7 @@ public class RegistryClient {
      * IVOA identifier (e.g. with URI scheme "ivo"). This method returns the first matching
      * interface.
      *
+     * @param regBaseURL the registry endpoint URL
      * @param resourceID        ID of the resource to lookup.
      * @param standardID                The standard ID of the resource to look up.  Indicates the specific purpose of
      *                                  the resource to get a URL for.
@@ -317,8 +387,7 @@ public class RegistryClient {
      *                                  resource identifiers
      * @return service URL or null if a matching interface was not found
      */
-    public URL getServiceURL(final URI resourceID, final URI standardID, final AuthMethod authMethod,
-                             URI interfaceType) {
+    public URL getServiceURL(final URI resourceID, final URI standardID, final AuthMethod authMethod, URI interfaceType) {
         if (resourceID == null || standardID == null || interfaceType == null) {
             String msg = "No input parameters should be null";
             throw new IllegalArgumentException(msg);
@@ -356,19 +425,19 @@ public class RegistryClient {
         return url;
     }
 
-    File getQueryCacheFile(Query queryName) {
+    File getQueryCacheFile(final URL queryURL, Query queryName) {
         String baseCacheDir = getBaseCacheDirectory();
-        baseCacheDir += FILE_SEP + capsDomain;
+        baseCacheDir += FILE_SEP + this.getCapsDomain(queryURL);
         String path = FILE_SEP + queryName.getValue();
         log.debug("getQueryCacheFile [" + path + "] in dir [" + baseCacheDir + "]");
         File file = new File(baseCacheDir + path);
         return file;
     }
 
-    private File getCapabilitiesCacheFile(URI resourceID) {
+    private File getCapabilitiesCacheFile(final URL regBaseURL, URI resourceID) {
         String baseCacheDir = getBaseCacheDirectory();
         String resourceCacheDir = baseCacheDir + resourceID.getAuthority();
-        resourceCacheDir = baseCacheDir + FILE_SEP + capsDomain + FILE_SEP + resourceID.getAuthority();
+        resourceCacheDir = baseCacheDir + FILE_SEP + this.getCapsDomain(regBaseURL) + FILE_SEP + resourceID.getAuthority();
         String path = resourceID.getPath() + FILE_SEP + "capabilities.xml";
         log.debug("getCapabilitiesCacheFile [" + path + "] in dir [" + resourceCacheDir + "]");
         File file = new File(resourceCacheDir, path);
@@ -392,11 +461,11 @@ public class RegistryClient {
     }
 
     // for test access
-    URL getRegistryBaseURL() {
-        return regBaseURL;
+    List<URL> getRegistryBaseURLs() {
+        return regBaseURLs;
     }
 
-    String getCapsDomain() {
-        return capsDomain;
+    String getCapsDomain(final URL domainQueryURL) {
+        return domainQueryURL.getHost();
     }
 }

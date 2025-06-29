@@ -96,7 +96,10 @@ public class LocalAuthority {
     private final Map<URI, Set<URI>> authorityMap = new TreeMap<>();
 
     public LocalAuthority() {
-        PropertiesReader propReader = new PropertiesReader(RegistryClient.CONFIG_FILE);
+        this(RegistryClient.DEFAULT_CONFIG_FILE_NAME);
+    }
+    public LocalAuthority(final String configFileName) {
+        PropertiesReader propReader = new PropertiesReader(configFileName);
         MultiValuedProperties mvp = propReader.getAllProperties();
         
         for (String std : mvp.keySet()) {

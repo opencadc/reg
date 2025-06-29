@@ -1,0 +1,13 @@
+.gradle
+daemon
+caches
+native
+wrapper
+
+.project
+.classpath
+.settings
+
+cadc-registry/bin
+cadc-registry/build
+
