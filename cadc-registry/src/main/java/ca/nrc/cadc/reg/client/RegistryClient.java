@@ -142,13 +142,42 @@ public class RegistryClient {
     private int connectionTimeout = 30000; // millis
     private int readTimeout = 60000;       // millis
 
+    /**
+     * Default constructor, using the DEFAULT_CONFIG_FILE_NAME. 
+     * 
+     */
     public RegistryClient() {
         this(DEFAULT_CONFIG_FILE_NAME);
     }
-    
+
+    /**
+     * Parameterised constructor to make testing easier.
+     * @param configFile The configuration file to use.
+     * 
+     */
+    public RegistryClient(final File configFile) {
+        this(
+            new PropertiesReader(configFile)
+        );
+    }
+
+    /**
+     * Parameterised constructor to make testing easier.
+     * @param configFileName The name of the configuration file to use.
+     * 
+     */
     public RegistryClient(final String configFileName) {
-        // standard behaviour: get regBaseURL from config file
-        PropertiesReader propReader = new PropertiesReader(configFileName);
+        this(
+            new PropertiesReader(configFileName)
+        );
+    }
+    
+    /**
+     * Parameterised constructor to make testing easier.
+     * @param propReader A PropertiesReader for the configuration file.
+     * 
+     */
+    public RegistryClient(final PropertiesReader propReader) {
         MultiValuedProperties mvp = propReader.getAllProperties();
 
         for (String str : mvp.getProperty(CONFIG_BASE_URL_KEY))
@@ -161,7 +190,7 @@ public class RegistryClient {
                 }
             catch (MalformedURLException ex)
                 {
-                throw new InvalidConfigException(configFileName + ": " + CONFIG_BASE_URL_KEY  + " = " + str + " is not a valid URL", ex);
+                throw new InvalidConfigException(CONFIG_BASE_URL_KEY  + " = " + str + " is not a valid URL", ex);
                 }
             }
 
@@ -180,42 +209,7 @@ public class RegistryClient {
                 throw new RuntimeException(e);
                 }
             }
-
-        /*
-        * 
-        String str = mvp.getFirstPropertyValue(CONFIG_BASE_URL_KEY);
-        if (str != null) {
-            try {
-                if (str.endsWith("/")) {
-                    str = str.substring(0, str.length() - 1);
-                }
-                this.regBaseURL = new URL(str);
-            } catch (MalformedURLException ex) {
-                throw new InvalidConfigException(configFileName + ": " + CONFIG_BASE_URL_KEY
-                        + " = " + str + " is not a valid URL", ex);
-            }
-        } else {
-            // developer support for targetting integration tests at a reg servcie without config
-            try {
-                String hostP = System.getProperty(HOST_PROPERTY_KEY);
-                log.debug("     host: " + hostP);
-                if (hostP != null) {
-                    this.regBaseURL = new URL("https://" + hostP + "/reg");
-                    this.isRegOverride = true;
-                }
-            } catch (MalformedURLException e) {
-                log.error("Error transforming resource-caps URL", e);
-                throw new RuntimeException(e);
-            }
         }
-            
-        if (regBaseURL != null) {
-            this.capsDomain = "reg-domains/" + regBaseURL.getHost();
-        }
-        log.debug("regBaseURL: " + regBaseURL + " domain: " + capsDomain);
-        * 
-        */
-    }
 
     /**
      * HTTP connection timeout in milliseconds (default: 30000).
@@ -268,9 +262,6 @@ public class RegistryClient {
      */
     public URL getAccessURL(Query queryName, URI uri) throws IOException, ResourceNotFoundException {
 
-    // TODO Iterate the list on errors
-   
-    
         if (regBaseURLs.isEmpty()) {
             throw new IllegalStateException("Registry base URL list is empty");
         }
@@ -444,7 +435,7 @@ public class RegistryClient {
         return file;
     }
 
-    private String getBaseCacheDirectory() {
+    protected String getBaseCacheDirectory() {
         String tmpDir = System.getProperty("java.io.tmpdir");
         String userName = System.getProperty("user.name");
         if (tmpDir == null) {
