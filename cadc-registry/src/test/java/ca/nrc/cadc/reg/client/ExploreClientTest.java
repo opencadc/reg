@@ -186,73 +186,6 @@ public class ExploreClientTest
         System.clearProperty(TEST_CONFIG_DIR);
     }
 
-    public static void deleteDirectory(final String path)
-        throws IOException {
-        deleteDirectory(
-            Paths.get(path)
-            );
-    }
-    
-    /**
-     * Recursive directory delete, using FileVisitor.
-     * https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileVisitor.html
-     * @param path
-     * @throws IOException
-     * 
-     */
-    public static void deleteDirectory(final Path path)
-        throws IOException {
-        if (path.toFile().exists()) {
-            Files.walkFileTree(
-                path,
-                new SimpleFileVisitor<Path>(){
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                        throws IOException
-                        {
-                        Files.delete(file);
-                        return FileVisitResult.CONTINUE;
-                        }
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException e)
-                        throws IOException
-                        {
-                        if (e == null) {
-                            Files.delete(dir);
-                            return FileVisitResult.CONTINUE;
-                            }
-                        else {
-                            throw e;
-                            }
-                        }
-                    }
-                );        
-            }        
-        }        
-
-    /**
-     * Recursive directory delete, using Stream API.
-     * https://stackoverflow.com/a/35989142
-     * https://stackoverflow.com/questions/35988192/java-nio-most-concise-recursive-directory-delete
-     * @param root
-     * @throws IOException
-     * 
-     */
-    public void frogDirectory(final Path root) {
-        try (Stream<Path> walk = Files.walk(root)) {
-            walk.sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .peek(System.out::println)
-                .forEach(File::delete);
-        }
-        catch (IOException ouch)
-            {
-            log.debug(
-                "IOException [" + ouch.getMessage()+ "]"
-                );
-        }    
-    }
-    
 //  @Test
     public void testSomething()
         throws Exception {
@@ -299,10 +232,7 @@ public class ExploreClientTest
         );
         
         RegistryClient regClient = new RegistryClient("test-005.properties");
-
-        deleteDirectory(
-            regClient.getBaseCacheDirectory()
-            );
+        regClient.delteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(new URI(RESOURCE_ID_CADC_ARGUS));
@@ -374,11 +304,7 @@ public class ExploreClientTest
             );
         
         RegistryClient regClient = new RegistryClient("test-005.properties");
-
-        // TODO Add clearCache() method to the client.
-        deleteDirectory(
-                regClient.getBaseCacheDirectory()
-                );
+        regClient.delteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(
@@ -478,11 +404,7 @@ public class ExploreClientTest
         writer.close();
         
         RegistryClient regClient = new RegistryClient(configFile);
-
-        // TODO Add clearCache() method to the client.
-        deleteDirectory(
-            regClient.getBaseCacheDirectory()
-            );
+        regClient.delteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(new URI(RESOURCE_ID_SKAO_TEST));
@@ -615,11 +537,7 @@ public class ExploreClientTest
         printWriter.close();
         
         RegistryClient regClient = new RegistryClient(configFile);
-
-        // TODO Add clearCache() method to the client.
-        deleteDirectory(
-            regClient.getBaseCacheDirectory()
-            );
+        regClient.delteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(new URI(RESOURCE_ID_SKAO_TEST));
