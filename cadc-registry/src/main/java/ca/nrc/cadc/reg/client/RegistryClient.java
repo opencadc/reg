@@ -87,6 +87,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -459,4 +465,54 @@ public class RegistryClient {
     String getCapsDomain(final URL domainQueryURL) {
         return domainQueryURL.getHost();
     }
+
+    /**
+     * Delete the cache directory.
+     * Added to make testing more predictable.
+     * @throws IOException
+     * 
+     */
+    public void delteCache()
+        throws IOException {
+        deleteDirectory(
+            Paths.get(
+                this.getBaseCacheDirectory()
+            )
+        );
+    }
+    
+    /**
+     * Recursive directory delete using FileVisitor.
+     * https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileVisitor.html
+     * @param path
+     * @throws IOException
+     * 
+     */
+    public static void deleteDirectory(final Path path)
+        throws IOException {
+        if (path.toFile().exists()) {
+            Files.walkFileTree(
+                path,
+                new SimpleFileVisitor<Path>(){
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                        throws IOException {
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException e)
+                        throws IOException {
+                        if (e == null) {
+                            Files.delete(dir);
+                            return FileVisitResult.CONTINUE;
+                        }
+                        else {
+                            throw e;
+                        }
+                    }
+                }
+            );        
+        }        
+    }        
 }
