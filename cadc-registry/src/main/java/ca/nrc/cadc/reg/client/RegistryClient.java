@@ -472,7 +472,7 @@ public class RegistryClient {
      * @throws IOException
      * 
      */
-    public void delteCache()
+    public void deleteCache()
         throws IOException {
         deleteDirectory(
             Paths.get(
