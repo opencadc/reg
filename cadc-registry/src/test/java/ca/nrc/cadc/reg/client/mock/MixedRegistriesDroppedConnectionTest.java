@@ -112,8 +112,8 @@ public class MixedRegistriesDroppedConnectionTest
     {
     private static final Logger log = Logger.getLogger(MixedRegistriesDroppedConnectionTest.class);
     static {
-    Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
-    Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
+        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+        Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
     private static ClientAndServer mockServer;
@@ -370,7 +370,7 @@ public class MixedRegistriesDroppedConnectionTest
         // Try to get the service capabilities again.
         try {
             Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/unknown-service")
+                new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
             assertTrue(
