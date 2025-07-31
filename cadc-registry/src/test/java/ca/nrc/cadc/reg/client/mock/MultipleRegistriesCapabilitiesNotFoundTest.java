@@ -107,8 +107,8 @@ public class MultipleRegistriesCapabilitiesNotFoundTest
     {
     private static final Logger log = Logger.getLogger(MultipleRegistriesCapabilitiesNotFoundTest.class);
     static {
-    Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
-    Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
+        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+        Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
     private static ClientAndServer mockServer;
