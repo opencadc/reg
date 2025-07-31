@@ -232,7 +232,7 @@ public class ExploreClientTest
         );
         
         RegistryClient regClient = new RegistryClient("test-005.properties");
-        regClient.delteCache();
+        regClient.deleteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(new URI(RESOURCE_ID_CADC_ARGUS));
@@ -304,7 +304,7 @@ public class ExploreClientTest
             );
         
         RegistryClient regClient = new RegistryClient("test-005.properties");
-        regClient.delteCache();
+        regClient.deleteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(
@@ -404,7 +404,7 @@ public class ExploreClientTest
         writer.close();
         
         RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
+        regClient.deleteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(new URI(RESOURCE_ID_SKAO_TEST));
@@ -537,7 +537,7 @@ public class ExploreClientTest
         printWriter.close();
         
         RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
+        regClient.deleteCache();
         
         try {
             Capabilities capabilities = regClient.getCapabilities(new URI(RESOURCE_ID_SKAO_TEST));
