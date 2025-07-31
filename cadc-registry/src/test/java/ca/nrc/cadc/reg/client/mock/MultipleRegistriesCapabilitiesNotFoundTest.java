@@ -69,7 +69,6 @@
 
 package ca.nrc.cadc.reg.client.mock;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
@@ -108,32 +107,29 @@ public class MultipleRegistriesCapabilitiesNotFoundTest
     {
     private static final Logger log = Logger.getLogger(MultipleRegistriesCapabilitiesNotFoundTest.class);
     static {
-        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+    Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+    Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
     private static ClientAndServer mockServer;
+
     @BeforeClass
     public static void startMockServer() {
         mockServer = startClientAndServer(1080);
     }
-    @Before
-    public void resetMockServer() {
-        mockServer.reset();
-    }
+    
     @AfterClass
     public static void stopMockServer() {
         mockServer.stop();
     }
 
-    public MultipleRegistriesCapabilitiesNotFoundTest() {
-        super();
-    }
-
+    @Before
+    public void setupMockServer() {
+        
+        //
+        // Reset the MockServer
+        mockServer.reset();
     
-    @Test
-    public void testCapabilitiesNotFoundOnce()
-        throws Exception {
-
         //
         // Setup the good 'resource-caps' responses.
         mockServer.when(
@@ -194,8 +190,16 @@ public class MultipleRegistriesCapabilitiesNotFoundTest
                         )
                     );
 
+    }
+
+    private RegistryClient registryClient ;
+
+    @Before
+    public void setupRegClient()
+        throws IOException {
+    
         //
-        // Setup the good configuration properties.
+        // Create the registry client configuration file.
         File configFile = File.createTempFile("good-config", "properties");
         PrintWriter printWriter = new PrintWriter(
             new FileWriter(configFile)
@@ -211,18 +215,24 @@ public class MultipleRegistriesCapabilitiesNotFoundTest
         
         //
         // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
+        registryClient = new RegistryClient(configFile);
+        registryClient.deleteCache();
+
+    }
+    
+    @Test
+    public void testCapabilitiesNotFoundOnce()
+        throws Exception {
         
         //
         // Try to get the service capabilities.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (IOException ouch) {
@@ -296,100 +306,14 @@ public class MultipleRegistriesCapabilitiesNotFoundTest
         throws Exception {
 
         //
-        // Setup the good 'resource-caps' responses.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-registry-one/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/missing-capabilities"
-                        )
-        );
-        mockServer.when(
-                request()
-                    .withPath(
-                        "/good-registry-two/resource-caps"
-                        )
-                    )
-                .respond(
-                    response()
-                        .withStatusCode(
-                            HttpStatus.SC_OK
-                            )
-                        .withBody(
-                            "ivo://good.authority/good-service = http://localhost:1080/good-service/missing-capabilities"
-                            )
-            );
-        mockServer.when(
-                request()
-                    .withPath(
-                        "/good-registry-three/resource-caps"
-                        )
-                    )
-                .respond(
-                    response()
-                        .withStatusCode(
-                            HttpStatus.SC_OK
-                            )
-                        .withBody(
-                            "ivo://good.authority/good-service = http://localhost:1080/good-service/missing-capabilities"
-                            )
-            );
-
-        //
-        // Setup the 'missing-capabilities' response to return a 404 error code.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-service/missing-capabilities"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_NOT_FOUND
-                        )
-                    .withBody(
-                        "These are not the capabilities you are looking for"
-                        )
-                    );
-
-        //
-        // Setup the good configuration properties.
-        File configFile = File.createTempFile("good-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        printWriter.print(
-                "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-one"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-two"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-three"
-            );
-        printWriter.close();
-        
-        //
-        // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
-        
-        //
         // Try to get the service capabilities.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (IOException ouch) {
@@ -468,12 +392,12 @@ public class MultipleRegistriesCapabilitiesNotFoundTest
         //
         // Try to get the service capabilities.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (IOException ouch) {

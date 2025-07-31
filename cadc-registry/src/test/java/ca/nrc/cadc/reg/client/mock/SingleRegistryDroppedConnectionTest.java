@@ -77,6 +77,7 @@ import static org.mockserver.model.HttpRequest.request;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
@@ -107,29 +108,27 @@ public class SingleRegistryDroppedConnectionTest
     private static final Logger log = Logger.getLogger(SingleRegistryDroppedConnectionTest.class);
     static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+        Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
     private static ClientAndServer mockServer;
+
     @BeforeClass
     public static void startMockServer() {
         mockServer = startClientAndServer(1080);
     }
-    @Before
-    public void resetMockServer() {
-        mockServer.reset();
-    }
+
     @AfterClass
     public static void stopMockServer() {
         mockServer.stop();
     }
 
-    public SingleRegistryDroppedConnectionTest() {
-        super();
-    }
-    
-    @Test
-    public void testRegistryDroppedConnectionOnce()
-        throws Exception {
+    @Before
+    public void setupMockServer() {
+        
+        //
+        // Reset the MockServer
+        mockServer.reset(); 
 
         //
         // Setup the dropped connection response.
@@ -141,9 +140,16 @@ public class SingleRegistryDroppedConnectionTest
                 error()
                     .withDropConnection(true)
             );
+    }
+
+    private RegistryClient registryClient ;
+
+    @Before
+    public void setupRegClient()
+        throws IOException {
         
         //
-        // Setup the good configuration properties.
+        // Create the registry client configuration file.
         File configFile = File.createTempFile("good-config", "properties");
         PrintWriter printWriter = new PrintWriter(
             new FileWriter(configFile)
@@ -155,13 +161,19 @@ public class SingleRegistryDroppedConnectionTest
         
         //
         // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
-        
+        registryClient = new RegistryClient(configFile);
+        registryClient.deleteCache();
+
+    }
+
+    @Test
+    public void testDroppedRegistryConnectionOnce()
+        throws Exception {
+    
         //
         // Try to get the service capabilities for good service.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
@@ -197,45 +209,18 @@ public class SingleRegistryDroppedConnectionTest
     }         
 
     @Test
-    public void testRegistryDroppedConnectionTwice()
+    public void testDroppedRegistryConnectionTwice()
         throws Exception {
 
         //
-        // Setup the dropped connection response.
-        mockServer.when(
-            request()
-                .withPath("/bad-registry/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
-            );
-
-        //
-        // Setup the good configuration properties.
-        File configFile = File.createTempFile("good-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        printWriter.print(
-              "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/bad-registry"
-            );
-        printWriter.close();
-        
-        //
-        // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
-        
-        //
         // Try to get the service capabilities for a good service.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (ResourceNotFoundException ouch) {
@@ -273,12 +258,12 @@ public class SingleRegistryDroppedConnectionTest
         //
         // Try to get the service capabilities again.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/unknown-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (ResourceNotFoundException ouch) {
