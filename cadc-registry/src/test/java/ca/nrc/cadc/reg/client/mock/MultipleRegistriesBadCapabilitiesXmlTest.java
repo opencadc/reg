@@ -69,7 +69,6 @@
 
 package ca.nrc.cadc.reg.client.mock;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
@@ -77,6 +76,7 @@ import static org.mockserver.model.HttpResponse.response;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
@@ -110,32 +110,29 @@ public class MultipleRegistriesBadCapabilitiesXmlTest
     {
     private static final Logger log = Logger.getLogger(MultipleRegistriesBadCapabilitiesXmlTest.class);
     static {
-        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+    Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+    Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
     private static ClientAndServer mockServer;
+
     @BeforeClass
     public static void startMockServer() {
         mockServer = startClientAndServer(1080);
     }
-    @Before
-    public void resetMockServer() {
-        mockServer.reset();
-    }
+    
     @AfterClass
     public static void stopMockServer() {
         mockServer.stop();
     }
 
-    public MultipleRegistriesBadCapabilitiesXmlTest() {
-        super();
-    }
-
+    @Before
+    public void setupMockServer() {
+        
+        //
+        // Reset the MockServer
+        mockServer.reset();
     
-    @Test
-    public void testBadCapabilitiesXmlOnce()
-        throws Exception {
-
         //
         // Setup the good 'resource-caps' responses.
         mockServer.when(
@@ -221,8 +218,16 @@ public class MultipleRegistriesBadCapabilitiesXmlTest
                         )
                     );
 
+    }
+
+    private RegistryClient registryClient ;
+
+    @Before
+    public void setupRegClient()
+        throws IOException {
+    
         //
-        // Setup the good configuration properties.
+        // Create the registry client configuration file.
         File configFile = File.createTempFile("good-config", "properties");
         PrintWriter printWriter = new PrintWriter(
             new FileWriter(configFile)
@@ -238,18 +243,25 @@ public class MultipleRegistriesBadCapabilitiesXmlTest
         
         //
         // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
+        registryClient = new RegistryClient(configFile);
+        registryClient.deleteCache();
+
+    }
+    
+    
+    @Test
+    public void testBadCapabilitiesXmlOnce()
+        throws Exception {
         
         //
         // Try to get the service capabilities.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (RuntimeException ouch) {
@@ -324,119 +336,14 @@ public class MultipleRegistriesBadCapabilitiesXmlTest
         throws Exception {
 
         //
-        // Setup the good 'resource-caps' responses.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-registry-one/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities"
-                        )
-        );
-        mockServer.when(
-                request()
-                    .withPath(
-                        "/good-registry-two/resource-caps"
-                        )
-                    )
-                .respond(
-                    response()
-                        .withStatusCode(
-                            HttpStatus.SC_OK
-                            )
-                        .withBody(
-                            "ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities"
-                            )
-            );
-        mockServer.when(
-                request()
-                    .withPath(
-                        "/good-registry-three/resource-caps"
-                        )
-                    )
-                .respond(
-                    response()
-                        .withStatusCode(
-                            HttpStatus.SC_OK
-                            )
-                        .withBody(
-                            "ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities"
-                            )
-            );
-
-        //
-        // Setup the 'bad-capabilities' response, missing the URI for the vosi namespace.
-        mockServer.when(
-            request()
-                .withPath("/good-service/bad-capabilities")
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withHeader(
-                        new Header(
-                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
-                            )
-                        )
-                    .withBody(
-                          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                        + "<vosi:capabilities"
-                    //  + "    xmlns:vosi=\"http://www.ivoa.net/xml/VOSICapabilities/v1.0\""
-                        + "    xmlns:vr=\"http://www.ivoa.net/xml/VOResource/v1.0\""
-                        + "    xmlns:vs=\"http://www.ivoa.net/xml/VODataService/v1.1\""
-                        + "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-                        + "  <capability standardID=\"ivo://ivoa.net/std/VOSI#capabilities\">"
-                        + "    <interface xsi:type=\"vs:ParamHTTP\" role=\"std\">"
-                        + "      <accessURL use=\"full\">http://localhost:1080/good-service/good-capabilities</accessURL>"
-                        + "    </interface>"
-                        + "  </capability>"
-                        + "  <capability standardID=\"ivo://ivoa.net/std/VOSI#availability\">"
-                        + "    <interface xsi:type=\"vs:ParamHTTP\" role=\"std\">"
-                        + "      <accessURL use=\"full\">http://localhost:1080/good-service/good-availability</accessURL>"
-                        + "    </interface>"
-                        + "  </capability>"
-                        + "</vosi:capabilities>"
-                        )
-                    );
-
-        //
-        // Setup the good configuration properties.
-        File configFile = File.createTempFile("good-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        printWriter.print(
-                "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-one"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-two"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-three"
-            );
-        printWriter.close();
-        
-        //
-        // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
-        
-        //
         // Try to get the service capabilities.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (RuntimeException ouch) {
@@ -515,12 +422,12 @@ public class MultipleRegistriesBadCapabilitiesXmlTest
         //
         // Try to get the service capabilities.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not have reached this point"
                 );
         }
         catch (RuntimeException ouch) {

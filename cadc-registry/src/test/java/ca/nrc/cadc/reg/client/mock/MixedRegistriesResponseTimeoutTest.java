@@ -103,9 +103,9 @@ import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
 
 /**
- * A set of Junit tests that use a MockServer to test a how the RegistryClient handles a request timeout. 
+ * A set of Junit tests that use a MockServer to test a how the RegistryClient handles a request timeout.
  * See https://www.mock-server.com/
- * 
+ *
  */
 public class MixedRegistriesResponseTimeoutTest
     {
@@ -121,7 +121,7 @@ public class MixedRegistriesResponseTimeoutTest
     public static void startMockServer() {
         mockServer = startClientAndServer(1080);
     }
-    
+
     @AfterClass
     public static void stopMockServer() {
         mockServer.stop();
@@ -129,11 +129,11 @@ public class MixedRegistriesResponseTimeoutTest
 
     @Before
     public void setupMockServer() {
-        
+
         //
         // Reset the MockServer
         mockServer.reset();
-    
+
         //
         // Setup the slow 'resource-caps' response.
         mockServer.when(
@@ -228,15 +228,15 @@ public class MixedRegistriesResponseTimeoutTest
                         )
             );
     }
-    
+
     private RegistryClient registryClient ;
 
     @Before
     public void setupRegClient()
         throws IOException {
-    
+
         //
-        // Setup the good configuration properties.
+        // Create the registry client configuration file.
         File configFile = File.createTempFile("good-config", "properties");
         PrintWriter printWriter = new PrintWriter(
             new FileWriter(configFile)
@@ -249,7 +249,7 @@ public class MixedRegistriesResponseTimeoutTest
               + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-two"
             );
         printWriter.close();
-        
+
         //
         // Create the registry client and clear the cache directory.
         registryClient = new RegistryClient(configFile);
@@ -262,11 +262,11 @@ public class MixedRegistriesResponseTimeoutTest
         // Set the read timeout to something short.
         registryClient.setReadTimeout(1000);
     }
-    
+
     @Test
     public void testRegistryResponseTimeoutOnce()
         throws Exception {
-        
+
         //
         // Try to get the service capabilities for good service.
         try {
@@ -295,7 +295,7 @@ public class MixedRegistriesResponseTimeoutTest
                     "/slow-registry-one/resource-caps"
                     ),
                 VerificationTimes.atLeast(2)
-        );        
+        );
 
         //
         // The registry client should have called the first good registry 'resource-caps' endpoint once to get the result and populate the cache.
@@ -305,7 +305,7 @@ public class MixedRegistriesResponseTimeoutTest
                     "/good-registry-one/resource-caps"
                     ),
                 VerificationTimes.exactly(1)
-        );        
+        );
 
         //
         // The registry client should not need to call the second good registry.
@@ -315,13 +315,13 @@ public class MixedRegistriesResponseTimeoutTest
                     "/good-registry-two/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
-        );        
-    }         
+        );
+    }
 
     @Test
     public void testRegistryResponseTimeoutTwice()
         throws Exception {
-        
+
         //
         // Try to get the service capabilities for good service.
         try {
@@ -350,7 +350,7 @@ public class MixedRegistriesResponseTimeoutTest
                     "/slow-registry-one/resource-caps"
                     ),
                 VerificationTimes.atLeast(2)
-        );        
+        );
 
         //
         // The registry client should have called the first good registry 'resource-caps' endpoint once to get the result and populate the cache.
@@ -360,7 +360,7 @@ public class MixedRegistriesResponseTimeoutTest
                     "/good-registry-one/resource-caps"
                     ),
                 VerificationTimes.exactly(1)
-        );        
+        );
 
         //
         // The registry client should not need to call the second good registry.
@@ -370,7 +370,7 @@ public class MixedRegistriesResponseTimeoutTest
                     "/good-registry-two/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
-        );        
+        );
 
         //
         // Clear the MockServer request logs.
@@ -408,20 +408,20 @@ public class MixedRegistriesResponseTimeoutTest
                     "/slow-registry-one/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
-        );        
+        );
         mockServer.verify(
             request()
                 .withPath(
                     "/good-registry-one/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
-        );        
+        );
         mockServer.verify(
             request()
                 .withPath(
                     "/good-registry-two/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
-        );        
-    }         
+        );
+    }
 }

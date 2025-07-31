@@ -69,7 +69,6 @@
 
 package ca.nrc.cadc.reg.client.mock;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
@@ -77,6 +76,7 @@ import static org.mockserver.model.HttpResponse.response;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
@@ -107,31 +107,28 @@ public class SingleRegistryResponseTimeoutTest
     {
     private static final Logger log = Logger.getLogger(SingleRegistryResponseTimeoutTest.class);
     static {
-    Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
-    Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
+        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
+        Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
     private static ClientAndServer mockServer;
+
     @BeforeClass
     public static void startMockServer() {
         mockServer = startClientAndServer(1080);
     }
-    @Before
-    public void resetMockServer() {
-        mockServer.reset();
-    }
+
     @AfterClass
     public static void stopMockServer() {
         mockServer.stop();
     }
 
-    public SingleRegistryResponseTimeoutTest() {
-        super();
-    }
-    
-    @Test
-    public void testRegistryResponseTimeoutOnce()
-        throws Exception {
+    @Before
+    public void setupMockServer() {
+
+        //
+        // Reset the MockServer
+        mockServer.reset(); 
 
         //
         // Setup the slow 'resource-caps' response.
@@ -155,9 +152,16 @@ public class SingleRegistryResponseTimeoutTest
                         )
         );
 
-        
+    }
+
+    private RegistryClient registryClient ;
+
+    @Before
+    public void setupRegClient()
+        throws IOException {
+
         //
-        // Setup the good configuration properties.
+        // Create the registry client configuration file.
         File configFile = File.createTempFile("good-config", "properties");
         PrintWriter printWriter = new PrintWriter(
             new FileWriter(configFile)
@@ -169,25 +173,30 @@ public class SingleRegistryResponseTimeoutTest
         
         //
         // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
+        registryClient = new RegistryClient(configFile);
+        registryClient.deleteCache();
 
         //
         // Set the connection timeout to something short.
-        regClient.setConnectionTimeout(1000);
+        registryClient.setConnectionTimeout(1000);
         //
         // Set the read timeout to something short.
-        regClient.setReadTimeout(1000);
-        
+        registryClient.setReadTimeout(1000);
+    }
+
+    @Test
+    public void testRegistryResponseTimeoutOnce()
+        throws Exception {
+    
         //
         // Try to get the service capabilities for good service.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not reach this point"
                 );
         }
         catch (ResourceNotFoundException ouch) {
@@ -220,62 +229,16 @@ public class SingleRegistryResponseTimeoutTest
     @Test
     public void testRegistryResponseTimeoutTwice()
         throws Exception {
-
-        //
-        // Setup the slow 'resource-caps' response.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/slow-registry/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "No need to be so hasty"
-                        )
-                    .withDelay(
-                        TimeUnit.SECONDS,
-                        10
-                        )
-        );
-
-        
-        //
-        // Setup the good configuration properties.
-        File configFile = File.createTempFile("good-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        printWriter.print(
-              "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/slow-registry"
-            );
-        printWriter.close();
-        
-        //
-        // Create the registry client and clear the cache directory.
-        RegistryClient regClient = new RegistryClient(configFile);
-        regClient.delteCache();
-
-        //
-        // Set the connection timeout to something short.
-        regClient.setConnectionTimeout(1000);
-        //
-        // Set the read timeout to something short.
-        regClient.setReadTimeout(1000);
         
         //
         // Try to get the service capabilities for good service.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not reach this point"
                 );
         }
         catch (ResourceNotFoundException ouch) {
@@ -307,12 +270,12 @@ public class SingleRegistryResponseTimeoutTest
         //
         // Try to get the service capabilities a second time.
         try {
-            Capabilities capabilities = regClient.getCapabilities(
+            Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not reach this point" 
                 );
         }
         catch (ResourceNotFoundException ouch) {
