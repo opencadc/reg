@@ -375,7 +375,7 @@ public class MixedRegistriesResourceNotFoundTest
         // Try to get the service capabilities again.
         try {
             Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/unknown-service")
+                new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
             assertTrue(
