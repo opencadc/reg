@@ -1,5 +1,4 @@
 plugins {
-//  id 'eclipse'
     id 'java-library'
     id 'maven-publish'
     id 'checkstyle'
