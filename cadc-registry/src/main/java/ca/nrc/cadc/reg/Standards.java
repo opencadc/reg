@@ -200,10 +200,25 @@ public class Standards {
     // Standard for package requests (ie zip or tar)
     public static final URI PKG_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Pkg-1.0");
 
-    // batch processing
+    /**
+     * Science Platform
+     */
+    // batch processing - deprecated
+    @Deprecated
     public static final URI PROC_JOBS_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#jobs-1.0");
-    // interactive processing 
+    // interactive processing - deprecated
+    @Deprecated
     public static final URI PROC_SESSIONS_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/Proc#sessions-1.0");
+    
+    // science platform sessions and jobs
+    public static final URI PLATFORM_SESSION_1 = URI.create("http://www.opencadc.org/std/platform#session-1");
+    // science platform context (resources)
+    public static final URI PLATFORM_CONTEXT_1 = URI.create("http://www.opencadc.org/std/platform#context-1");
+    // science platform images
+    public static final URI PLATFORM_IMAGE_1 = URI.create("http://www.opencadc.org/std/platform#image-1");
+    // science platform repositories
+    public static final URI PLATFORM_REPO_1 = URI.create("http://www.opencadc.org/std/platform#repository-1");
+    
 
     public static final URI UWS_UPDATE_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UWS#update-1.0");
 
