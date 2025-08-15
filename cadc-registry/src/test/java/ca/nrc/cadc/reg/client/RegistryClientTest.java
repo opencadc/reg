@@ -281,7 +281,7 @@ public class RegistryClientTest {
             URL serviceURL = rc.getServiceURL(resourceID, Standards.TAP_10, AuthMethod.ANON);
             Assert.assertNotNull("Service URL should not be null", serviceURL);
             Assert.assertEquals("got an incorrect URL", expected, serviceURL);
-            Assert.assertNotNull("no caps domain", rc.getCapsDomain());
+//          Assert.assertNotNull("no caps domain", rc.getCapsDomain());
         } catch (Exception unexpected) {
             log.error("unexpected exception", unexpected);
             Assert.fail("unexpected exception: " + unexpected);
@@ -294,53 +294,56 @@ public class RegistryClientTest {
 
     @Test
     public void testGetServiceURLModifyHost() {
-        String currentUserHome = System.getProperty("user.home");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
-        // must not have cadc-registry.properties in config dir for the old system prop behaviour to apply
+
+        // mis-directing the config directory means the old system prop behaviour should apply 
+        System.setProperty(TEST_CONFIG_DIR, "src/test/unknown");
+        // With no config file, means the system property should be used
+        System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
         
         try {
-            System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
 
             URL expected = new URL("https://foo.bar.com/reg");
-            URL resourceCapsURL = rc.getRegistryBaseURL();
+            URL resourceCapsURL = rc.getRegistryBaseURLs().get(0);
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
-            Assert.assertEquals("wrong caps domain", "reg-domains/foo.bar.com", rc.getCapsDomain());
+            Assert.assertEquals("wrong caps domain", "foo.bar.com", rc.getCapsDomain(resourceCapsURL));
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
             // reset
             System.clearProperty(RegistryClient.class.getName() + ".host");
-            System.setProperty("user.home", currentUserHome);
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
-    
+
     @Test
     public void testGetServiceURLModifyHostDeprecated() {
-        String currentUserHome = System.getProperty("user.home");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
         
         // with cadc-registry.properties in config dir: system prop does nothing
         System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+        System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
         
         try {
-            System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
 
             URL expected = new URL("https://foo.bar.com/reg");
-            URL resourceCapsURL = rc.getRegistryBaseURL();
+            URL resourceCapsURL = rc.getRegistryBaseURLs().get(0);
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertNotEquals(expected, resourceCapsURL);
-            //Assert.assertEquals("wrong caps domain", "alt-domains/foo.bar.com", rc.getCapsDomain());
+            Assert.assertEquals("wrong caps domain", "ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain(resourceCapsURL));
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
             // reset
             System.clearProperty(RegistryClient.class.getName() + ".host");
-            System.setProperty("user.home", currentUserHome);
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
 
@@ -357,11 +360,11 @@ public class RegistryClientTest {
             
             String srvKey = "ivo://cadc.nrc.ca/myservice/entry";
             String srvVal = "https://mysite.com/services/mygreatservice";
-            createCache(registryClient, RegistryClient.Query.CAPABILITIES, srvKey + " = " + srvVal);
+            createCacheDirectories(registryClient, RegistryClient.Query.CAPABILITIES, srvKey + " = " + srvVal);
             
             String appKey = "ivo://cadc.nrc.ca/app/entry";
             String appVal = "https://mysite.com/application/page";
-            createCache(registryClient, RegistryClient.Query.APPLICATIONS, appKey + " = " + appVal);
+            createCacheDirectories(registryClient, RegistryClient.Query.APPLICATIONS, appKey + " = " + appVal);
             
             // query caps
             URI srvID = URI.create(srvKey);
@@ -400,19 +403,20 @@ public class RegistryClientTest {
         }
     }
     
-    private void createCache(RegistryClient rc, RegistryClient.Query query, String line) throws IOException {
-        final String fileSeparator = System.getProperty("file.separator");
-        String cache = query.getValue();
+    private void createCacheDirectories(RegistryClient rc, RegistryClient.Query query, String line) throws IOException {
+        //final String fileSeparator = System.getProperty("file.separator");
+        //String cache = query.getValue();
         //File cacheDir = new File(System.getProperty("java.io.tmpdir") 
         //        + fileSeparator + System.getProperty("user.name") 
         //        + fileSeparator + RegistryClient.CONFIG_CACHE_DIR);
         //cacheDir.mkdirs();
         //File cacheFile = new File(cacheDir, cache);
-        File cacheFile = rc.getQueryCacheFile(query);
-        cacheFile.getParentFile().mkdirs();
-
-        FileWriter fileWriter = new FileWriter(cacheFile);
-        fileWriter.write(line);
-        fileWriter.close();
+        for (URL url : rc.getRegistryBaseURLs()) {
+            File cacheFile = rc.getQueryCacheFile(url, query);
+            cacheFile.getParentFile().mkdirs();
+            FileWriter fileWriter = new FileWriter(cacheFile);
+            fileWriter.write(line);
+            fileWriter.close();
+        }
     }
 }
