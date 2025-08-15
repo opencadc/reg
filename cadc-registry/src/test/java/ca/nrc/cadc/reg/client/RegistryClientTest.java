@@ -292,65 +292,60 @@ public class RegistryClientTest {
         }
     }
 
-    /*
-     * This no longer works because endpoint address varies. 
     @Test
     public void testGetServiceURLModifyHost() {
-        String currentUserHome = System.getProperty("user.home");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
-        // must not have cadc-registry.properties in config dir for the old system prop behaviour to apply
+
+        // mis-directing the config directory means the old system prop behaviour should apply 
+        System.setProperty(TEST_CONFIG_DIR, "src/test/unknown");
+        // With no config file, means the system property should be used
+        System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
         
         try {
-            System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
 
             URL expected = new URL("https://foo.bar.com/reg");
-            URL resourceCapsURL = rc.getRegistryBaseURL();
+            URL resourceCapsURL = rc.getRegistryBaseURLs().get(0);
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertEquals("got an incorrect URL", expected, resourceCapsURL);
-            Assert.assertEquals("wrong caps domain", "reg-domains/foo.bar.com", rc.getCapsDomain());
+            Assert.assertEquals("wrong caps domain", "foo.bar.com", rc.getCapsDomain(resourceCapsURL));
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
             // reset
             System.clearProperty(RegistryClient.class.getName() + ".host");
-            System.setProperty("user.home", currentUserHome);
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
-     * 
-     */
 
-    /*
-     * This no longer works because endpoint address varies. 
     @Test
     public void testGetServiceURLModifyHostDeprecated() {
-        String currentUserHome = System.getProperty("user.home");
+        String currentTmpDir = System.getProperty("java.io.tmpdir");
         System.setProperty("java.io.tmpdir", "build/tmp");
         
         // with cadc-registry.properties in config dir: system prop does nothing
         System.setProperty(TEST_CONFIG_DIR, "src/test/resources");
+        System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
         
         try {
-            System.setProperty(RegistryClient.class.getName() + ".host", "foo.bar.com");
             RegistryClient rc = new RegistryClient();
 
             URL expected = new URL("https://foo.bar.com/reg");
-            URL resourceCapsURL = rc.getRegistryBaseURL();
+            URL resourceCapsURL = rc.getRegistryBaseURLs().get(0);
             Assert.assertNotNull("Service URL should not be null", resourceCapsURL);
             Assert.assertNotEquals(expected, resourceCapsURL);
-            //Assert.assertEquals("wrong caps domain", "alt-domains/foo.bar.com", rc.getCapsDomain());
+            Assert.assertEquals("wrong caps domain", "ws.cadc-ccda.hia-iha.nrc-cnrc.gc.ca", rc.getCapsDomain(resourceCapsURL));
         } catch (Exception t) {
             log.error("unexpected exception", t);
             Assert.fail("unexpected exception: " + t);
         } finally {
             // reset
             System.clearProperty(RegistryClient.class.getName() + ".host");
-            System.setProperty("user.home", currentUserHome);
+            System.setProperty("java.io.tmpdir", currentTmpDir);
         }
     }
-     * 
-     */
 
     @Test
     public void testGetAccessURL() throws Exception {

@@ -142,7 +142,7 @@ public class RegistryClient {
     // fully qualified type value (see CapabilitiesReader)
     private static final URI DEFAULT_ITYPE = Standards.INTERFACE_PARAM_HTTP;
 
-    private List<URL> regBaseURLs = new ArrayList<URL>();
+    private final List<URL> regBaseURLs = new ArrayList<URL>();
     // private String capsDomain;
     private boolean isRegOverride = false;
     private int connectionTimeout = 30000; // millis
@@ -153,37 +153,25 @@ public class RegistryClient {
      * 
      */
     public RegistryClient() {
-        this(DEFAULT_CONFIG_FILE_NAME);
+        this(new PropertiesReader(DEFAULT_CONFIG_FILE_NAME));
     }
 
-    /**
+    /*
      * Parameterised constructor to make testing easier.
+     * Needs to be public because the mock tests are in a separate package.
      * @param configFile The configuration file to use.
      * 
      */
     public RegistryClient(final File configFile) {
-        this(
-            new PropertiesReader(configFile)
-        );
+        this(new PropertiesReader(configFile));
     }
 
-    /**
-     * Parameterised constructor to make testing easier.
-     * @param configFileName The name of the configuration file to use.
-     * 
-     */
-    public RegistryClient(final String configFileName) {
-        this(
-            new PropertiesReader(configFileName)
-        );
-    }
-    
-    /**
-     * Parameterised constructor to make testing easier.
+    /*
+     * Private constructor called by the others.
      * @param propReader A PropertiesReader for the configuration file.
      * 
      */
-    public RegistryClient(final PropertiesReader propReader) {
+    private RegistryClient(final PropertiesReader propReader) {
         MultiValuedProperties mvp = propReader.getAllProperties();
 
         for (String str : mvp.getProperty(CONFIG_BASE_URL_KEY))
@@ -262,9 +250,8 @@ public class RegistryClient {
      *
      * @param queryName  name of the canned query: QUERY_CAPABILITIES or QUERY_APPLICATIONS
      * @param uri        a resourceID (for QUERY_CAPABILITIES) or a standardID (for QUERY_APPLICATIONS)
-     * @return URL              Location of the resource
-     * @throws IOException      If the cache file cannot be read
-     * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found in the registry
+     * @return URL       the location of the resource
+     * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found, check the Exception cause for more details
      */
     public URL getAccessURL(Query queryName, URI uri) throws IOException, ResourceNotFoundException {
 
@@ -272,57 +259,75 @@ public class RegistryClient {
             throw new IllegalStateException("Registry base URL list is empty");
         }
 
+        List<Exception> exceptions = new ArrayList<Exception>();
+        
         for (URL regBaseURL : regBaseURLs) {
             
-            log.debug("registry base URL [" + regBaseURL + "]");
-            File queryCacheFile = getQueryCacheFile(regBaseURL, queryName);
-            log.debug("resource-caps cache file [" + queryCacheFile + "]");
-
-            URL queryURL = new URL(regBaseURL + "/" + queryName.getValue());
-            log.debug("query URL [" + queryURL + "]");
-
-            CachingFile cachedCapSource = new CachingFile(queryCacheFile, queryURL);
-            cachedCapSource.setConnectionTimeout(connectionTimeout);
-            cachedCapSource.setReadTimeout(readTimeout);
-
-            String map = null ;
             try {
-                map = cachedCapSource.getContent();
-            } catch (IOException e) {
-                log.debug("CachingFile.getContent failed with IOException [" + e.getMessage() + "]");
-                continue;
+                log.debug("registry base URL [" + regBaseURL + "]");
+                File queryCacheFile = getQueryCacheFile(regBaseURL, queryName);
+                log.debug("resource-caps cache file [" + queryCacheFile + "]");
+    
+                URL queryURL = new URL(regBaseURL + "/" + queryName.getValue());
+                log.debug("query URL [" + queryURL + "]");
+    
+                CachingFile cachedCapSource = new CachingFile(queryCacheFile, queryURL);
+                cachedCapSource.setConnectionTimeout(connectionTimeout);
+                cachedCapSource.setReadTimeout(readTimeout);
+    
+                String map = null ;
+                try {
+                    map = cachedCapSource.getContent();
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                        "CachingFile.getContent from registry [" + regBaseURL + "] failed with IOException [" + e.getMessage() + "]",
+                        e
+                    );
+                }
+                InputStream mapStream = new ByteArrayInputStream(map.getBytes(StandardCharsets.UTF_8));
+                MultiValuedProperties mvp = new MultiValuedProperties();
+                try {
+                    mvp.load(mapStream);
+                } catch (IOException e) {
+                    throw new RuntimeException(
+                        "MultiValuedProperties.load from registry [" + regBaseURL + "] failed with IOException [" + queryURL + "][" + e.getMessage() + "]",
+                        e
+                    );
+                }
+                List<String> values = mvp.getProperty(uri.toString());
+                if ((values == null) || (values.isEmpty())) {
+                    throw new RuntimeException(
+                        "MultiValuedProperties.getProperty from registry [" + regBaseURL + "] for [" + uri.toString() + "] returned null or empty list"
+                    );
+                }
+                if (values.size() > 1) {
+                    throw new RuntimeException(
+                        "MultiValuedProperties.getProperty from registry [" + regBaseURL + "] for [" + uri.toString() + "] returned more than one value"
+                    );
+                }
+                try {
+                    return new URL(
+                        values.get(0)
+                    );
+                }
+                catch (MalformedURLException e) {
+                    throw new RuntimeException(
+                        "Parsing accessURL [" + values.get(0) + "] from registry [" + regBaseURL + "] threw MalformedURLException [" + e.getMessage() + "]",
+                        e
+                    );
+                }
             }
-            InputStream mapStream = new ByteArrayInputStream(map.getBytes(StandardCharsets.UTF_8));
-            MultiValuedProperties mvp = new MultiValuedProperties();
-            try {
-                mvp.load(mapStream);
-            } catch (IOException e) {
-                log.debug("MultiValuedProperties.load failed with IOException [" + queryURL + "][" + e.getMessage() + "]");
-                continue;
-            }
-            List<String> values = mvp.getProperty(uri.toString());
-            if (values == null) {
-                log.debug("MultiValuedProperties.getProperty [" + uri.toString() + "] is null");
-                continue;
-            }
-            else if (values.isEmpty()) {
-                log.debug("MultiValuedProperties.getProperty [" + uri.toString() + "] is empty");
-                continue;
-            }
-            if (values.size() > 1) {
-                log.debug("MultiValuedProperties.getProperty [" + uri.toString() + "] retruned more than one value");
-                continue;
-            }
-            try {
-                String str = values.get(0);
-                URL url = new URL(str);
-                return url;
-            } catch (MalformedURLException e) {
-                log.debug("MalformedURLException  [" + values.get(0) + "] [" + e.getMessage() + "]");
+            catch (Exception e) {
+                log.warn("Exception querying [" + regBaseURL + "] for [" + queryName.getValue() + "] message [" + e.getMessage() + "]");
+                exceptions.add(e);
                 continue;
             }
         }
-        throw new ResourceNotFoundException("Failed to find registry resource for [" + queryName + "][" + uri + "]"); 
+
+        throw new ResourceNotFoundException(
+            "Failed to find registry resource for [" + queryName.getValue() + "][" + uri + "]",
+            ((exceptions.isEmpty()) ? null : exceptions.get(0))
+        ); 
     }
 
     /**
