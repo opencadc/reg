@@ -253,7 +253,7 @@ public class RegistryClient {
      * @return URL       the location of the resource
      * @throws ca.nrc.cadc.net.ResourceNotFoundException if the resourceID cannot be found, check the Exception cause for more details
      */
-    public URL getAccessURL(Query queryName, URI uri) throws IOException, ResourceNotFoundException {
+    public URL getAccessURL(Query queryName, URI uri) throws ResourceNotFoundException {
 
         if (regBaseURLs.isEmpty()) {
             throw new IllegalStateException("Registry base URL list is empty");
@@ -380,7 +380,6 @@ public class RegistryClient {
      * IVOA identifier (e.g. with URI scheme "ivo"). This method returns the first matching
      * interface.
      *
-     * @param regBaseURL the registry endpoint URL
      * @param resourceID        ID of the resource to lookup.
      * @param standardID                The standard ID of the resource to look up.  Indicates the specific purpose of
      *                                  the resource to get a URL for.
@@ -474,7 +473,7 @@ public class RegistryClient {
     /**
      * Delete the cache directory.
      * Added to make testing more predictable.
-     * @throws IOException
+     * @throws IOException if it encounters an error deleting the directory
      * 
      */
     public void deleteCache()
@@ -489,8 +488,8 @@ public class RegistryClient {
     /**
      * Recursive directory delete using FileVisitor.
      * https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileVisitor.html
-     * @param path
-     * @throws IOException
+     * @param path The Path of the directory to delete  
+     * @throws IOException if it encounters an error deleting the directory
      * 
      */
     public static void deleteDirectory(final Path path)
