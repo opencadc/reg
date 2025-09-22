@@ -104,6 +104,7 @@ import ca.nrc.cadc.util.Log4jInit;
  * 
  */
 public class SingleRegistryDroppedConnectionTest
+extends MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(SingleRegistryDroppedConnectionTest.class);
     static {
@@ -111,106 +112,15 @@ public class SingleRegistryDroppedConnectionTest
         Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
-    private static ClientAndServer mockServer;
-
-    @BeforeClass
-    public static void startMockServer() {
-        mockServer = startClientAndServer(1080);
-    }
-
-    @AfterClass
-    public static void stopMockServer() {
-        mockServer.stop();
-    }
-
-    @Before
-    public void setupMockServer() {
-        
-        //
-        // Reset the MockServer
-        mockServer.reset(); 
-
-        //
-        // Setup the dropped connection response.
-        mockServer.when(
-            request()
-                .withPath("/bad-registry/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
-            );
-    }
-
-    private RegistryClient registryClient ;
-
-    @Before
-    public void setupRegClient()
-        throws IOException {
-        
-        //
-        // Create the registry client configuration file.
-        File configFile = File.createTempFile("good-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        printWriter.print(
-              "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/bad-registry"
-            );
-        printWriter.close();
-        
-        //
-        // Create the registry client and clear the cache directory.
-        registryClient = new RegistryClient(configFile);
-        registryClient.deleteCache();
-
-    }
-
     @Test
-    public void testDroppedRegistryConnectionOnce()
+    public void testSingleDropConnectionRegistry()
         throws Exception {
-    
+
         //
-        // Try to get the service capabilities for good service.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+        // A single bad registry.
+        RegistryClient registryClient = buildRegistryClient(
+            "http://testhost-001:1080/drop-connection-one"
             );
-        }
-
-        //
-        // The registry client should have called the 'resource-caps' endpoint twice, once to try to populate the cache,
-        // and a second time to try to get the content without using the cache.
-        // MocServer logs multiple requests to the 'resource-caps' endpoint because the HttpGet library retries multiple times.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-registry/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-    }         
-
-    @Test
-    public void testDroppedRegistryConnectionTwice()
-        throws Exception {
 
         //
         // Try to get the service capabilities for a good service.
@@ -237,13 +147,14 @@ public class SingleRegistryDroppedConnectionTest
             );
         }
 
-        // The registry client should have called the 'resource-caps' endpoint twice, once to try to populate the cache,
+        //
+        // The registry client should have called the bad 'resource-caps' endpoint at least twice, once to try to populate the cache,
         // and a second time to try to get the content without using the cache.
-        // MocServer logs multiple requests to the 'resource-caps' endpoint because the HttpGet library retries multiple times.
+        // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
             request()
                 .withPath(
-                    "/bad-registry/resource-caps"
+                    "/drop-connection-one/resource-caps"
                     ),
                 VerificationTimes.atLeast(2)
         );        
@@ -280,13 +191,14 @@ public class SingleRegistryDroppedConnectionTest
             );
         }
 
-        // The registry client should have called the 'resource-caps' endpoint twice, once to try to populate the cache,
+        //
+        // The registry client should have called the bad 'resource-caps' endpoint at least twice, once to try to populate the cache,
         // and a second time to try to get the content without using the cache.
-        // MocServer logs multiple requests to the 'resource-caps' endpoint because the HttpGet library retries multiple times.
+        // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
             request()
                 .withPath(
-                    "/bad-registry/resource-caps"
+                    "/drop-connection-one/resource-caps"
                     ),
                 VerificationTimes.atLeast(2)
         );        
