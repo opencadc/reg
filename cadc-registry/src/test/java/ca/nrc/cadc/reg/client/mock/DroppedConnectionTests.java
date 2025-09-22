@@ -96,7 +96,7 @@ import ca.nrc.cadc.util.Log4jInit;
 public class DroppedConnectionTests
 extends MockServerTestBase
     {
-    private static final Logger log = Logger.getLogger(SingleRegistryDroppedConnectionTest.class);
+    private static final Logger log = Logger.getLogger(DroppedConnectionTests.class);
     static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
         Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
