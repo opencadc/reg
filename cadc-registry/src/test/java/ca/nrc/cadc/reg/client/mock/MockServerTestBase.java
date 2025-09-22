@@ -185,5 +185,32 @@ public class MockServerTestBase
                             )
                         )
             );
-        }
+
+        //
+        // Setup the 'good-availability' response.
+        mockServer.when(
+            request()
+                .withPath(
+                    "/good-service/good-availability"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withHeader(
+                        new Header(
+                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
+                            )
+                        )
+                    .withBody(
+                        IOUtils.toByteArray(
+                                getClass().getClassLoader().getResourceAsStream(
+                                    "good-availability.xml"
+                                    )
+                                )
+                        )
+            );
     }
+}
