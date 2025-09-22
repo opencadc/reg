@@ -102,7 +102,7 @@ extends MockServerTestBase
     }
     
     @Test
-    public void testMixedDropConnectionRegistry()
+    public void testMixedHostnameDropConnection()
         throws Exception {
 
         //

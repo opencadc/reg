@@ -71,30 +71,15 @@ package ca.nrc.cadc.reg.client.mock;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-import static org.mockserver.model.HttpError.error;
 import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.ClearType;
-import org.mockserver.model.Header;
-import org.mockserver.model.MediaType;
 import org.mockserver.verify.VerificationTimes;
 
 import ca.nrc.cadc.net.ResourceNotFoundException;
@@ -109,203 +94,25 @@ import ca.nrc.cadc.util.Log4jInit;
  * 
  */
 public class MixedRegistriesDroppedConnectionTest
+extends MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(MixedRegistriesDroppedConnectionTest.class);
     static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
         Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
-
-    private static ClientAndServer mockServer;
-
-    @BeforeClass
-    public static void startMockServer() {
-        mockServer = startClientAndServer(1080);
-    }
-    
-    @AfterClass
-    public static void stopMockServer() {
-        mockServer.stop();
-    }
-    
-    @Before
-    public void setupMockServer() {
-        
-        //
-        // Reset the MockServer.
-        mockServer.reset();
-
-        //
-        // Setup the dropped connection response.
-        mockServer.when(
-            request()
-                .withPath("/bad-registry-one/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
-            );
-        //
-        // Setup the good 'resource-caps' responses.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-registry-one/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities"
-                        )
-            );
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-registry-two/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities"
-                        )
-            );
-        
-        //
-        // Setup the 'good-capabilities' response.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withHeader(
-                        new Header(
-                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
-                            )
-                        )
-                    .withBody(
-                          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                        + "<vosi:capabilities"
-                        + "    xmlns:vosi=\"http://www.ivoa.net/xml/VOSICapabilities/v1.0\""
-                        + "    xmlns:vr=\"http://www.ivoa.net/xml/VOResource/v1.0\""
-                        + "    xmlns:vs=\"http://www.ivoa.net/xml/VODataService/v1.1\""
-                        + "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-                        + "  <capability standardID=\"ivo://ivoa.net/std/VOSI#capabilities\">"
-                        + "    <interface xsi:type=\"vs:ParamHTTP\" role=\"std\">"
-                        + "      <accessURL use=\"full\">http://localhost:1080/good-service/good-capabilities</accessURL>"
-                        + "    </interface>"
-                        + "  </capability>"
-                        + "  <capability standardID=\"ivo://ivoa.net/std/VOSI#availability\">"
-                        + "    <interface xsi:type=\"vs:ParamHTTP\" role=\"std\">"
-                        + "      <accessURL use=\"full\">http://localhost:1080/good-service/good-availability</accessURL>"
-                        + "    </interface>"
-                        + "  </capability>"
-                        + "</vosi:capabilities>"
-                        )
-            );
-    }
-
-    private RegistryClient registryClient ;
-
-    @Before
-    public void setupRegClient()
-        throws IOException {
-    
-        //
-        // Create the registry client configuration file.
-        File configFile = File.createTempFile("good-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        printWriter.print(
-                "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/bad-registry-one"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-one"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-two"
-            );
-        printWriter.close();
-        
-        //
-        // Create a new registry client and clear the cache directory.
-        registryClient = new RegistryClient(configFile);
-        registryClient.deleteCache();
-
-    }
     
     @Test
-    public void testDroppedRegistryConnectionOnce()
+    public void testMixedRegistriesDropConnection()
         throws Exception {
 
         //
-        // Try to get the service capabilities for good service.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+        // One bad registry, followed by two good registries.
+        RegistryClient registryClient = buildRegistryClient(
+            "http://localhost:1080/drop-connection-one",
+            "http://localhost:1080/good-registry-one",
+            "http://localhost:1080/good-registry-two"
             );
-        }
-
-        //
-        // We would expect the registry client to call the bad registry 'resource-caps' endpoint at least twice, once to try to populate the cache,
-        // and again to try to get the content without using the cache.
-        // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-registry-one/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-
-        //
-        // The registry client should have called the first good registry 'resource-caps' endpoint once to get the result and populate the cache.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-one/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
-        );        
-
-        //
-        // The registry client should not need to call the second good registry.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-two/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
-    }             
-    
-    @Test
-    public void testDroppedRegistryConnectionTwice()
-        throws Exception {
 
         //
         // Try to get the service capabilities for a good service.
@@ -334,7 +141,7 @@ public class MixedRegistriesDroppedConnectionTest
         mockServer.verify(
             request()
                 .withPath(
-                    "/bad-registry-one/resource-caps"
+                    "/drop-connection-one/resource-caps"
                     ),
                 VerificationTimes.atLeast(2)
         );        
@@ -393,13 +200,12 @@ public class MixedRegistriesDroppedConnectionTest
 
         //
         // The registry client should have called the bad registry 'resource-caps' endpoint at least twice, once to try to populate the cache, and again to try to get the content without using the cache.
-        // BUT the cache is indexed by the hostname only, not the full URL, so http://localhost:1080/bad-registry-one and http://localhost:1080/good-registry-one share the same cache file.
+        // BUT the cache is indexed by the hostname only, not the full URL, so http://localhost:1080/drop-connection-one and http://localhost:1080/good-registry-one share the same cache file.
         // This means that the client finds the cached response for 'localhost/good-registry-one' and doesn't call the bad registry.
-        // TODO Use the MockServer proxy mode to setup a test using different hostnames.
         mockServer.verify(
             request()
                 .withPath(
-                    "/bad-registry-one/resource-caps"
+                    "/drop-connection-one/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
         );        

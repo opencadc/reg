@@ -69,26 +69,15 @@
 
 package ca.nrc.cadc.reg.client.mock;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-import static org.mockserver.model.HttpError.error;
 import static org.mockserver.model.HttpRequest.request;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.ClearType;
 import org.mockserver.verify.VerificationTimes;
 
