@@ -141,13 +141,13 @@ extends MockServerTestBase
     }
     
     @Test
-    public void testLocalhostSingleDropped()
+    public void testSingleDroppedConnection()
         throws Exception {
 
         //
-        // A single bad registry on localhost.
+        // A single bad registry.
         RegistryClient registryClient = buildRegistryClient(
-            "http://localhost:1080/drop-connection-001"
+            "http://testhost-001:1080/drop-connection-001"
             );
 
         //
@@ -233,245 +233,7 @@ extends MockServerTestBase
     }         
 
     @Test
-    public void testLocalhostMultipleDropped()
-        throws Exception {
-
-        //
-        // Three bad registries on localhost.
-        RegistryClient registryClient = buildRegistryClient(
-            "http://localhost:1080/drop-connection-001",
-            "http://localhost:1080/drop-connection-002",
-            "http://localhost:1080/drop-connection-003"
-            );
-
-        //
-        // Try to get the service capabilities for good service.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
-        }
-
-        //
-        // The registry client should have called each of the bad 'resource-caps' endpoints twice, once to try to populate the cache,
-        // and a second time to try to get the content without using the cache.
-        // In reality MockServer will log multiple requests because the HttpGet library retries the request multiple times.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-002/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-003/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-
-        //
-        // Try to get the service capabilities a second time.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
-        }
-
-        //
-        // The registry client should have called each of the bad 'resource-caps' endpoints twice, once to try to populate the cache,
-        // and a second time to try to get the content without using the cache.
-        // In reality MockServer will log multiple requests because the HttpGet library retries the request multiple times.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-002/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-003/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-    }         
-    
-    @Test
-    public void testLocalhostMixedDropped()
-        throws Exception {
-
-        //
-        // One bad registry and two good registries on localhost.
-        RegistryClient registryClient = buildRegistryClient(
-            "http://localhost:1080/drop-connection-001",
-            "http://localhost:1080/good-registry-001",
-            "http://localhost:1080/good-registry-002"
-            );
-
-        //
-        // Try to get the service capabilities for a good service.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
-        }
-
-        //
-        // We would expect the registry client to call the bad registry 'resource-caps' endpoint at least twice, once to try to populate the cache,
-        // and again to try to get the content without using the cache.
-        // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-
-        //
-        // The registry client should have called the first good registry 'resource-caps' endpoint once to get the result and populate the cache.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
-        );        
-
-        //
-        // The registry client should not have needed to call the second good registry.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
-
-        //
-        // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
-    
-        //
-        // Try to get the service capabilities again.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
-        }
-
-        //
-        // The registry client should have called the bad registry 'resource-caps' endpoint at least twice, once to try to populate the cache, and again to try to get the content without using the cache.
-        // BUT the cache is indexed by the hostname only, not the full URL, so http://localhost:1080/drop-connection-one and http://localhost:1080/good-registry-one share the same cache file.
-        // This means that the client finds the cached response for 'localhost/good-registry-one' and doesn't call need to call any of the registries.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
-    }         
-
-    @Test
-    public void testMixedHostMultipleDropped()
+    public void testMultipleDroppedConnection()
         throws Exception {
 
         //
@@ -593,7 +355,7 @@ extends MockServerTestBase
     }         
     
     @Test
-    public void testMixedHostMixedDropped()
+    public void testMixedDroppedConnection()
         throws Exception {
 
         //

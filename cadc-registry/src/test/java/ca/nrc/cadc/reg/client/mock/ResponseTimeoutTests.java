@@ -190,13 +190,13 @@ extends MockServerTestBase
     }
     
     @Test
-    public void testLocalhostSingleTimeout()
+    public void testSingleResponseTimeout()
         throws Exception {
 
         //
-        // A single slow registry on localhost.
+        // A single slow registry.
         RegistryClient registryClient = buildRegistryClient(
-            "http://localhost:1080/slow-registry-001"
+            "http://testhost-001:1080/slow-registry-001"
             );
 
         //
@@ -274,237 +274,9 @@ extends MockServerTestBase
         );        
     }         
 
-    @Test
-    public void testLocalhostMultipleTimeout()
-        throws Exception {
-
-        //
-        // Three slow registries on localhost.
-        RegistryClient registryClient = buildRegistryClient(
-            "http://localhost:1080/slow-registry-001",
-            "http://localhost:1080/slow-registry-002",
-            "http://localhost:1080/slow-registry-003"
-            );
-
-        //
-        // Try to get the service capabilities for good service.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
-        }
-
-        //
-        // The registry client should have called the 'resource-caps' endpoint on each of the registries twice, once to try to populate the cache,
-        // and a second time to try to get the content without using the cache.
-        // MocServer logs multiple requests to the 'resource-caps' endpoint because the HttpGet library retries multiple times.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-002/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-003/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-
-        //
-        // Try to get the service capabilities a second time.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
-        }
-
-        //
-        // The registry client should have called the 'resource-caps' endpoint on eaxch of the registries twice, once to try to populate the cache,
-        // and a second time to try to get the content without using the cache.
-        // MocServer logs multiple requests to the 'resource-caps' endpoint because the HttpGet library retries multiple times.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-002/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-003/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );        
-    }         
-    
-    @Test
-    public void testLocalhostMixedTimeout()
-        throws Exception {
-
-        //
-        // One slow and two good registries on localhost.
-        RegistryClient registryClient = buildRegistryClient(
-            "http://localhost:1080/slow-registry-001",
-            "http://localhost:1080/good-registry-002",
-            "http://localhost:1080/good-registry-003"
-            );
-        
-        //
-        // Try to get the service capabilities for good service.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            throw ouch ;
-        }
-
-        //
-        // We would expect the registry client to call the slow registry 'resource-caps' endpoint at least twice, once to try to populate the cache,
-        // and again to try to get the content without using the cache.
-        // In reality MockServer will log multiple requests because the HttpGet library retries the request multiple times.
-       mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
-        );
-
-        //
-        // The registry client should have called the first good registry endpoint once to get the result and populate the cache.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
-        );
-
-        //
-        // The registry client should not need to have called the third registry.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );
-
-        //
-        // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
-
-        //
-        // Try to get the service capabilities a second time.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(
-                new URI("ivo://good.authority/good-service")
-                );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            throw ouch ;
-        }
-
-        //
-        // The registry client should have called the slow registry 'resource-caps' endpoint at least twice, once to try to populate the cache, and again to try to get the content without using the cache.
-        // BUT the cache is indexed by the hostname only, not the full URL, so http://localhost:1080/slow-registry-001 and http://localhost:1080/good-registry-002 share the same cache file.
-        // This means that the client finds the cached response for 'localhost/good-registry-002' and doesn't need to call the slow registry.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/slow-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );
-    }
 
     @Test
-    public void testMixedHostMultipleTimeout()
+    public void testMultipleResponseTimeout()
         throws Exception {
 
         //
@@ -619,7 +391,7 @@ extends MockServerTestBase
     }         
     
     @Test
-    public void testMixedHostMixedTimeout()
+    public void testMixedResponseTimeout()
         throws Exception {
 
         //

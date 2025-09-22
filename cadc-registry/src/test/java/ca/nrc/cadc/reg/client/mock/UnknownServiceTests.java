@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg.client.mock;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -159,16 +160,33 @@ extends MockServerTestBase
                         "ivo://good.authority/unknown-service = http://localhost:1080/unknown-service/unknown-capabilities"
                         )
                     );
+
+        mockServer.when(
+            request()
+                .withPath(
+                    "/unknown-service/unknown-capabilities"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_NOT_FOUND
+                        )
+                    .withBody(
+                        "This is not the service you are looking for"
+                        )
+                    );
+
     }
 
     @Test
-    public void testLocalhostSingleUnknown()
+    public void testSingleUnknownService()
         throws Exception {
 
         //
-        // A single bad registry with the unknown service on localhost.
+        // A single bad registry with the unknown service.
         RegistryClient registryClient = buildRegistryClient(
-            "http://localhost:1080/unknown-service-001"
+            "http://testhost-001:1080/unknown-service-001"
             );
         
         //
@@ -197,7 +215,8 @@ extends MockServerTestBase
         }
 
         //
-        // The registry client should have called the 'resource-caps' endpoint to get the list of capabilities endpoints.
+        // The registry client should have called the 'resource-caps' endpoint once to get the list of capabilities endpoints.
+        // The registry client should cache the result, even though the good-service isn't in the list.
         mockServer.verify(
             request()
                 .withPath(
@@ -259,11 +278,11 @@ extends MockServerTestBase
         }
 
         //
-        // The registry client should have found a cached result, and not have needed to call the registry endpoint again.
+        // The registry client should have found a cached result, and should not have needed to call the registry endpoint again.
         mockServer.verify(
             request()
                 .withPath(
-                        "/unknown-service-001/resource-caps"
+                    "/unknown-service-001/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
         );        
@@ -291,15 +310,15 @@ extends MockServerTestBase
 
     
     @Test
-    public void testLocalhostMultipleUnknown()
+    public void testMultipleUnknownService()
         throws Exception {
 
         //
-        // Three registries with the unknown service on on localhost.
+        // Three registries with the unknown service with different hostnames.
         RegistryClient registryClient = buildRegistryClient(
-                "http://localhost:1080/unknown-service-001",
-                "http://localhost:1080/unknown-service-002",
-                "http://localhost:1080/unknown-service-003"
+            "http://testhost-001:1080/unknown-service-001",
+            "http://testhost-002:1080/unknown-service-002",
+            "http://testhost-003:1080/unknown-service-003"
             );
         
         //
@@ -328,7 +347,8 @@ extends MockServerTestBase
         }
 
         //
-        // The registry client should have called the 'resource-caps' endpoint on the first registry once to get the list of capabilities endpoints.
+        // The registry client should have called the 'resource-caps' endpoint on each registry once to get the list of capability endpoints for the target service.
+        // The registry client should cache the results, even though the good-service isn't in any of the lists.
         mockServer.verify(
             request()
                 .withPath(
@@ -337,23 +357,22 @@ extends MockServerTestBase
                 VerificationTimes.exactly(1)
                 );        
 
-        //
-        // The registry client should not have needed to call the second or third registry.
         mockServer.verify(
             request()
                 .withPath(
                     "/unknown-service-002/resource-caps"
                     ),
-                VerificationTimes.exactly(0)
-            );        
+                VerificationTimes.exactly(1)
+                );        
+
         mockServer.verify(
             request()
                 .withPath(
                     "/unknown-service-003/resource-caps"
                     ),
-                VerificationTimes.exactly(0)
-            );        
-
+                VerificationTimes.exactly(1)
+                );        
+        
         //
         // The registry client should not have been able to find the '/good-service/good-capabilities' endpoint.
         mockServer.verify(
@@ -407,17 +426,15 @@ extends MockServerTestBase
         }
 
         //
-        // The registry client should have found a cached result from the first registry, and not have needed to call the registry endpoint again.
+        // The registry client should have found a cached result from each of the registries, and should not have needed to call the registry endpoints again.
         mockServer.verify(
             request()
                 .withPath(
-                        "/unknown-service-001/resource-caps"
+                    "/unknown-service-001/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
-        );        
+                );        
 
-        //
-        // The registry client should not have needed to call the second or third registry.
         mockServer.verify(
             request()
                 .withPath(
@@ -425,6 +442,7 @@ extends MockServerTestBase
                     ),
                 VerificationTimes.exactly(0)
             );        
+
         mockServer.verify(
             request()
                 .withPath(
@@ -455,16 +473,16 @@ extends MockServerTestBase
     }         
 
     @Test
-    public void testLocalhostMixedUnknown()
+    public void testMixedUnknownService()
         throws IOException
         {
 
         //
-        // One registry with the unknown service and two good registries all on localhost.
+        // One registry with the unknown service and two good registries.
         RegistryClient registryClient = buildRegistryClient(
-                "http://localhost:1080/unknown-service-001",
-                "http://localhost:1080/good-registry-002",
-                "http://localhost:1080/good-registry-003"
+            "http://testhost-001:1080/unknown-service-001",
+            "http://testhost-002:1080/good-registry-002",
+            "http://testhost-003:1080/good-registry-003"
             );
         
         //
@@ -474,13 +492,8 @@ extends MockServerTestBase
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            fail(
-                "Should not have reached this point"
-                );
-        }
-        catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+            assertTrue(
+                list.size() == 2
                 );
         }
         catch (Exception ouch) {
@@ -493,7 +506,8 @@ extends MockServerTestBase
         }
 
         //
-        // The registry client should have called the 'resource-caps' endpoint on the first registry once to get the list of capabilities endpoints.
+        // The registry client should have called the 'resource-caps' endpoint on the first registry once to get the list of capability endpoints for the target service.
+        // The registry client should cache the results, even though the good-service isn't in any of the lists.
         mockServer.verify(
             request()
                 .withPath(
@@ -503,14 +517,18 @@ extends MockServerTestBase
                 );        
 
         //
-        // The result from the first registry should have prevented the client from calling the second or third registry.
+        // The registry client should have called the 'resource-caps' endpoint on the second registry once to get the list of capability endpoints for the target service.
+        // The registry client should cache the results.
         mockServer.verify(
             request()
                 .withPath(
                     "/good-registry-002/resource-caps"
                     ),
-                VerificationTimes.exactly(0)
-            );        
+                VerificationTimes.exactly(1)
+                );        
+
+        //
+        // The registry client should not have needed to call the third registry.
         mockServer.verify(
             request()
                 .withPath(
@@ -520,13 +538,13 @@ extends MockServerTestBase
             );        
 
         //
-        // The registry client should not have been able to find the '/good-service/good-capabilities' endpoint.
+        // The registry client should have been able to find and call the '/good-service/good-capabilities' endpoint.
         mockServer.verify(
             request()
                 .withPath(
                     "/good-service/good-capabilities"
                     ),
-                VerificationTimes.exactly(0)
+                VerificationTimes.exactly(1)
         );        
 
         //
@@ -553,8 +571,8 @@ extends MockServerTestBase
                 new URI("ivo://good.authority/good-service")
                 );
             List<Capability> list = capabilities.getCapabilities();
-            fail(
-                "Should not have reached this point"
+            assertTrue(
+                list.size() == 2
                 );
         }
         catch (ResourceNotFoundException ouch) {
@@ -572,7 +590,7 @@ extends MockServerTestBase
         }
 
         //
-        // The registry client should have found a cached result from the first registry, and not have needed to call the registry endpoint again.
+        // The registry client should have found a cached result from the first registry, and should not have needed to call the registry endpoint again.
         mockServer.verify(
             request()
                 .withPath(
@@ -582,7 +600,7 @@ extends MockServerTestBase
         );        
 
         //
-        // The result from the first registry should have prevented the client from calling the second or third registry.
+        // The registry client should have found a cached result from the second registry, and should not have needed to call the registry endpoint again.
         mockServer.verify(
             request()
                 .withPath(
@@ -590,6 +608,9 @@ extends MockServerTestBase
                     ),
                 VerificationTimes.exactly(0)
             );        
+
+        //
+        // The registry client should not have needed to call the third registry endpoint.
         mockServer.verify(
             request()
                 .withPath(
@@ -599,7 +620,7 @@ extends MockServerTestBase
             );        
 
         //
-        // The registry client should not have been able to find the '/good-service/good-capabilities' endpoint.
+        // The registry client should have found a cached result for the good capabilities, and should not have needed to call the capabilities endpoint again.
         mockServer.verify(
             request()
                 .withPath(
@@ -619,10 +640,4 @@ extends MockServerTestBase
         );        
     }
 
-    public void testMixedHostMultipleUnknown()
-        {}
-
-    public void testMixedHostMixedUnknown()
-        {}
-    
-    }
+}
