@@ -362,8 +362,8 @@ extends MockServerTestBase
         // One bad registry and two good registries on different hostnames.
         RegistryClient registryClient = buildRegistryClient(
             "http://testhost-001:1080/drop-connection-001",
-            "http://testhost-002:1080/good-registry-001",
-            "http://testhost-003:1080/good-registry-002"
+            "http://testhost-002:1080/good-registry-002",
+            "http://testhost-003:1080/good-registry-003"
             );
         
         //
@@ -402,7 +402,7 @@ extends MockServerTestBase
         mockServer.verify(
             request()
                 .withPath(
-                    "/good-registry-001/resource-caps"
+                    "/good-registry-002/resource-caps"
                     ),
                 VerificationTimes.exactly(1)
         );        
@@ -412,7 +412,7 @@ extends MockServerTestBase
         mockServer.verify(
             request()
                 .withPath(
-                    "/good-registry-002/resource-caps"
+                    "/good-registry-003/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
         );        
@@ -460,7 +460,7 @@ extends MockServerTestBase
         mockServer.verify(
             request()
                 .withPath(
-                    "/good-registry-001/resource-caps"
+                    "/good-registry-002/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
         );        
@@ -470,7 +470,7 @@ extends MockServerTestBase
         mockServer.verify(
             request()
                 .withPath(
-                    "/good-registry-002/resource-caps"
+                    "/good-registry-003/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
         );        
