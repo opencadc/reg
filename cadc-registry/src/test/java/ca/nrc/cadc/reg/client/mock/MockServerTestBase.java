@@ -135,7 +135,7 @@ public class MockServerTestBase
             );
         
         //
-        // Setup the 'good-capabilities' response.
+        // Setup the good and bad capabilities responses.
         mockServer.when(
             request()
                 .withPath(
@@ -156,6 +156,31 @@ public class MockServerTestBase
                         IOUtils.toByteArray(
                             getClass().getClassLoader().getResourceAsStream(
                                 "good-capabilities.xml"
+                                )
+                            )
+                        )
+            );
+        
+        mockServer.when(
+            request()
+                .withPath(
+                    "/good-service/bad-capabilities"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withHeader(
+                        new Header(
+                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
+                            )
+                        )
+                    .withBody(
+                        IOUtils.toByteArray(
+                            getClass().getClassLoader().getResourceAsStream(
+                                "bad-capabilities.xml"
                                 )
                             )
                         )
