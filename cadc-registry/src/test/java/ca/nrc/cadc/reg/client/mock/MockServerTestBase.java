@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
@@ -52,6 +53,9 @@ import ca.nrc.cadc.reg.client.RegistryClient;
 public class MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(MockServerTestBase.class);
+
+    public static final int TEST_CONNECT_TIMEOUT = 500 ;
+    public static final int TEST_READ_TIMEOUT = 500 ;
 
     /**
      * 
@@ -79,6 +83,9 @@ public class MockServerTestBase
         RegistryClient registryClient = new RegistryClient(configFile);
         registryClient.deleteCache();
 
+        registryClient.setConnectionTimeout(TEST_CONNECT_TIMEOUT);
+        registryClient.setReadTimeout(TEST_READ_TIMEOUT);
+        
         return registryClient ;
         }
 
@@ -97,7 +104,8 @@ public class MockServerTestBase
     }
 
     @Before
-    public void setupMockServer() throws IOException {
+    public void setupMockServer()
+        throws IOException {
         
         //
         // Reset the MockServer.
@@ -107,7 +115,7 @@ public class MockServerTestBase
         // Setup the dropped connection responses.
         mockServer.when(
             request()
-                .withPath("/drop-connection-one/resource-caps")
+                .withPath("/drop-connection-001/resource-caps")
                 )
             .error(
                 error()
@@ -116,7 +124,7 @@ public class MockServerTestBase
 
         mockServer.when(
             request()
-                .withPath("/drop-connection-two/resource-caps")
+                .withPath("/drop-connection-002/resource-caps")
                 )
             .error(
                 error()
@@ -125,11 +133,71 @@ public class MockServerTestBase
 
         mockServer.when(
             request()
-                .withPath("/drop-connection-three/resource-caps")
+                .withPath("/drop-connection-003/resource-caps")
                 )
             .error(
                 error()
                     .withDropConnection(true)
+            );
+
+        //
+        // Setup the slow 'resource-caps' responses.
+        mockServer.when(
+            request()
+                .withPath(
+                    "/slow-registry-001/resource-caps"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withBody(
+                        "No need to be so hasty"
+                        )
+                    .withDelay(
+                        TimeUnit.SECONDS,
+                        10
+                        )
+            );
+        mockServer.when(
+            request()
+                .withPath(
+                    "/slow-registry-002/resource-caps"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withBody(
+                        "No need to be so hasty"
+                        )
+                    .withDelay(
+                        TimeUnit.SECONDS,
+                        10
+                        )
+            );
+        mockServer.when(
+            request()
+                .withPath(
+                    "/slow-registry-003/resource-caps"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withBody(
+                        "No need to be so hasty"
+                        )
+                    .withDelay(
+                        TimeUnit.SECONDS,
+                        10
+                        )
             );
         
         //
@@ -137,7 +205,7 @@ public class MockServerTestBase
         mockServer.when(
             request()
                 .withPath(
-                    "/good-registry-one/resource-caps"
+                    "/good-registry-001/resource-caps"
                     )
                 )
             .respond(
@@ -153,7 +221,7 @@ public class MockServerTestBase
         mockServer.when(
             request()
                 .withPath(
-                    "/good-registry-two/resource-caps"
+                    "/good-registry-002/resource-caps"
                     )
                 )
             .respond(
