@@ -24,7 +24,6 @@
 package ca.nrc.cadc.reg.client.mock;
 
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-import static org.mockserver.model.HttpError.error;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -32,7 +31,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
@@ -53,9 +51,6 @@ import ca.nrc.cadc.reg.client.RegistryClient;
 public class MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(MockServerTestBase.class);
-
-    public static final int TEST_CONNECT_TIMEOUT = 500 ;
-    public static final int TEST_READ_TIMEOUT = 500 ;
 
     /**
      * 
@@ -83,9 +78,6 @@ public class MockServerTestBase
         RegistryClient registryClient = new RegistryClient(configFile);
         registryClient.deleteCache();
 
-        registryClient.setConnectionTimeout(TEST_CONNECT_TIMEOUT);
-        registryClient.setReadTimeout(TEST_READ_TIMEOUT);
-        
         return registryClient ;
         }
 
@@ -103,103 +95,11 @@ public class MockServerTestBase
         mockServer.stop();
     }
 
-    @Before
     public void setupMockServer()
         throws IOException {
         
-        //
-        // Reset the MockServer.
         mockServer.reset();
 
-        //
-        // Setup the dropped connection responses.
-        mockServer.when(
-            request()
-                .withPath("/drop-connection-001/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
-            );
-
-        mockServer.when(
-            request()
-                .withPath("/drop-connection-002/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
-            );
-
-        mockServer.when(
-            request()
-                .withPath("/drop-connection-003/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
-            );
-
-        //
-        // Setup the slow 'resource-caps' responses.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/slow-registry-001/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "No need to be so hasty"
-                        )
-                    .withDelay(
-                        TimeUnit.SECONDS,
-                        10
-                        )
-            );
-        mockServer.when(
-            request()
-                .withPath(
-                    "/slow-registry-002/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "No need to be so hasty"
-                        )
-                    .withDelay(
-                        TimeUnit.SECONDS,
-                        10
-                        )
-            );
-        mockServer.when(
-            request()
-                .withPath(
-                    "/slow-registry-003/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "No need to be so hasty"
-                        )
-                    .withDelay(
-                        TimeUnit.SECONDS,
-                        10
-                        )
-            );
-        
         //
         // Setup the good 'resource-caps' responses.
         mockServer.when(

@@ -72,12 +72,17 @@ package ca.nrc.cadc.reg.client.mock;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.http.HttpStatus;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.model.ClearType;
 import org.mockserver.verify.VerificationTimes;
@@ -102,6 +107,88 @@ extends MockServerTestBase
         Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
+    public static final int TEST_CONNECT_TIMEOUT = 500 ;
+    public static final int TEST_READ_TIMEOUT = 500 ;
+
+    @Override
+    public RegistryClient buildRegistryClient(final String ...endpoints)
+        throws IOException {
+
+        RegistryClient registryClient = super.buildRegistryClient(endpoints);
+
+        registryClient.setConnectionTimeout(TEST_CONNECT_TIMEOUT);
+        registryClient.setReadTimeout(TEST_READ_TIMEOUT);
+        
+        return registryClient ;
+        
+        }
+
+    @Before
+    @Override
+    public void setupMockServer()
+        throws IOException {
+
+        super.setupMockServer();
+        
+        mockServer.when(
+            request()
+                .withPath(
+                    "/slow-registry-001/resource-caps"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withBody(
+                        "No need to be so hasty"
+                        )
+                    .withDelay(
+                        TimeUnit.SECONDS,
+                        10
+                        )
+            );
+        mockServer.when(
+            request()
+                .withPath(
+                    "/slow-registry-002/resource-caps"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withBody(
+                        "No need to be so hasty"
+                        )
+                    .withDelay(
+                        TimeUnit.SECONDS,
+                        10
+                        )
+            );
+        mockServer.when(
+            request()
+                .withPath(
+                    "/slow-registry-003/resource-caps"
+                    )
+                )
+            .respond(
+                response()
+                    .withStatusCode(
+                        HttpStatus.SC_OK
+                        )
+                    .withBody(
+                        "No need to be so hasty"
+                        )
+                    .withDelay(
+                        TimeUnit.SECONDS,
+                        10
+                        )
+            );
+    }
+    
     @Test
     public void testLocalhostSingleTimeout()
         throws Exception {

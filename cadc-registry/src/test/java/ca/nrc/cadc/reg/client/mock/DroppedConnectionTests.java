@@ -71,13 +71,16 @@ package ca.nrc.cadc.reg.client.mock;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockserver.model.HttpError.error;
 import static org.mockserver.model.HttpRequest.request;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.model.ClearType;
 import org.mockserver.verify.VerificationTimes;
@@ -101,7 +104,42 @@ extends MockServerTestBase
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
         Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
+    
+    @Before
+    @Override
+    public void setupMockServer()
+        throws IOException {
 
+        super.setupMockServer();
+        
+        mockServer.when(
+            request()
+                .withPath("/drop-connection-001/resource-caps")
+                )
+            .error(
+                error()
+                    .withDropConnection(true)
+            );
+
+        mockServer.when(
+            request()
+                .withPath("/drop-connection-002/resource-caps")
+                )
+            .error(
+                error()
+                    .withDropConnection(true)
+            );
+
+        mockServer.when(
+            request()
+                .withPath("/drop-connection-003/resource-caps")
+                )
+            .error(
+                error()
+                    .withDropConnection(true)
+            );
+    }
+    
     @Test
     public void testLocalhostSingleDropped()
         throws Exception {
