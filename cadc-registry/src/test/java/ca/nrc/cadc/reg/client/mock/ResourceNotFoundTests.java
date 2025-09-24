@@ -108,8 +108,8 @@ extends MockServerTestBase
     
     @Before
     @Override
-    protected void setupMockServer()
-            throws IOException {
+    public void setupMockServer()
+    throws IOException {
         
         super.setupMockServer();
     

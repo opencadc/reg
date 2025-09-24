@@ -112,8 +112,8 @@ extends MockServerTestBase
 
     @Before
     @Override
-    protected void setupMockServer()
-        throws IOException {
+    public void setupMockServer()
+    throws IOException {
 
         super.setupMockServer();
         
@@ -399,6 +399,11 @@ extends MockServerTestBase
             "http://testhost-003:1080/good-registry-003"
             );
 
+        //
+        // Set the client timeouts to longer than the slow service.
+        registryClient.setConnectionTimeout(TEST_CONNECT_TIMEOUT);
+        registryClient.setReadTimeout(TEST_READ_TIMEOUT);
+        
         //
         // Try to get the service capabilities for good service.
         try {

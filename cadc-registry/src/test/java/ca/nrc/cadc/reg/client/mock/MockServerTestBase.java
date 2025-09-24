@@ -69,14 +69,14 @@ public class MockServerTestBase
     protected static ClientAndServer mockServer;
 
     @BeforeClass
-    protected static void startMockServer() {
+    public static void startMockServer() {
         mockServer = startClientAndServer(1080);
         System.setProperty("http.proxyHost", "127.0.0.1");
         System.setProperty("http.proxyPort", String.valueOf(mockServer.getPort()));
     }
     
     @AfterClass
-    protected static void stopMockServer() {
+    public static void stopMockServer() {
         mockServer.stop();
     }
 
@@ -85,7 +85,7 @@ public class MockServerTestBase
      * @throws IOException If it is unable to load resources from the classpath
      * 
      */
-    protected void setupMockServer()
+    public void setupMockServer()
         throws IOException {
         
         mockServer.reset();
