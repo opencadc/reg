@@ -71,29 +71,17 @@ package ca.nrc.cadc.reg.client.mock;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.util.List;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.ClearType;
-import org.mockserver.model.Header;
-import org.mockserver.model.MediaType;
 import org.mockserver.verify.VerificationTimes;
 
 import ca.nrc.cadc.reg.Capabilities;
@@ -106,217 +94,33 @@ import ca.nrc.cadc.util.Log4jInit;
  * See https://www.mock-server.com/
  * 
  */
-public class MultipleRegistriesGoodCapabilitiesTest
+public class GoodCapabilitiesTests
+extends MockServerTestBase
     {
-    private static final Logger log = Logger.getLogger(MultipleRegistriesGoodCapabilitiesTest.class);
+    private static final Logger log = Logger.getLogger(GoodCapabilitiesTests.class);
     static {
         Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
         Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
     }
 
-    private static ClientAndServer mockServer;
-
-    @BeforeClass
-    public static void startMockServer() {
-        mockServer = startClientAndServer(1080);
-    }
-
-    @AfterClass
-    public static void stopMockServer() {
-        mockServer.stop();
-    }
-
     @Before
-    public void setupMockServer() {
-        
-        //
-        // Reset the MockServer
-        mockServer.reset(); 
-    
-        //
-        // Setup the good 'resource-caps' responses.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-registry-one/resource-caps"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities"
-                        )
-        );
-
-        mockServer.when(
-                request()
-                    .withPath(
-                        "/good-registry-two/resource-caps"
-                        )
-                    )
-                .respond(
-                    response()
-                        .withStatusCode(
-                            HttpStatus.SC_OK
-                            )
-                        .withBody(
-                            "ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities"
-                            )
-            );
-
-        mockServer.when(
-                request()
-                    .withPath(
-                        "/good-registry-three/resource-caps"
-                        )
-                    )
-                .respond(
-                    response()
-                        .withStatusCode(
-                            HttpStatus.SC_OK
-                            )
-                        .withBody(
-                            "ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities"
-                            )
-            );
-        
-        //
-        // Setup the 'good-capabilities' response.
-        mockServer.when(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    )
-                )
-            .respond(
-                response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withHeader(
-                        new Header(
-                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
-                            )
-                        )
-                    .withBody(
-                          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                        + "<vosi:capabilities"
-                        + "    xmlns:vosi=\"http://www.ivoa.net/xml/VOSICapabilities/v1.0\""
-                        + "    xmlns:vr=\"http://www.ivoa.net/xml/VOResource/v1.0\""
-                        + "    xmlns:vs=\"http://www.ivoa.net/xml/VODataService/v1.1\""
-                        + "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-                        + "  <capability standardID=\"ivo://ivoa.net/std/VOSI#capabilities\">"
-                        + "    <interface xsi:type=\"vs:ParamHTTP\" role=\"std\">"
-                        + "      <accessURL use=\"full\">http://localhost:1080/good-service/good-capabilities</accessURL>"
-                        + "    </interface>"
-                        + "  </capability>"
-                        + "  <capability standardID=\"ivo://ivoa.net/std/VOSI#availability\">"
-                        + "    <interface xsi:type=\"vs:ParamHTTP\" role=\"std\">"
-                        + "      <accessURL use=\"full\">http://localhost:1080/good-service/good-availability</accessURL>"
-                        + "    </interface>"
-                        + "  </capability>"
-                        + "</vosi:capabilities>"
-                        )
-                    );
-
-    }
-
-    private RegistryClient registryClient ;
-
-    @Before
-    public void setupRegClient()
+    @Override
+    protected void setupMockServer()
         throws IOException {
-    
-        //
-        // Create the registry client configuration file.
-        File configFile = File.createTempFile("good-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        printWriter.print(
-                "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-one"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-two"
-              + "\n"
-              + "ca.nrc.cadc.reg.client.RegistryClient.baseURL = http://localhost:1080/good-registry-three"
-            );
-        printWriter.close();
-        
-        //
-        // Create the registry client and clear the cache directory.
-        registryClient = new RegistryClient(configFile);
-        registryClient.deleteCache();
 
+        super.setupMockServer();
+        
     }
-
-    @Test
-    public void testGoodServiceCapabilitiesOnce()
-        throws Exception {
     
+    @Test
+    public void testSingleServiceCapabilities()
+        throws Exception {
+
         //
-        // Get the good service capabilities.
-        try {
-            Capabilities capabilities = registryClient.getCapabilities(new URI("ivo://good.authority/good-service"));
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+        // A single good registry.
+        RegistryClient registryClient = buildRegistryClient(
+            "http://testhost-001:1080/good-registry-001"
             );
-        }
-
-        //
-        // The registry client calls the 'resource-caps' endpoint on the first registry once to get the list of capabilities endpoints.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-one/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
-        );        
-
-        //
-        // The registry client should not have called the the 'resource-caps' endpoint on the other registries.
-        mockServer.verify(
-                request()
-                    .withPath(
-                        "/good-registry-two/resource-caps"
-                        ),
-                    VerificationTimes.exactly(0)
-            );        
-
-        mockServer.verify(
-                request()
-                    .withPath(
-                        "/good-registry-three/resource-caps"
-                        ),
-                    VerificationTimes.exactly(0)
-            );        
-        
-        //
-        // The registry client calls the 'good-capabilities' endpoint once to get the service capabilities.
-        mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
-            );        
-    }         
-
-    
-    @Test
-    public void testGoodServiceCapabilitiesTwice()
-        throws Exception {
         
         //
         // Get the good service capabilities.
@@ -337,35 +141,17 @@ public class MultipleRegistriesGoodCapabilitiesTest
         }
 
         //
-        // The registry client calls the 'resource-caps' endpoint on the first registry once to get the list of capabilities endpoints.
+        // The registry client should call the 'resource-caps' endpoint once to get the list of capabilities endpoints.
         mockServer.verify(
             request()
                 .withPath(
-                    "/good-registry-one/resource-caps"
+                    "/good-registry-001/resource-caps"
                     ),
                 VerificationTimes.exactly(1)
         );        
 
         //
-        // The registry client should not have called the 'resource-caps' endpoint on the other registries.
-        mockServer.verify(
-                request()
-                    .withPath(
-                        "/good-registry-two/resource-caps"
-                        ),
-                    VerificationTimes.exactly(0)
-            );        
-
-        mockServer.verify(
-                request()
-                    .withPath(
-                        "/good-registry-three/resource-caps"
-                        ),
-                    VerificationTimes.exactly(0)
-            );        
-        
-        //
-        // The registry client should have called the 'good-capabilities' endpoint once to get the service capabilities.
+        // The registry client should call the 'good-capabilities' endpoint once to get the service capabilities.
         mockServer.verify(
             request()
                 .withPath(
@@ -400,35 +186,148 @@ public class MultipleRegistriesGoodCapabilitiesTest
         }
 
         //
-        // The registry client should have used the cached version of capabilities endpoints list and should not not have called the 'resource-caps' endpoint again.
+        // The registry client should have a cached version of the capabilities and should not not have called the 'resource-caps' endpoint again.
         mockServer.verify(
             request()
                 .withPath(
-                    "/good-registry/resource-caps"
+                    "/good-registry-001/resource-caps"
                     ),
                 VerificationTimes.exactly(0)
         );        
 
         //
-        // The registry client should not have called the 'resource-caps' endpoint on the other registries.
+        // The registry client should have a cached version of good service capabilities and should not not have called the 'good-capabilities' endpoint again.
         mockServer.verify(
-                request()
-                    .withPath(
-                        "/good-registry-two/resource-caps"
-                        ),
-                    VerificationTimes.exactly(0)
+            request()
+                .withPath(
+                    "/good-service/good-capabilities"
+                    ),
+                VerificationTimes.exactly(0)
+            );        
+    }         
+    
+    @Test
+    public void testMultipleServiceCapabilities()
+        throws Exception {
+
+        //
+        // Three good registries.
+        RegistryClient registryClient = buildRegistryClient(
+                "http://testhost-001:1080/good-registry-001",
+                "http://testhost-002:1080/good-registry-001",
+                "http://testhost-003:1080/good-registry-001"
+            );
+        
+        //
+        // Get the good service capabilities.
+        try {
+            Capabilities capabilities = registryClient.getCapabilities(new URI("ivo://good.authority/good-service"));
+            List<Capability> list = capabilities.getCapabilities();
+            assertTrue(
+                list.size() == 2
+                );
+        }
+        catch (Exception ouch) {
+            log.warn(
+                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+                );
+            fail(
+                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+            );
+        }
+
+        //
+        // The registry client should call the 'resource-caps' endpoint once to get the list of capabilities endpoints.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-001/resource-caps"
+                    ),
+                VerificationTimes.exactly(1)
+        );        
+
+        //
+        // The registry client should not have called the other registries.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-002/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+        );        
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-003/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
             );        
 
+        
+        //
+        // The registry client should call the 'good-capabilities' endpoint once to get the service capabilities.
         mockServer.verify(
-                request()
-                    .withPath(
-                        "/good-registry-three/resource-caps"
-                        ),
-                    VerificationTimes.exactly(0)
+            request()
+                .withPath(
+                    "/good-service/good-capabilities"
+                    ),
+                VerificationTimes.exactly(1)
+            );        
+
+        //
+        // Clear the MockServer request logs.
+        mockServer.clear(
+            request(),
+            ClearType.LOG
+            );
+        
+        //
+        // Get the good service capabilities again.
+        try {
+            Capabilities capabilities = registryClient.getCapabilities(new URI("ivo://good.authority/good-service"));
+            List<Capability> list = capabilities.getCapabilities();
+            assertTrue(
+                list.size() == 2
+                );
+        }
+        catch (Exception ouch) {
+            log.warn(
+                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+                );
+            fail(
+                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+            );
+        }
+
+        //
+        // The registry client should have a cached version of the capabilities and should not not have called the 'resource-caps' endpoint again.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-001/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+        );        
+
+        //
+        // The registry client should not have called the other registries.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-002/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+        );        
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-003/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
             );        
         
         //
-        // The registry client should have used the cached version of good service capabilities  and should not not have called the 'good-capabilities' endpoint again.
+        // The registry client should have a cached version of good service capabilities and should not not have called the 'good-capabilities' endpoint again.
         mockServer.verify(
             request()
                 .withPath(

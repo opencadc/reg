@@ -23,27 +23,36 @@
 
 package ca.nrc.cadc.reg.client.mock;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
+import org.jdom2.Document;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
 import org.mockserver.model.MediaType;
 
+import ca.nrc.cadc.net.HttpGet;
 import ca.nrc.cadc.reg.client.RegistryClient;
+import ca.nrc.cadc.xml.XmlUtil;
 
 /**
  * 
@@ -52,50 +61,31 @@ public class MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(MockServerTestBase.class);
 
-    /**
-     * 
-     */
-    public MockServerTestBase()
+    protected MockServerTestBase()
         {
         super();
-        }
-
-    public RegistryClient buildRegistryClient(final String ...endpoints)
-        throws IOException {
-    
-        File configFile = File.createTempFile("registry-config", "properties");
-        PrintWriter printWriter = new PrintWriter(
-            new FileWriter(configFile)
-            );
-        for (String endpoint : endpoints)
-            {
-            printWriter.println(
-                "ca.nrc.cadc.reg.client.RegistryClient.baseURL = " + endpoint 
-                );
-            }
-        printWriter.close();
-        
-        RegistryClient registryClient = new RegistryClient(configFile);
-        registryClient.deleteCache();
-
-        return registryClient ;
         }
 
     protected static ClientAndServer mockServer;
 
     @BeforeClass
-    public static void startMockServer() {
+    protected static void startMockServer() {
         mockServer = startClientAndServer(1080);
         System.setProperty("http.proxyHost", "127.0.0.1");
         System.setProperty("http.proxyPort", String.valueOf(mockServer.getPort()));
     }
     
     @AfterClass
-    public static void stopMockServer() {
+    protected static void stopMockServer() {
         mockServer.stop();
     }
 
-    public void setupMockServer()
+    /**
+     * Configure our MockServer with a set of good endpoints and responses.
+     * @throws IOException If it is unable to load resources from the classpath
+     * 
+     */
+    protected void setupMockServer()
         throws IOException {
         
         mockServer.reset();
@@ -212,5 +202,84 @@ public class MockServerTestBase
                                 )
                         )
             );
+    }
+
+    /**
+     * Create a new registry client using a specific set of registry endpoint URLs.
+     * @param endpoints The registry endpoint URLs to use.
+     * @return A new registry client.
+     * @throws IOException If it is unable to create a (temporary) configuration file or to delete the client's cache directory.
+     * 
+     */
+    protected RegistryClient buildRegistryClient(final String ...endpoints)
+        throws IOException {
+
+        File configFile = File.createTempFile("registry-config", "properties");
+        PrintWriter printWriter = new PrintWriter(
+            new FileWriter(configFile)
+            );
+        for (String endpoint : endpoints)
+            {
+            printWriter.println(
+                "ca.nrc.cadc.reg.client.RegistryClient.baseURL = " + endpoint 
+                );
+            }
+        printWriter.close();
+        
+        RegistryClient registryClient = new RegistryClient(configFile);
+        registryClient.deleteCache();
+
+        return registryClient ;
+        }
+
+    
+    /**
+     * Get the availability document for a service and check the XML namespace is correct.
+     * @param targetIvoid The ivoid of the target service
+     * @param registryClient The registry client to use
+     * @throws Exception If the test fails
+     * 
+     */
+    protected void checkAvailibility(final URI targetIvoid, final RegistryClient registryClient )
+        throws Exception {
+
+        try {
+            URL endpoint = registryClient.getServiceURL(
+                targetIvoid,
+                new URI("ivo://ivoa.net/std/VOSI#availability"),
+                null
+                );
+            assertNotNull(
+                endpoint
+                );
+    
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    
+            HttpGet download = new HttpGet(endpoint, outputStream);
+            download.run();
+            
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+    
+            Document document = XmlUtil.buildDocument(
+                    inputStream,
+                null
+                );
+            assertEquals(
+                "availability",
+                document.getRootElement().getName()
+                );
+            assertEquals(
+                "http://www.ivoa.net/xml/VOSIAvailability/v1.0",
+                document.getRootElement().getNamespace().getURI()
+                );
+        }
+        catch (Exception ouch) {
+            log.warn(
+                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+                );
+            fail(
+                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
+            );
+        }
     }
 }
