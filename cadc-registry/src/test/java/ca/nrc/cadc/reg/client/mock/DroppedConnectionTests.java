@@ -90,7 +90,7 @@ import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.client.RegistryClient;
 
 /**
- * A set of Junit tests that use a MockServer to test a how the RegistryClient handles dropped connection. 
+ * A set of Junit tests that use a MockServer to test a how the RegistryClient handles dropped connections. 
  * See https://www.mock-server.com/
  * 
  */

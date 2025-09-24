@@ -91,7 +91,7 @@ import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.client.RegistryClient;
 
 /**
- * A set of Junit tests that use a MockServer to test a how the RegistryClient handles an unknown (404) registry resource. 
+ * A set of Junit tests that use a MockServer to test a how the RegistryClient handles a missing (404) service endpoint. 
  * See https://www.mock-server.com/
  * 
  */

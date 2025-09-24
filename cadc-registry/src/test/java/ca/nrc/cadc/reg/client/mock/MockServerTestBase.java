@@ -55,6 +55,7 @@ import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.xml.XmlUtil;
 
 /**
+ * Base class for the MockServer test cases.
  * 
  */
 public class MockServerTestBase
