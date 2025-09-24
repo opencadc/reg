@@ -69,29 +69,20 @@
 
 package ca.nrc.cadc.reg.client.mock;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jdom2.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockserver.model.ClearType;
 import org.mockserver.verify.VerificationTimes;
 
-import ca.nrc.cadc.net.HttpGet;
 import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.util.Log4jInit;
-import ca.nrc.cadc.xml.XmlUtil;
 
 /**
  * A set of Junit tests that use a MockServer to test a how the RegistryClient handles good responses to queries for service availability. 
@@ -109,54 +100,11 @@ extends MockServerTestBase
 
     @Before
     @Override
-    public void setupMockServer()
+    protected void setupMockServer()
         throws IOException {
 
         super.setupMockServer();
         
-    }
-    
-    private void checkAvailibility(final RegistryClient registryClient )
-        throws Exception {
-
-        try {
-            URL endpoint = registryClient.getServiceURL(
-                new URI("ivo://good.authority/good-service"),
-                new URI("ivo://ivoa.net/std/VOSI#availability"),
-                null
-                );
-            assertNotNull(
-                endpoint
-                );
-    
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    
-            HttpGet download = new HttpGet(endpoint, outputStream);
-            download.run();
-            
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-    
-            Document document = XmlUtil.buildDocument(
-                    inputStream,
-                null
-                );
-            assertEquals(
-                "availability",
-                document.getRootElement().getName()
-                );
-            assertEquals(
-                "http://www.ivoa.net/xml/VOSIAvailability/v1.0",
-                document.getRootElement().getNamespace().getURI()
-                );
-        }
-        catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
-        }
     }
     
     @Test
@@ -164,14 +112,17 @@ extends MockServerTestBase
         throws Exception {
 
         //
-        // A single registry pointing to the good registry.
+        // A single good registry.
         RegistryClient registryClient = buildRegistryClient(
             "http://testhost-001:1080/good-registry-001"
             );
 
         //
         // Check the service availability.
-        checkAvailibility(registryClient);
+        checkAvailibility(
+            new URI("ivo://good.authority/good-service"),
+            registryClient
+            );
 
         //
         // The registry client should call the registry 'resource-caps' endpoint  once to get the list of 'capabilities' endpoints.
@@ -211,7 +162,10 @@ extends MockServerTestBase
         
         //
         // Check the service availability again.
-        checkAvailibility(registryClient);
+        checkAvailibility(
+            new URI("ivo://good.authority/good-service"),
+            registryClient
+            );
 
         //
         // The registry client should have used the cached version of 'resource-caps' response and should not not have called the 'resource-caps' endpoint again.
@@ -233,6 +187,125 @@ extends MockServerTestBase
                 VerificationTimes.exactly(0)
             );        
         
+        //
+        // The JUnit test should call the 'good-availability' endpoint once to get the service availability.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-service/good-availability"
+                    ),
+                VerificationTimes.exactly(1)
+            );        
+    }         
+
+    @Test
+    public void testMultipleServiceAvailibility()
+        throws Exception {
+
+        //
+        // Multiple good registries.
+        RegistryClient registryClient = buildRegistryClient(
+            "http://testhost-001:1080/good-registry-001",
+            "http://testhost-002:1080/good-registry-002",
+            "http://testhost-003:1080/good-registry-003"
+            );
+
+        //
+        // Check the service availability.
+        checkAvailibility(
+            new URI("ivo://good.authority/good-service"),
+            registryClient
+            );
+
+        //
+        // The registry client should call the first registry 'resource-caps' endpoint  once to get the list of 'capabilities' endpoints.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-001/resource-caps"
+                    ),
+                VerificationTimes.exactly(1)
+        );        
+
+        //
+        // The registry client should not need to call the other registries..
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-002/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+        );        
+
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-003/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+            );        
+        
+        //
+        // The registry client should call the 'good-capabilities endpoint once to get the service capabilities.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-service/good-capabilities"
+                    ),
+                VerificationTimes.exactly(1)
+            );        
+        //
+        // The JUnit test should call the 'good-availability' endpoint once to get the service availability.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-service/good-availability"
+                    ),
+                VerificationTimes.exactly(1)
+            );        
+
+        //
+        // Clear the MockServer request logs.
+        mockServer.clear(
+            request(),
+            ClearType.LOG
+            );
+        
+        //
+        // Check the service availability again.
+        checkAvailibility(
+            new URI("ivo://good.authority/good-service"),
+            registryClient
+            );
+
+        //
+        // The registry client should have used the cached version of 'resource-caps' response and should not not have called the 'resource-caps' endpoint again.
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-001/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+        );        
+
+        //
+        // The registry client should not need to call the other registries..
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-002/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+        );        
+
+        mockServer.verify(
+            request()
+                .withPath(
+                    "/good-registry-003/resource-caps"
+                    ),
+                VerificationTimes.exactly(0)
+            );        
+
         //
         // The JUnit test should call the 'good-availability' endpoint once to get the service availability.
         mockServer.verify(

@@ -110,22 +110,9 @@ extends MockServerTestBase
     public static final int TEST_CONNECT_TIMEOUT = 500 ;
     public static final int TEST_READ_TIMEOUT = 500 ;
 
-    @Override
-    public RegistryClient buildRegistryClient(final String ...endpoints)
-        throws IOException {
-
-        RegistryClient registryClient = super.buildRegistryClient(endpoints);
-
-        registryClient.setConnectionTimeout(TEST_CONNECT_TIMEOUT);
-        registryClient.setReadTimeout(TEST_READ_TIMEOUT);
-        
-        return registryClient ;
-        
-        }
-
     @Before
     @Override
-    public void setupMockServer()
+    protected void setupMockServer()
         throws IOException {
 
         super.setupMockServer();
@@ -188,7 +175,7 @@ extends MockServerTestBase
                         )
             );
     }
-    
+
     @Test
     public void testSingleResponseTimeout()
         throws Exception {
@@ -199,6 +186,11 @@ extends MockServerTestBase
             "http://testhost-001:1080/slow-registry-001"
             );
 
+        //
+        // Set the client timeouts to longer than the slow service.
+        registryClient.setConnectionTimeout(TEST_CONNECT_TIMEOUT);
+        registryClient.setReadTimeout(TEST_READ_TIMEOUT);
+        
         //
         // Try to get the service capabilities for good service.
         try {
@@ -287,6 +279,11 @@ extends MockServerTestBase
             "http://testhost-003:1080/slow-registry-003"
             );
 
+        //
+        // Set the client timeouts to longer than the slow service.
+        registryClient.setConnectionTimeout(TEST_CONNECT_TIMEOUT);
+        registryClient.setReadTimeout(TEST_READ_TIMEOUT);
+        
         //
         // Try to get the service capabilities for good service.
         try {

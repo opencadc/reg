@@ -106,7 +106,7 @@ extends MockServerTestBase
 
     @Before
     @Override
-    public void setupMockServer()
+    protected void setupMockServer()
         throws IOException {
 
         super.setupMockServer();
