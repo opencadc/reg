@@ -77,7 +77,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,7 +86,6 @@ import org.mockserver.verify.VerificationTimes;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.client.RegistryClient;
-import ca.nrc.cadc.util.Log4jInit;
 
 /**
  * A set of Junit tests that use a MockServer to test a how the RegistryClient handles good responses for service capabilities. 
@@ -98,10 +96,6 @@ public class GoodCapabilitiesTests
 extends MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(GoodCapabilitiesTests.class);
-    static {
-        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
-        Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
-    }
 
     @Before
     @Override

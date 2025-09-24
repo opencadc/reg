@@ -78,7 +78,6 @@ import java.net.URI;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,7 +88,6 @@ import ca.nrc.cadc.net.ResourceNotFoundException;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
 import ca.nrc.cadc.reg.client.RegistryClient;
-import ca.nrc.cadc.util.Log4jInit;
 
 /**
  * A set of Junit tests that use a MockServer to test a how the RegistryClient handles a missing capabilities response. 
@@ -100,10 +98,6 @@ public class CapabilitiesNotFoundTests
 extends MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(CapabilitiesNotFoundTests.class);
-    static {
-        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
-        Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
-    }
 
     @Before
     @Override

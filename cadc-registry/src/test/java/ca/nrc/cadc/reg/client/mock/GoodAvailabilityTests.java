@@ -74,7 +74,6 @@ import static org.mockserver.model.HttpRequest.request;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +81,6 @@ import org.mockserver.model.ClearType;
 import org.mockserver.verify.VerificationTimes;
 
 import ca.nrc.cadc.reg.client.RegistryClient;
-import ca.nrc.cadc.util.Log4jInit;
 
 /**
  * A set of Junit tests that use a MockServer to test a how the RegistryClient handles good responses to queries for service availability. 
@@ -93,10 +91,6 @@ public class GoodAvailabilityTests
 extends MockServerTestBase
     {
     private static final Logger log = Logger.getLogger(GoodAvailabilityTests.class);
-    static {
-        Log4jInit.setLevel("ca.nrc.cadc.reg", Level.DEBUG);
-        Log4jInit.setLevel("ca.nrc.cadc.net", Level.DEBUG);
-    }
 
     @Before
     @Override
