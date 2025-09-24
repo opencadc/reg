@@ -21,7 +21,7 @@
  *
  */
 
-package ca.nrc.cadc.reg.client.mock;
+package ca.nrc.cadc.reg.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -51,7 +51,6 @@ import org.mockserver.model.Header;
 import org.mockserver.model.MediaType;
 
 import ca.nrc.cadc.net.HttpGet;
-import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.xml.XmlUtil;
 
 /**

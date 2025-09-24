@@ -67,7 +67,7 @@
 ************************************************************************
 */
 
-package ca.nrc.cadc.reg.client.mock;
+package ca.nrc.cadc.reg.client;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -87,17 +87,16 @@ import org.mockserver.verify.VerificationTimes;
 import ca.nrc.cadc.net.ResourceNotFoundException;
 import ca.nrc.cadc.reg.Capabilities;
 import ca.nrc.cadc.reg.Capability;
-import ca.nrc.cadc.reg.client.RegistryClient;
 
 /**
  * A set of Junit tests that use a MockServer to test a how the RegistryClient handles dropped connections. 
  * See https://www.mock-server.com/
  * 
  */
-public class DroppedConnectionTests
+public class MockServerDroppedConnectionTests
 extends MockServerTestBase
     {
-    private static final Logger log = Logger.getLogger(DroppedConnectionTests.class);
+    private static final Logger log = Logger.getLogger(MockServerDroppedConnectionTests.class);
     
     @Before
     @Override
