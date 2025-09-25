@@ -75,7 +75,6 @@ import static org.mockserver.model.HttpResponse.response;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jdom2.input.JDOMParseException;
@@ -85,7 +84,6 @@ import org.mockserver.model.ClearType;
 import org.mockserver.verify.VerificationTimes;
 
 import ca.nrc.cadc.reg.Capabilities;
-import ca.nrc.cadc.reg.Capability;
 
 /**
  * A set of Junit tests that use a MockServer to test a how the RegistryClient handles an invalid XML capabilities response. 
@@ -165,7 +163,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -231,7 +228,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -304,7 +300,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -387,7 +382,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -477,7 +471,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -560,7 +553,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );

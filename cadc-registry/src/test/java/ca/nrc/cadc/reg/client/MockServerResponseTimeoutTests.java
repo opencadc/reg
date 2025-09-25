@@ -69,6 +69,7 @@
 
 package ca.nrc.cadc.reg.client;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
@@ -190,7 +191,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not reach this point"
                 );
@@ -227,7 +227,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not reach this point" 
                 );
@@ -283,9 +282,8 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not reach this point" 
                 );
         }
         catch (ResourceNotFoundException ouch) {
@@ -334,9 +332,8 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
+            fail(
+                "Should not reach this point" 
                 );
         }
         catch (ResourceNotFoundException ouch) {
@@ -403,6 +400,7 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
+            assertNotNull(capabilities);
             List<Capability> list = capabilities.getCapabilities();
             assertTrue(
                 list.size() == 2
@@ -459,6 +457,7 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
+            assertNotNull(capabilities);
             List<Capability> list = capabilities.getCapabilities();
             assertTrue(
                 list.size() == 2

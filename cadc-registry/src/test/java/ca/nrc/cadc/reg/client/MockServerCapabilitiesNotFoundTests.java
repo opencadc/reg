@@ -75,7 +75,6 @@ import static org.mockserver.model.HttpResponse.response;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
 
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
@@ -86,7 +85,6 @@ import org.mockserver.verify.VerificationTimes;
 
 import ca.nrc.cadc.net.ResourceNotFoundException;
 import ca.nrc.cadc.reg.Capabilities;
-import ca.nrc.cadc.reg.Capability;
 
 /**
  * A set of Junit tests that use a MockServer to test a how the RegistryClient handles a missing (404) capabilities response. 
@@ -184,7 +182,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -251,7 +248,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -325,7 +321,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -419,7 +414,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -498,7 +492,7 @@ extends MockServerTestBase
         throws Exception {
 
         //
-        // A single registry pointing to the missing capabilities.
+        // One bad registry and two good registries.
         RegistryClient registryClient = buildRegistryClient(
             "http://testhost-001:1080/missing-capabilities-001",
             "http://testhost-002:1080/good-registry-002",
@@ -511,7 +505,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
@@ -605,7 +598,6 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            List<Capability> list = capabilities.getCapabilities();
             fail(
                 "Should not have reached this point"
                 );
