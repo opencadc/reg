@@ -162,7 +162,7 @@ public class RegistryClient {
      * @param configFile The configuration file to use.
      * 
      */
-    public RegistryClient(final File configFile) {
+    protected RegistryClient(final File configFile) {
         this(new PropertiesReader(configFile));
     }
 
