@@ -33,13 +33,13 @@ import static org.mockserver.model.HttpResponse.response;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
@@ -51,6 +51,8 @@ import org.mockserver.model.Header;
 import org.mockserver.model.MediaType;
 
 import ca.nrc.cadc.net.HttpGet;
+import ca.nrc.cadc.util.FileUtil;
+import ca.nrc.cadc.util.StringUtil;
 import ca.nrc.cadc.xml.XmlUtil;
 
 /**
@@ -143,10 +145,14 @@ public class MockServerTestBase
                             )
                         )
                     .withBody(
-                        IOUtils.toByteArray(
-                            getClass().getClassLoader().getResourceAsStream(
-                                "good-capabilities.xml"
-                                )
+                        StringUtil.readFromInputStream(
+                            new FileInputStream(
+                                FileUtil.getFileFromResource(
+                                    "good-capabilities.xml",
+                                    MockServerTestBase.class
+                                    )
+                                ),
+                            "UTF-8"
                             )
                         )
             );
@@ -168,10 +174,14 @@ public class MockServerTestBase
                             )
                         )
                     .withBody(
-                        IOUtils.toByteArray(
-                            getClass().getClassLoader().getResourceAsStream(
-                                "bad-capabilities.xml"
-                                )
+                        StringUtil.readFromInputStream(
+                            new FileInputStream(
+                                FileUtil.getFileFromResource(
+                                    "bad-capabilities.xml",
+                                    MockServerTestBase.class
+                                    )
+                                ),
+                            "UTF-8"
                             )
                         )
             );
@@ -195,11 +205,15 @@ public class MockServerTestBase
                             )
                         )
                     .withBody(
-                        IOUtils.toByteArray(
-                                getClass().getClassLoader().getResourceAsStream(
-                                    "good-availability.xml"
+                        StringUtil.readFromInputStream(
+                            new FileInputStream(
+                                FileUtil.getFileFromResource(
+                                    "good-availability.xml",
+                                    MockServerTestBase.class
                                     )
-                                )
+                                ),
+                            "UTF-8"
+                            )
                         )
             );
     }
@@ -261,7 +275,7 @@ public class MockServerTestBase
             ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
     
             Document document = XmlUtil.buildDocument(
-                    inputStream,
+                inputStream,
                 null
                 );
             assertEquals(
