@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2022.                            (c) 2022.
+*  (c) 2025.                            (c) 2025.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -119,38 +119,26 @@ extends MockServerTestBase
         //
         // The registry client should call the registry 'resource-caps' endpoint  once to get the list of 'capabilities' endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(1)
         );        
 
         //
         // The registry client should call the 'good-capabilities endpoint once to get the service capabilities.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-capabilities"),
+            VerificationTimes.exactly(1)
             );        
         //
         // The JUnit test should call the 'good-availability' endpoint once to get the service availability.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-availability"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-availability"),
+            VerificationTimes.exactly(1)
             );        
 
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
         
         //
         // Check the service availability again.
@@ -162,31 +150,22 @@ extends MockServerTestBase
         //
         // The registry client should have used the cached version of 'resource-caps' response and should not not have called the 'resource-caps' endpoint again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         //
         // The registry client should have used the cached version of 'good-capabilities' response and should not not have called the 'good-capabilities' endpoint again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-service/good-capabilities"),
+            VerificationTimes.exactly(0)
             );        
         
         //
         // The JUnit test should call the 'good-availability' endpoint once to get the service availability.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-availability"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-availability"),
+            VerificationTimes.exactly(1)
             );        
     }         
 
@@ -212,56 +191,38 @@ extends MockServerTestBase
         //
         // The registry client should call the first registry 'resource-caps' endpoint  once to get the list of 'capabilities' endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(1)
         );        
 
         //
         // The registry client should not need to call the other registries..
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
         
         //
         // The registry client should call the 'good-capabilities endpoint once to get the service capabilities.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-capabilities"),
+            VerificationTimes.exactly(1)
             );        
         //
         // The JUnit test should call the 'good-availability' endpoint once to get the service availability.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-availability"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-availability"),
+            VerificationTimes.exactly(1)
             );        
 
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
         
         //
         // Check the service availability again.
@@ -273,39 +234,27 @@ extends MockServerTestBase
         //
         // The registry client should have used the cached version of 'resource-caps' response and should not not have called the 'resource-caps' endpoint again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         //
         // The registry client should not need to call the other registries..
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
 
         //
         // The JUnit test should call the 'good-availability' endpoint once to get the service availability.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-availability"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-availability"),
+            VerificationTimes.exactly(1)
             );        
     }         
 }

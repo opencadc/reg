@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2022.                            (c) 2022.
+*  (c) 2025.                            (c) 2025.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -127,40 +127,26 @@ extends MockServerTestBase
                 );
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should call the 'resource-caps' endpoint once to get the list of capabilities endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(1)
         );        
 
         //
         // The registry client should call the 'good-capabilities' endpoint once to get the service capabilities.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-capabilities"),
+            VerificationTimes.exactly(1)
             );        
 
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
         
         //
         // Get the good service capabilities again.
@@ -173,32 +159,21 @@ extends MockServerTestBase
                 );
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have a cached version of the capabilities and should not not have called the 'resource-caps' endpoint again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         //
         // The registry client should have a cached version of good service capabilities and should not not have called the 'good-capabilities' endpoint again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-service/good-capabilities"),
+            VerificationTimes.exactly(0)
             );        
     }         
     
@@ -225,58 +200,38 @@ extends MockServerTestBase
                 );
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should call the 'resource-caps' endpoint once to get the list of capabilities endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(1)
         );        
 
         //
         // The registry client should not have called the other registries.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
 
         
         //
         // The registry client should call the 'good-capabilities' endpoint once to get the service capabilities.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/good-capabilities"),
+            VerificationTimes.exactly(1)
             );        
 
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
         
         //
         // Get the good service capabilities again.
@@ -289,49 +244,32 @@ extends MockServerTestBase
                 );
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have a cached version of the capabilities and should not not have called the 'resource-caps' endpoint again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-001/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         //
         // The registry client should not have called the other registries.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
         
         //
         // The registry client should have a cached version of good service capabilities and should not not have called the 'good-capabilities' endpoint again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-service/good-capabilities"),
+            VerificationTimes.exactly(0)
             );        
     }         
 }

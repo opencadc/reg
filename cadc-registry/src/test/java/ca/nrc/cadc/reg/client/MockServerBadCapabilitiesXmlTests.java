@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2022.                            (c) 2022.
+*  (c) 2025.                            (c) 2025.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -76,6 +76,7 @@ import static org.mockserver.model.HttpResponse.response;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.http.HttpStatus;
 import org.apache.log4j.Logger;
 import org.jdom2.input.JDOMParseException;
 import org.junit.Before;
@@ -105,45 +106,27 @@ extends MockServerTestBase
         //
         // Setup the missing capabilities responses.
         mockServer.when(
-            request()
-                .withPath(
-                    "/bad-capabilities-001/resource-caps"
-                    )
-                )
+            request().withPath("/bad-capabilities-001/resource-caps"))
             .respond(
                 response()
-                    .withStatusCode(200)
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities"
-                        )
+                    .withStatusCode(HttpStatus.SC_OK)
+                    .withBody("ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities")
             );
 
         mockServer.when(
-                request()
-                    .withPath(
-                        "/bad-capabilities-002/resource-caps"
-                        )
-                    )
-                .respond(
-                    response()
-                        .withStatusCode(200)
-                        .withBody(
-                            "ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities"
-                            )
+            request().withPath("/bad-capabilities-002/resource-caps"))
+            .respond(
+                response()
+                    .withStatusCode(HttpStatus.SC_OK)
+                    .withBody("ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities")
             );
 
         mockServer.when(
-            request()
-                .withPath(
-                    "/bad-capabilities-003/resource-caps"
-                    )
-                )
+            request().withPath("/bad-capabilities-003/resource-caps"))
             .respond(
                 response()
-                    .withStatusCode(200)
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities"
-                        )
+                    .withStatusCode(HttpStatus.SC_OK)
+                    .withBody("ivo://good.authority/good-service = http://localhost:1080/good-service/bad-capabilities")
             );
     }
     
@@ -163,64 +146,38 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (RuntimeException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            if (ouch.getCause() instanceof JDOMParseException)
-                {
-                log.debug(
-                    "Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                }
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
+            if (ouch.getCause() instanceof JDOMParseException) {
+                log.debug("Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
+            }
             else {
-                log.warn(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                fail(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                );
+                fail("Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
             }
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have called the '/bad-capabilities-001/resource-caps' endpoint once to get the list of capabilities endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
-        );        
+            request().withPath("/bad-capabilities-001/resource-caps"),
+            VerificationTimes.exactly(1)
+            );        
 
         //
         // The registry client should have called the '/good-service/bad-capabilities' endpoint once to try to get the capabilities XML.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/bad-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/bad-capabilities"),
+            VerificationTimes.exactly(1)
             );        
  
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
         
         //
         // Try to get the service capabilities.
@@ -228,57 +185,33 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (RuntimeException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            if (ouch.getCause() instanceof JDOMParseException)
-                {
-                log.debug(
-                    "Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                }
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
+            if (ouch.getCause() instanceof JDOMParseException) {
+                log.debug("Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
+            }
             else {
-                log.warn(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                fail(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                );
-            
+                fail("Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
             }
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have used the cached version of '/bad-capabilities-001/resource-caps' response and should not need to call the registry again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
+            request().withPath("/bad-capabilities-001/resource-caps"),
+            VerificationTimes.exactly(0)
+            );        
         
         //
         // The registry client should have used the cached version of '/good-service/bad-capabilities' response and should not need to call the registry again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/bad-capabilities"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-service/bad-capabilities"),
+            VerificationTimes.exactly(0)
             );        
      }         
 
@@ -300,81 +233,49 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (RuntimeException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            if (ouch.getCause() instanceof JDOMParseException)
-                {
-                log.debug(
-                    "Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                }
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
+            if (ouch.getCause() instanceof JDOMParseException) {
+                log.debug("Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
+            }
             else {
-                log.warn(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                fail(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                );
+                fail("Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
             }
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have called the '/bad-capabilities-001/resource-caps' endpoint once to get the list of capabilities endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
-        );        
+            request().withPath("/bad-capabilities-001/resource-caps"),
+            VerificationTimes.exactly(1)
+            );        
 
         //
         // The registry client should not have needed to call the other registry endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/bad-capabilities-002/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/bad-capabilities-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
         
         //
         // The registry client should have called the '/good-service/bad-capabilities' endpoint once to try to get the capabilities XML.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/bad-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/bad-capabilities"),
+            VerificationTimes.exactly(1)
             );        
  
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
         
         //
         // Try to get the service capabilities.
@@ -382,74 +283,44 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (RuntimeException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            if (ouch.getCause() instanceof JDOMParseException)
-                {
-                log.debug(
-                    "Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                }
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
+            if (ouch.getCause() instanceof JDOMParseException) {
+                log.debug("Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
+            }
             else {
-                log.warn(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                fail(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                );
-            
+                fail("Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
             }
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have used the cached version of '/bad-capabilities-001/resource-caps' response and should not need to call the registry again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
+            request().withPath("/bad-capabilities-001/resource-caps"),
+            VerificationTimes.exactly(0)
+            );        
 
         //
         // The registry client should not have needed to call the other registry endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
+            request().withPath("/bad-capabilities-002/resource-caps"),
+            VerificationTimes.exactly(0)
+            );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/bad-capabilities-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
         
         //
         // The registry client should have used the cached version of '/good-service/bad-capabilities' response and should not need to call the registry again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/bad-capabilities"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-service/bad-capabilities"),
+            VerificationTimes.exactly(0)
             );        
     }         
 
@@ -471,81 +342,50 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (RuntimeException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
             if (ouch.getCause() instanceof JDOMParseException)
                 {
-                log.debug(
-                    "Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
+                log.debug("Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
                 }
             else {
-                log.warn(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                fail(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                );
+                fail("Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
             }
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have called the '/bad-capabilities-001/resource-caps' endpoint once to get the list of capabilities endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
-        );        
+            request().withPath("/bad-capabilities-001/resource-caps"),
+            VerificationTimes.exactly(1)
+            );        
 
         //
         // The registry client should not have needed to call the other registry endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(0)
+            );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
         
         //
         // The registry client should have called the '/good-service/bad-capabilities' endpoint once to try to get the capabilities XML.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/bad-capabilities"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-service/bad-capabilities"),
+            VerificationTimes.exactly(1)
             );        
  
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
         
         //
         // Try to get the service capabilities.
@@ -553,74 +393,46 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (RuntimeException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
             if (ouch.getCause() instanceof JDOMParseException)
                 {
-                log.debug(
-                    "Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
+                log.debug("Expected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
                 }
             else {
-                log.warn(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                    );
-                fail(
-                    "Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]"
-                );
+                fail("Unexpected cause [" + ouch.getCause().getClass().getSimpleName() + "][" + ouch.getCause().getMessage() + "]");
             
             }
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // The registry client should have used the cached version of '/bad-capabilities-001/resource-caps' response and should not need to call the registry again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/bad-capabilities-001/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
+            request().withPath("/bad-capabilities-001/resource-caps"),
+            VerificationTimes.exactly(0)
+            );        
 
         //
         // The registry client should not have needed to call the other registry endpoints.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
-        );        
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(0)
+            );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
             );        
         
         //
         // The registry client should have used the cached version of '/good-service/bad-capabilities' response and should not need to call the registry again.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-service/bad-capabilities"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-service/bad-capabilities"),
+            VerificationTimes.exactly(0)
             );        
     }         
 }

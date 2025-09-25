@@ -95,54 +95,30 @@ public class MockServerTestBase
         //
         // Setup the good 'resource-caps' responses.
         mockServer.when(
-            request()
-                .withPath(
-                    "/good-registry-001/resource-caps"
-                    )
-                )
+            request().withPath("/good-registry-001/resource-caps"))
             .respond(
                 response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities"
-                        )
+                    .withStatusCode(HttpStatus.SC_OK)
+                    .withBody("ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities")
             );
 
         mockServer.when(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    )
-                )
+            request().withPath("/good-registry-002/resource-caps"))
             .respond(
                 response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
-                    .withBody(
-                        "ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities"
-                        )
+                    .withStatusCode(HttpStatus.SC_OK)
+                    .withBody("ivo://good.authority/good-service = http://localhost:1080/good-service/good-capabilities")
             );
         
         //
         // Setup the good and bad capabilities responses.
         mockServer.when(
-            request()
-                .withPath(
-                    "/good-service/good-capabilities"
-                    )
-                )
+            request().withPath("/good-service/good-capabilities"))
             .respond(
                 response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
+                    .withStatusCode(HttpStatus.SC_OK)
                     .withHeader(
-                        new Header(
-                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
-                            )
+                        new Header(HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString())
                         )
                     .withBody(
                         StringUtil.readFromInputStream(
@@ -158,21 +134,12 @@ public class MockServerTestBase
             );
         
         mockServer.when(
-            request()
-                .withPath(
-                    "/good-service/bad-capabilities"
-                    )
-                )
+            request().withPath("/good-service/bad-capabilities"))
             .respond(
                 response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
+                    .withStatusCode(HttpStatus.SC_OK)
                     .withHeader(
-                        new Header(
-                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
-                            )
-                        )
+                        new Header(HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()))
                     .withBody(
                         StringUtil.readFromInputStream(
                             new FileInputStream(
@@ -189,20 +156,12 @@ public class MockServerTestBase
         //
         // Setup the 'good-availability' response.
         mockServer.when(
-            request()
-                .withPath(
-                    "/good-service/good-availability"
-                    )
-                )
+            request().withPath("/good-service/good-availability"))
             .respond(
                 response()
-                    .withStatusCode(
-                        HttpStatus.SC_OK
-                        )
+                    .withStatusCode(HttpStatus.SC_OK)
                     .withHeader(
-                        new Header(
-                            HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString()
-                            )
+                        new Header(HttpHeaders.CONTENT_TYPE, MediaType.XML_UTF_8.toString())
                         )
                     .withBody(
                         StringUtil.readFromInputStream(
@@ -232,8 +191,7 @@ public class MockServerTestBase
         PrintWriter printWriter = new PrintWriter(
             new FileWriter(configFile)
             );
-        for (String endpoint : endpoints)
-            {
+        for (String endpoint : endpoints) {
             printWriter.println(
                 "ca.nrc.cadc.reg.client.RegistryClient.baseURL = " + endpoint 
                 );
@@ -263,9 +221,7 @@ public class MockServerTestBase
                 new URI("ivo://ivoa.net/std/VOSI#availability"),
                 null
                 );
-            assertNotNull(
-                endpoint
-                );
+            assertNotNull(endpoint);
     
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     
@@ -274,10 +230,7 @@ public class MockServerTestBase
             
             ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
     
-            Document document = XmlUtil.buildDocument(
-                inputStream,
-                null
-                );
+            Document document = XmlUtil.buildDocument(inputStream,null);
             assertEquals(
                 "availability",
                 document.getRootElement().getName()
@@ -288,12 +241,7 @@ public class MockServerTestBase
                 );
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
     }
 }

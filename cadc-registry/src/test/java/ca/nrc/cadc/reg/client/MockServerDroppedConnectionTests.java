@@ -107,30 +107,18 @@ extends MockServerTestBase
         super.setupMockServer();
         
         mockServer.when(
-            request()
-                .withPath("/drop-connection-001/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
+            request().withPath("/drop-connection-001/resource-caps"))
+            .error(error().withDropConnection(true)
             );
 
         mockServer.when(
-            request()
-                .withPath("/drop-connection-002/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
+            request().withPath("/drop-connection-002/resource-caps"))
+            .error(error().withDropConnection(true)
             );
 
         mockServer.when(
-            request()
-                .withPath("/drop-connection-003/resource-caps")
-                )
-            .error(
-                error()
-                    .withDropConnection(true)
+            request().withPath("/drop-connection-003/resource-caps"))
+            .error(error().withDropConnection(true)
             );
     }
     
@@ -150,22 +138,13 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
@@ -173,19 +152,13 @@ extends MockServerTestBase
         // and a second time to try to get the content without using the cache.
         // In reality MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-001/resource-caps"),
+            VerificationTimes.atLeast(2)
         );        
 
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
     
         //
         // Try to get the service capabilities again.
@@ -193,22 +166,13 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/unknown-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
@@ -216,11 +180,8 @@ extends MockServerTestBase
         // and a second time to try to get the content without using the cache.
         // In reality MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-001/resource-caps"),
+            VerificationTimes.atLeast(2)
         );        
     }         
 
@@ -242,22 +203,13 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
@@ -265,33 +217,21 @@ extends MockServerTestBase
         // and a second time to try to get the content without using the cache.
         // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-001/resource-caps"),
+            VerificationTimes.atLeast(2)
         );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-002/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-002/resource-caps"),
+            VerificationTimes.atLeast(2)
             );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-003/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-003/resource-caps"),
+            VerificationTimes.atLeast(2)
             );        
 
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
     
         //
         // Try to get the service capabilities again.
@@ -299,22 +239,13 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/unknown-service")
                 );
-            fail(
-                "Should not have reached this point"
-                );
+            fail("Should not have reached this point");
         }
         catch (ResourceNotFoundException ouch) {
-            log.debug(
-                "Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
+            log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
@@ -322,25 +253,16 @@ extends MockServerTestBase
         // and a second time to try to get the content without using the cache.
         // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-001/resource-caps"),
+            VerificationTimes.atLeast(2)
         );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-002/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-002/resource-caps"),
+            VerificationTimes.atLeast(2)
             );        
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-003/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-003/resource-caps"),
+            VerificationTimes.atLeast(2)
             );        
     }         
     
@@ -369,51 +291,34 @@ extends MockServerTestBase
                 );
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // We would expect the registry client to call the bad registry 'resource-caps' endpoint at least twice, once to try to populate the cache, and again to try to get the content without using the cache.
         // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-001/resource-caps"),
+            VerificationTimes.atLeast(2)
         );        
 
         //
         // The registry client should call the first good registry 'resource-caps' endpoint once to get the result and populate the cache.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(1)
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(1)
         );        
 
         //
         // The registry client should not need to call the third registry.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         //
         // Clear the MockServer request logs.
-        mockServer.clear(
-            request(),
-            ClearType.LOG
-            );
+        mockServer.clear(request(),ClearType.LOG);
     
         //
         // Try to get the service capabilities again.
@@ -428,43 +333,29 @@ extends MockServerTestBase
                 );
         }
         catch (Exception ouch) {
-            log.warn(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-                );
-            fail(
-                "Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]"
-            );
+            fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
         }
 
         //
         // We would expect the registry client to call the bad registry 'resource-caps' endpoint at least twice, once to try to populate the cache, and again to try to get the content without using the cache.
         // In fact MockServer will log multiple requests because the HttpGet library retries the request multiple times.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/drop-connection-001/resource-caps"
-                    ),
-                VerificationTimes.atLeast(2)
+            request().withPath("/drop-connection-001/resource-caps"),
+            VerificationTimes.atLeast(2)
         );        
 
         //
         // The registry client should find the cached result from the first good registry, so it should not need to call the 'resource-caps' endpoint.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-002/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-002/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
 
         //
         // The registry client should not need to call the third registry.
         mockServer.verify(
-            request()
-                .withPath(
-                    "/good-registry-003/resource-caps"
-                    ),
-                VerificationTimes.exactly(0)
+            request().withPath("/good-registry-003/resource-caps"),
+            VerificationTimes.exactly(0)
         );        
     }         
 }
