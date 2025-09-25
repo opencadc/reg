@@ -98,6 +98,7 @@ public class LocalAuthority {
     public LocalAuthority() {
         this(RegistryClient.DEFAULT_CONFIG_FILE_NAME);
     }
+    
     public LocalAuthority(final String configFileName) {
         PropertiesReader propReader = new PropertiesReader(configFileName);
         MultiValuedProperties mvp = propReader.getAllProperties();

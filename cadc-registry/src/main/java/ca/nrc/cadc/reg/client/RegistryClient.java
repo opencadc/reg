@@ -174,36 +174,31 @@ public class RegistryClient {
     private RegistryClient(final PropertiesReader propReader) {
         MultiValuedProperties mvp = propReader.getAllProperties();
 
-        for (String str : mvp.getProperty(CONFIG_BASE_URL_KEY))
-            {
+        for (String str : mvp.getProperty(CONFIG_BASE_URL_KEY)) {
             try {
                 if (str.endsWith("/")) {
-                    str= str.substring(0, str.length() - 1);
-                    }
+                    str = str.substring(0, str.length() - 1);
+                }
                 this.regBaseURLs.add(new URL(str));
-                }
-            catch (MalformedURLException ex)
-                {
+            } catch (MalformedURLException ex) {
                 throw new InvalidConfigException(CONFIG_BASE_URL_KEY  + " = " + str + " is not a valid URL", ex);
-                }
             }
+        }
 
-        if (this.regBaseURLs.isEmpty())
-            {
+        if (this.regBaseURLs.isEmpty()) {
             try {
                 String hostP = System.getProperty(HOST_PROPERTY_KEY);
                 log.debug("     host: " + hostP);
                 if (hostP != null) {
                     this.regBaseURLs.add(new URL("https://" + hostP + "/reg"));
                     this.isRegOverride = true;
-                    }
                 }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 log.error("Error transforming resource-caps URL", e);
                 throw new RuntimeException(e);
-                }
             }
         }
+    }
 
     /**
      * HTTP connection timeout in milliseconds (default: 30000).
@@ -309,15 +304,13 @@ public class RegistryClient {
                     return new URL(
                         values.get(0)
                     );
-                }
-                catch (MalformedURLException e) {
+                } catch (MalformedURLException e) {
                     throw new RuntimeException(
                         "Parsing accessURL [" + values.get(0) + "] from registry [" + regBaseURL + "] threw MalformedURLException [" + e.getMessage() + "]",
                         e
                     );
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.warn("Exception querying [" + regBaseURL + "] for [" + queryName.getValue() + "] message [" + e.getMessage() + "]");
                 exceptions.add(e);
                 continue;
@@ -497,21 +490,22 @@ public class RegistryClient {
         if (path.toFile().exists()) {
             Files.walkFileTree(
                 path,
-                new SimpleFileVisitor<Path>(){
+                new SimpleFileVisitor<Path>() {
+
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                         throws IOException {
                         Files.delete(file);
                         return FileVisitResult.CONTINUE;
                     }
+
                     @Override
                     public FileVisitResult postVisitDirectory(Path dir, IOException e)
                         throws IOException {
                         if (e == null) {
                             Files.delete(dir);
                             return FileVisitResult.CONTINUE;
-                        }
-                        else {
+                        } else {
                             throw e;
                         }
                     }
