@@ -15,13 +15,13 @@ sourceCompatibility = 11
 
 group = 'org.opencadc'
 
-version = '1.8.1'
+version = '1.9.0'
 
 description = 'OpenCADC Registry client library'
 def git_url = 'https://github.com/opencadc/reg'
 
 dependencies {
-    implementation 'org.opencadc:cadc-util:[1.6,)'
+    implementation 'org.opencadc:cadc-util:[1.12,)'
 
     testImplementation 'junit:junit:[4.12,)'
     testImplementation 'org.opencadc:cadc-quality:[1.0,)'
