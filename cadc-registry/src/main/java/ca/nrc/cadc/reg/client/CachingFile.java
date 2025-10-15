@@ -255,7 +255,7 @@ public class CachingFile {
 
             return readCache();
         } catch (Exception e) {
-            log.warn("Failed to cache capabilities to file: " + localCache, e);
+            log.warn("Failed to cache capabilities to file : [" + localCache + "][" + e.getMessage() + "]");
             // for any error return the cached copy if available, otherwise return
             // the capabilities from source
             if (cacheExists) {
