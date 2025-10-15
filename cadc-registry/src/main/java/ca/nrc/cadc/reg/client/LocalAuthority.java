@@ -95,11 +95,16 @@ public class LocalAuthority {
     
     private final Map<URI, Set<URI>> authorityMap = new TreeMap<>();
 
+    /**
+     * Public constructor using DEFAULT_CONFIG_FILE_NAME from RegistryClient.
+     * 
+     */
     public LocalAuthority() {
         this(RegistryClient.DEFAULT_CONFIG_FILE_NAME);
     }
     
-    public LocalAuthority(final String configFileName) {
+    // JUnit tests use this constructor
+    LocalAuthority(final String configFileName) {
         PropertiesReader propReader = new PropertiesReader(configFileName);
         MultiValuedProperties mvp = propReader.getAllProperties();
         

@@ -149,28 +149,18 @@ public class RegistryClient {
     private int readTimeout = 60000;       // millis
 
     /**
-     * Default constructor, using the DEFAULT_CONFIG_FILE_NAME. 
+     * Default constructor, using DEFAULT_CONFIG_FILE_NAME. 
      * 
      */
     public RegistryClient() {
         this(new PropertiesReader(DEFAULT_CONFIG_FILE_NAME));
     }
 
-    /*
-     * Parameterised constructor to make testing easier.
-     * Needs to be public because the mock tests are in a separate package.
-     * @param configFile The configuration file to use.
-     * 
-     */
-    protected RegistryClient(final File configFile) {
+    // Parameterised constructor used by JUnit tests.
+    RegistryClient(final File configFile) {
         this(new PropertiesReader(configFile));
     }
 
-    /*
-     * Private constructor called by the others.
-     * @param propReader A PropertiesReader for the configuration file.
-     * 
-     */
     private RegistryClient(final PropertiesReader propReader) {
         MultiValuedProperties mvp = propReader.getAllProperties();
 

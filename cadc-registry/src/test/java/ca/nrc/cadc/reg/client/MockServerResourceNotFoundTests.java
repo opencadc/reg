@@ -69,8 +69,8 @@
 
 package ca.nrc.cadc.reg.client;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -290,11 +290,9 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            assertNotNull(capabilities);
+            assertNotNull("Null capabilities", capabilities);
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
+            assertEquals("Wrong number of capabilities", 2, list.size());
         }
         catch (Exception ouch) {
             fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
@@ -332,11 +330,9 @@ extends MockServerTestBase
             Capabilities capabilities = registryClient.getCapabilities(
                 new URI("ivo://good.authority/good-service")
                 );
-            assertNotNull(capabilities);
+            assertNotNull("Null capabilities", capabilities);
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
+            assertEquals("Wrong number of capabilities", 2, list.size());
         }
         catch (ResourceNotFoundException ouch) {
             log.debug("Expected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");

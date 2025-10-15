@@ -221,7 +221,7 @@ public class MockServerTestBase
                 new URI("ivo://ivoa.net/std/VOSI#availability"),
                 null
                 );
-            assertNotNull(endpoint);
+            assertNotNull("Null service endpoint",endpoint);
     
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     
@@ -232,10 +232,12 @@ public class MockServerTestBase
     
             Document document = XmlUtil.buildDocument(inputStream,null);
             assertEquals(
+                "Wrong element name",
                 "availability",
                 document.getRootElement().getName()
                 );
             assertEquals(
+                "Wrong namespace URI",
                 "http://www.ivoa.net/xml/VOSIAvailability/v1.0",
                 document.getRootElement().getNamespace().getURI()
                 );

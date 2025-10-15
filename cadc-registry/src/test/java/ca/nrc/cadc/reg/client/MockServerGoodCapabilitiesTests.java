@@ -69,8 +69,8 @@
 
 package ca.nrc.cadc.reg.client;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
 
@@ -120,11 +120,9 @@ extends MockServerTestBase
         // Get the good service capabilities.
         try {
             Capabilities capabilities = registryClient.getCapabilities(new URI("ivo://good.authority/good-service"));
-            assertNotNull(capabilities);
+            assertNotNull("Null capabilities", capabilities);
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
+            assertEquals("Wrong number of capabilities", 2, list.size());
         }
         catch (Exception ouch) {
             fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
@@ -152,11 +150,9 @@ extends MockServerTestBase
         // Get the good service capabilities again.
         try {
             Capabilities capabilities = registryClient.getCapabilities(new URI("ivo://good.authority/good-service"));
-            assertNotNull(capabilities);
+            assertNotNull("Null capabilities", capabilities);
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
+            assertEquals("Wrong number of capabilities", 2, list.size());
         }
         catch (Exception ouch) {
             fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
@@ -184,20 +180,18 @@ extends MockServerTestBase
         //
         // Three good registries.
         RegistryClient registryClient = buildRegistryClient(
-                "http://testhost-001:1080/good-registry-001",
-                "http://testhost-002:1080/good-registry-001",
-                "http://testhost-003:1080/good-registry-001"
+            "http://testhost-001:1080/good-registry-001",
+            "http://testhost-002:1080/good-registry-001",
+            "http://testhost-003:1080/good-registry-001"
             );
         
         //
         // Get the good service capabilities.
         try {
             Capabilities capabilities = registryClient.getCapabilities(new URI("ivo://good.authority/good-service"));
-            assertNotNull(capabilities);
+            assertNotNull("Null capabilities", capabilities);
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
+            assertEquals("Wrong number of capabilities", 2, list.size());
         }
         catch (Exception ouch) {
             fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
@@ -237,11 +231,9 @@ extends MockServerTestBase
         // Get the good service capabilities again.
         try {
             Capabilities capabilities = registryClient.getCapabilities(new URI("ivo://good.authority/good-service"));
-            assertNotNull(capabilities);
+            assertNotNull("Null capabilities", capabilities);
             List<Capability> list = capabilities.getCapabilities();
-            assertTrue(
-                list.size() == 2
-                );
+            assertEquals("Wrong number of capabilities", 2, list.size());
         }
         catch (Exception ouch) {
             fail("Unexpected exception [" + ouch.getClass().getSimpleName() + "][" + ouch.getMessage() + "]");
