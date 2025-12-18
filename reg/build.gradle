@@ -23,7 +23,7 @@ war {
 dependencies {
     implementation 'javax.servlet:javax.servlet-api:3.1.0'
     implementation 'org.opencadc:cadc-util:[1.11.2,)'
-    implementation 'org.opencadc:cadc-rest:[1.3.20,2.0)'
+    implementation 'org.opencadc:cadc-rest:[1.4.9,2.0)'
     implementation 'org.opencadc:cadc-vosi:[1.4.6,2.0)'
     implementation 'org.opencadc:cadc-registry:[1.7.7,2.0)'
     
