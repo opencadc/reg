@@ -112,7 +112,7 @@ public class CheckCertificate implements CheckResource {
         } catch (Throwable t) {
             log.debug("test failed: " + cert);
             // filename and reason detail are in throwable message
-            throw new CheckException("cert check failed (not found): " + t.getMessage());
+            throw new CheckException("cert check failed (not found): " + t.getMessage(), t);
         }
 
         log.debug("check validity - cert: " + cert.getAbsolutePath() + " " + cert);
