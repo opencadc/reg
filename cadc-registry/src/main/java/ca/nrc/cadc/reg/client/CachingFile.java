@@ -71,6 +71,7 @@ package ca.nrc.cadc.reg.client;
 
 import ca.nrc.cadc.net.HttpGet;
 import ca.nrc.cadc.net.HttpTransfer;
+import ca.nrc.cadc.net.TransientException;
 import ca.nrc.cadc.profiler.Profiler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -219,7 +220,7 @@ public class CachingFile {
             }
         }
 
-        // read the capabilities from the web service
+        // read and cache the remote source
         try {
             // create a temp file in the directory
             File tmpFile = File.createTempFile(UUID.randomUUID().toString(), null, cacheDir);
@@ -228,14 +229,22 @@ public class CachingFile {
             FileOutputStream fos = new FileOutputStream(tmpFile);
             try {
                 loadRemoteContent(fos);
-            } catch (IOException e) {
-                log.warn("Deleting tmp cache file because download failed.");
+            } catch (IOException | TransientException e) {
+                log.warn("Failed to cache " + remoteSource + " to " + cacheDir.getAbsolutePath() + " cause: " + e.getMessage());
+                
+                log.debug("Deleting tmp cache file because download failed.");
                 tmpFile.delete();
+                
+                if (cacheExists) {
+                    log.warn("Returning expired cached capabilities.");
+                    return readCache();
+                }
+                
                 throw e;
             } finally {
                 try {
                     fos.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     log.warn("Failed to close output stream", e);
                 }
             }
@@ -254,10 +263,9 @@ public class CachingFile {
             }
 
             return readCache();
-        } catch (Exception e) {
-            log.warn("Failed to cache capabilities to file : [" + localCache + "][" + e.getMessage() + "]");
-            // for any error return the cached copy if available, otherwise return
-            // the capabilities from source
+        
+        } catch (IOException e) {
+            // failure: cache in local filesystem
             if (cacheExists) {
                 log.warn("Returning expired cached capabilities.");
                 return readCache();
@@ -308,9 +316,10 @@ public class CachingFile {
         return out.toString("UTF-8");
     }
 
-    private void loadRemoteContent(OutputStream dest) throws IOException {
+    private void loadRemoteContent(OutputStream dest) throws IOException, TransientException {
         Profiler profiler = new Profiler(CachingFile.class);
         try {
+            log.debug("loadRemoteContent: " + remoteSource + " " + connectionTimeout + "/" + readTimeout);
             HttpGet download = new HttpGet(remoteSource, dest);
             download.setConnectionTimeout(connectionTimeout);
             download.setReadTimeout(readTimeout);
@@ -318,6 +327,9 @@ public class CachingFile {
 
             if (download.getThrowable() != null) {
                 log.warn("Could not get source from " + remoteSource + ": " + download.getThrowable());
+                if (download.getThrowable() instanceof TransientException) {
+                    throw (TransientException) download.getThrowable();
+                }
                 throw new IOException(download.getThrowable());
             }
         } finally {
