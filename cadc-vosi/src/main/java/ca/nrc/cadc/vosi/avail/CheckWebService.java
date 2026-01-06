@@ -70,26 +70,25 @@
 package ca.nrc.cadc.vosi.avail;
 
 import ca.nrc.cadc.net.HttpGet;
+import ca.nrc.cadc.reg.Capabilities;
+import ca.nrc.cadc.reg.Capability;
+import ca.nrc.cadc.reg.Interface;
+import ca.nrc.cadc.reg.Standards;
+import ca.nrc.cadc.reg.client.RegistryClient;
 import ca.nrc.cadc.vosi.Availability;
 import ca.nrc.cadc.vosi.VOSI;
 import ca.nrc.cadc.xml.XmlUtil;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.Namespace;
-import org.jdom2.filter.Filters;
-import org.jdom2.xpath.XPathBuilder;
-import org.jdom2.xpath.XPathExpression;
-import org.jdom2.xpath.XPathFactory;
 
 /**
  * Check the /availability resource of another web service.
@@ -101,7 +100,10 @@ public class CheckWebService implements CheckResource {
 
     private static Logger log = Logger.getLogger(CheckWebService.class);
     
-    private final URL availabilityURL;
+    private static final int TIMEOUT = 6000;
+    
+    private URI resourceID;
+    private URL availabilityURL;
     private final boolean fullCheck;
 
     /**
@@ -120,13 +122,12 @@ public class CheckWebService implements CheckResource {
     }
     
     /**
-     * Perform default check. Default is currently a full check.
+     * Perform default check. Default is currently a lightweight connectivity check.
      * 
      * @param availabilityURL the URL of availability endpoint of a service
      */
     public CheckWebService(URL availabilityURL) {
-        this(availabilityURL, false); // default to connectivity check
-        //this(availabilityURL, true); // default to full check
+        this(availabilityURL, false);
     }
     
     /**
@@ -139,34 +140,77 @@ public class CheckWebService implements CheckResource {
      * @param fullCheck true for normal check, false for detail=min connectivity check
      */
     public CheckWebService(URL availabilityURL, boolean fullCheck) {
+        this.availabilityURL = availabilityURL;
         this.fullCheck = fullCheck;
-        if (fullCheck) {
-            this.availabilityURL = availabilityURL;
-        } else {
-            try {
-                this.availabilityURL = new URL(availabilityURL.toExternalForm() + "?detail=min");
-            } catch (MalformedURLException ex) {
-                throw new RuntimeException("BUG: failed to append params to " + availabilityURL, ex);
-            }
-        }
+    }
+    
+    /**
+     * Performs a registry lookup and default check. Default is currently a lightweight 
+     * connectivity check.
+     * 
+     * @param resourceID resource identifier for registry lookup
+     */
+    public CheckWebService(URI resourceID) {
+        this(resourceID, false);
+    }
+
+    /**
+     * Perform a registry lookup and VOSI-availability check. A full check calls the remote availability 
+     * and checks the the status in the response XML, so this causes a full check of the remote service.
+     * Otherwise, this only performs a minimal check (detail=min) which normally only checks
+     * connectivity to the remote service.
+     * @param resourceID resource identifier for registry lookup
+     * @param fullCheck true for normal check, false for detail=min connectivity check
+     */
+    public CheckWebService(URI resourceID, boolean fullCheck) {
+        this.resourceID = resourceID;
+        this.fullCheck = fullCheck;
     }
 
     @Override
     public void check() throws CheckException {
+        if (resourceID != null) {
+            RegistryClient reg = new RegistryClient();
+            reg.setConnectionTimeout(TIMEOUT);
+            reg.setReadTimeout(2 * TIMEOUT);
+            URL capURL = null;
+            try {
+                capURL = reg.getAccessURL(resourceID);
+            } catch (Exception ex) {
+                throw new CheckException("registry lookup failed: " + resourceID
+                        + " cause: " + ex);
+            }
+            try {
+                Capabilities caps = reg.getCapabilities(resourceID);
+                Capability cap = caps.findCapability(Standards.VOSI_AVAILABILITY);
+                Interface iface = cap.findInterface(Standards.SECURITY_METHOD_ANON);
+                this.availabilityURL = iface.getAccessURL().getURL();
+            } catch (Exception ex) {
+                throw new CheckException("get-capabilities failed: " + resourceID
+                        + " cause: " + ex);
+            }
+        }
         if (fullCheck) {
             log.debug("fullcheck==true " + availabilityURL);
             doFullCheck();
         } else {
-            log.debug("fullcheck==false " + availabilityURL);
-            HttpGet get = new HttpGet(availabilityURL, true);
-            get.setConnectionTimeout(9000);
-            get.setReadTimeout(9000);
             long t = System.currentTimeMillis();
-            get.run();
-            if (get.getResponseCode() != 200 || get.getThrowable() != null) {
-                throw new CheckException("availability check failed: " + availabilityURL 
-                        + " code: " + get.getResponseCode()
-                        + " cause: " + get.getThrowable());
+            try {
+                log.debug("fullcheck==false " + availabilityURL);
+                URL u = new URL(availabilityURL.toExternalForm() + "?detail=min");
+                HttpGet get = new HttpGet(availabilityURL, true);
+                get.setConnectionTimeout(TIMEOUT);
+                get.setReadTimeout(2 * TIMEOUT);
+                
+                get.run();
+                if (get.getResponseCode() != 200 || get.getThrowable() != null) {
+                    throw new CheckException("availability check failed: " + availabilityURL 
+                            + " code: " + get.getResponseCode()
+                            + " cause: " + get.getThrowable());
+                }
+            } catch (MalformedURLException ex) {
+                throw new CheckException("availability check failed: " + availabilityURL
+                        + " reason: append ?detail=min caused " + ex);
             }
             long dt = System.currentTimeMillis() - t;
             log.debug("fullcheck==false dt=" + dt);
@@ -179,8 +223,8 @@ public class CheckWebService implements CheckResource {
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             HttpGet get = new HttpGet(availabilityURL, bos);
-            get.setConnectionTimeout(20000);
-            get.setReadTimeout(60000);
+            get.setConnectionTimeout(TIMEOUT);
+            get.setReadTimeout(10 * TIMEOUT); // longer to allow for more complete checks
             get.run();
             if (get.getThrowable() != null) {
                 throw new CheckException("availability check failed: " + availabilityURL 
