@@ -183,6 +183,10 @@ public class CheckWebService implements CheckResource {
             try {
                 Capabilities caps = reg.getCapabilities(resourceID);
                 Capability cap = caps.findCapability(Standards.VOSI_AVAILABILITY);
+                if (cap == null) {
+                    log.debug(resourceID + " does not provide " + Standards.VOSI_AVAILABILITY + " SKIP CHECK");
+                    return;
+                }
                 Interface iface = cap.findInterface(Standards.SECURITY_METHOD_ANON);
                 this.availabilityURL = iface.getAccessURL().getURL();
             } catch (Exception ex) {
