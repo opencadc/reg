@@ -69,7 +69,6 @@ package org.opencadc.reg.oai;
 
 import ca.nrc.cadc.date.DateUtil;
 import ca.nrc.cadc.xml.XmlUtil;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -80,13 +79,11 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
-
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.output.XMLOutputter;
-
 
 /**
  * Write a VOResource record wrapped in an OAI-PMH document.
