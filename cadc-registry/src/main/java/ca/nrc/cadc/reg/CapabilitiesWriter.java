@@ -68,7 +68,6 @@
 package ca.nrc.cadc.reg;
 
 import ca.nrc.cadc.xml.W3CConstants;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -78,7 +77,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.Document;

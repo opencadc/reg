@@ -68,18 +68,15 @@
 package org.opencadc.reg.oai;
 
 import ca.nrc.cadc.xml.XmlUtil;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
-
 
 /**
  * @author pdowler

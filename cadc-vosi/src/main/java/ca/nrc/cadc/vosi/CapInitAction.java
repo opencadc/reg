@@ -72,14 +72,11 @@ import ca.nrc.cadc.reg.CapabilitiesReader;
 import ca.nrc.cadc.rest.InitAction;
 import ca.nrc.cadc.rest.Version;
 import ca.nrc.cadc.util.StringUtil;
-
 import java.io.StringReader;
 import java.net.URL;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-
 import org.apache.log4j.Logger;
 
 /**

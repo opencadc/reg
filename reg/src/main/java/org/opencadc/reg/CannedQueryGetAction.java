@@ -72,7 +72,6 @@ import ca.nrc.cadc.log.WebServiceLogInfo;
 import ca.nrc.cadc.rest.InlineContentHandler;
 import ca.nrc.cadc.rest.RestAction;
 import ca.nrc.cadc.util.FileUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -80,9 +79,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
-
 
 /**
  * Simple servlet that performs a canned query to the registry and returns a
