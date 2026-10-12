@@ -3,7 +3,7 @@
 *******************  CANADIAN ASTRONOMY DATA CENTRE  *******************
 **************  CENTRE CANADIEN DE DONNÉES ASTRONOMIQUES  **************
 *
-*  (c) 2024.                            (c) 2024.
+*  (c) 2026.                            (c) 2026.
 *  Government of Canada                 Gouvernement du Canada
 *  National Research Council            Conseil national de recherches
 *  Ottawa, Canada, K1A 0R6              Ottawa, Canada, K1A 0R6
@@ -82,7 +82,7 @@ import java.util.Map;
  */
 public class Standards {
 
-    // standardID values
+    @Deprecated
     public static final URI CRED_DELEGATE_10 = URI.create("ivo://ivoa.net/std/CDP#delegate-1.0");
     public static final URI CRED_PROXY_10 = URI.create("ivo://ivoa.net/std/CDP#proxy-1.0");
 
@@ -92,6 +92,7 @@ public class Standards {
     public static final URI DATALINK_LINKS_10 = URI.create("ivo://ivoa.net/std/DataLink#links-1.0");
     public static final URI DATALINK_LINKS_11 = URI.create("ivo://ivoa.net/std/DataLink#links-1.1");
 
+    @Deprecated
     public static final URI GMS_GROUPS_01 = URI.create("ivo://ivoa.net/std/GMS#groups-0.1");
     
     @Deprecated
@@ -103,7 +104,6 @@ public class Standards {
     public static final URI SIA_10 = URI.create("ivo://ivoa.net/std/SIA");
     public static final URI SIA_QUERY_20 = URI.create("ivo://ivoa.net/std/SIA#query-2.0");
     public static final URI DAP_QUERY_21 = URI.create("ivo://ivoa.net/std/DAP#query-2.1");
-    //public static final URI SIA_META_2x = URI.create("ivo://ivoa.net/std/SIA#metadata-2.x");
 
     // Simple Cone Search 1.1
     public static final URI SCS_11 = URI.create("ivo://ivoa.net/std/conesearch#query-1.1");
@@ -129,6 +129,9 @@ public class Standards {
     public static final URI UMS_LOGIN_10 = URI.create("http://www.opencadc.org/std/UMS#login-1.0");
     public static final URI UMS_RESETPASS_10 = URI.create("http://www.opencadc.org/std/UMS#resetpass-1.0");
     public static final URI UMS_WHOAMI_10 = URI.create("http://www.opencadc.org/std/UMS#whoami-1.0");
+    
+    // CRUD operations for groups (to replace GMS_GROUPS_01)
+    public static final URI GMS_GROUPS_10 = URI.create("ivo://opencadc.org/std/GMS#groups-1.0");
 
     // SRCNet prototypes
     public static final URI POSIX_GROUPMAP = URI.create("http://www.opencadc.org/std/posix#group-mapping-0.1");
@@ -144,19 +147,31 @@ public class Standards {
     public static final URI PROTO_TABLE_LOAD_SYNC = URI.create("ivo://ivoa.net/std/VOSI#table-load-sync-1.x");
     public static final URI PROTO_TABLE_PERMISSIONS = URI.create("ivo://ivoa.net/std/VOSI#table-permissions-1.x");
 
+    // all these VOSpace related standardID constants have been added to cadc-vos; code should use VOS.*
+    @Deprecated
     public static final URI VOSPACE_NODES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#nodes");
+    @Deprecated
     public static final URI VOSPACE_PROPERTIES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#properties");
+    @Deprecated
     public static final URI VOSPACE_PROTOCOLS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#protocols");
+    @Deprecated
     public static final URI VOSPACE_SEARCHES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#searches");
+    @Deprecated
     public static final URI VOSPACE_SYNC_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#sync");
+    @Deprecated
     public static final URI VOSPACE_SYNC_21 = URI.create("ivo://ivoa.net/std/VOSpace#sync-2.1");
+    @Deprecated
     public static final URI VOSPACE_TRANSFERS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#transfers");
+    @Deprecated
     public static final URI VOSPACE_VIEWS_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.0#views");
     @Deprecated
     public static final URI VOSPACE_FILES_20 = URI.create("ivo://ivoa.net/std/VOSpace/v2.x#files");
     
+    @Deprecated
     public static final URI VOSPACE_FILES = URI.create("ivo://ivoa.net/std/VOSpace#files-proto");
+    @Deprecated
     public static final URI VOSPACE_RECURSIVE_DELETE = URI.create("ivo://ivoa.net/std/VOSpace#recursive-delete-proto");
+    @Deprecated
     public static final URI VOSPACE_RECURSIVE_NODEPROPS = URI.create("ivo://ivoa.net/std/VOSpace#recursive-nodeprops-proto");
 
     @Deprecated
@@ -219,7 +234,7 @@ public class Standards {
     // science platform repositories
     public static final URI PLATFORM_REPO_1 = URI.create("http://www.opencadc.org/std/platform#repository-1");
     
-
+    @Deprecated // no longer used
     public static final URI UWS_UPDATE_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/UWS#update-1.0");
 
     public static final URI RESOLVER_10 = URI.create("vos://cadc.nrc.ca~vospace/CADC/std/NameResolver#names-1.0");
@@ -238,6 +253,8 @@ public class Standards {
     public static final URI SECURITY_METHOD_CERT = URI.create("ivo://ivoa.net/sso#tls-with-certificate");
     public static final URI SECURITY_METHOD_COOKIE = URI.create("ivo://ivoa.net/sso#cookie");
     public static final URI SECURITY_METHOD_HTTP_BASIC = URI.create("ivo://ivoa.net/sso#BasicAA");
+    
+    @Deprecated // was never included in SSO-2.0
     public static final URI SECURITY_METHOD_TOKEN = URI.create("ivo://ivoa.net/sso#token");
     
     @Deprecated // Was for prototype delegation token work. Use SECURITY_METHOD_TOKEN now.
