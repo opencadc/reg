@@ -2,12 +2,17 @@
 {{- fail "Service entries must be provided in reg application values." }}
 {{- end }}
 {{- $connYaml := include "reg.tomcatConnector" . -}}
+{{- $rk := .Values.application.rsaSignaturePublicKey | default dict }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "reg.fullname" . }}-config
   labels:
     {{- include "reg.labels" . | nindent 4 }}
+{{- if and (not $rk.existingSecret) ($rk.value | trim) }}
+binaryData:
+  "RsaSignaturePub.key": {{ $rk.value | trim | b64enc | quote }}
+{{- end }}
 data:
   catalina.properties: |-
 {{- if $connYaml }}
@@ -18,6 +23,9 @@ data:
     tomcat.connector.secure={{ $conn.secure }}
 {{- end }}
     ca.nrc.cadc.util.Log4jInit.messageOnly=true
+{{- with .Values.application.identityManagerClass }}
+    ca.nrc.cadc.auth.IdentityManager={{ . }}
+{{- end }}
 
   reg-resource-caps.properties:
 {{ with .Values.application.serviceEntries }}

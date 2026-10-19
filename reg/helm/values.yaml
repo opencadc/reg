@@ -11,7 +11,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "1.2.1"
+  tag: "1.2.2"
 
 # -- Begin application specific parameters. --
 application:
@@ -48,6 +48,19 @@ application:
     #  - "ivo://cadc.nrc.ca/gms/auditgroup"
     #  - "ivo://cadc.nrc.ca/gms/anotherauditgroup"
     # groups: []
+
+  # IdentityManager class written to catalina.properties when set.
+  # Example: ca.nrc.cadc.ac.ACIdentityManager
+  identityManagerClass: ""
+
+  # RSA public key at /config/RsaSignaturePub.key.
+  # - If existingSecret is set: mount that Secret key as a file (GitOps/Argo-friendly; no Helm lookup).
+  #   Secret must exist in the release namespace before the pod starts; key name RsaSignaturePub.key.
+  # - Otherwise, when value is set: embed the PEM in ConfigMap binaryData
+  #   (e.g. --set-file application.rsaSignaturePublicKey.value=...).
+  rsaSignaturePublicKey:
+    existingSecret: ""
+    value: ""
 
 # -- End application specific parameters. --
 
