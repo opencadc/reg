@@ -28,6 +28,7 @@ dependencies {
     implementation 'org.opencadc:cadc-registry:[1.7.7,2.0)'
     
     runtimeOnly 'org.opencadc:cadc-access-control-identity:[1.2.7,2.0.0)'
+    runtimeOnly 'org.opencadc:cadc-gms:[1.0.21,2.0.0)'
     runtimeOnly 'org.opencadc:cadc-log:[1.2.1,)'
 
     testImplementation 'org.opencadc:cadc-quality:[1.0,)'
