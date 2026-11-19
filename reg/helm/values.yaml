@@ -64,6 +64,20 @@ application:
 
 # -- End application specific parameters. --
 
+# Optional: set environment variables for the container
+env: []
+  # - name: APP_ENV
+  #   value: "production"
+  # - name: LOG_LEVEL
+  #   value: "info"
+
+# Optional: load variables from existing ConfigMaps or Secrets
+envFrom: []
+# - configMapRef:
+#     name: my-configmap
+# - secretRef:
+#     name: my-secret
+
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 # This is to override the chart name.
