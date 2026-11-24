@@ -140,8 +140,12 @@ public class AvailabilityClient {
         if (resourceID == null) {
             throw new IllegalStateException("caller used deprecated constructor - must use deprecated getAvailability(URL)");
         }
-        URL avail = reg.getServiceURL(resourceID, Standards.VOSI_AVAILABILITY, AuthMethod.ANON);
-        return doit(avail);
+        try {
+            URL avail = reg.getServiceURL(resourceID, Standards.VOSI_AVAILABILITY);
+            return doit(avail);
+        } catch (Exception ex) {
+            return getFalseAvailability(ex.toString());
+        }
     }
 
     @Deprecated
